@@ -4,6 +4,13 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
+*,
+td,
+tr {
+  margin: 0;
+  padding: 0;
+}
+
 :root {
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 15, 15, 15;
@@ -12,6 +19,7 @@
 
 html {
   scroll-behavior: smooth !important;
+  height: 100%;
 }
 
 body {
@@ -25,6 +33,20 @@ body {
   font-family: "Inter", "sans-serif";
 }
 
+::-webkit-scrollbar {
+  width: 12px; /* width of the entire scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #424242; /* color of the tracking area */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #7b7b7b; /* color of the scroll thumb */
+  border-radius: 5px; /* roundness of the scroll thumb */
+  border: 3px solid #424242; /* creates padding around scroll thumb */
+}
+
 h1 {
   font-size: clamp(24px, 4vw, 32px);
   font-weight: 700;
@@ -36,10 +58,13 @@ h2 {
 }
 
 h3 {
-  font-size: clamp(16px, 8vw, 24px);
-  font-weight: 700;
+  font-size: clamp(14px, 8vw, 18px);
+  font-weight: 600;
 }
 
+textarea,
+input,
+span,
 p,
 ul,
 li {
@@ -52,10 +77,4 @@ h5 {
 
 h6 {
   font-size: clamp(8px, 3vw, 12px);
-}
-
-td,
-tr {
-  margin: 0;
-  padding: 0;
 }
