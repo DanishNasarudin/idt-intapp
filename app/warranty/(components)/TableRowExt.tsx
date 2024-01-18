@@ -2,6 +2,7 @@
 import React, { useRef, useState } from "react";
 import TextBoxNormal from "./TextBoxNormal";
 import { DataValues } from "../[branch]/page";
+import socket from "@/lib/socket";
 
 import html2pdf from "html2pdf.js";
 
@@ -306,10 +307,16 @@ const TableRowExt = ({
             <p>{copyValuesH ? "Copied!" : "Copy"}</p>
           </button>
           <button
+            disabled={data.email === "" || data.email === null}
             className={`
+            ${
+              data.email === "" || data.email === null
+                ? "border-zinc-800 text-zinc-800"
+                : "border-zinc-600 text-zinc-600 mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400"
+            }
                               px-4 py-2 rounded-md transition-all border-[1px]
-                              bg-transparent border-zinc-600 text-zinc-600
-                              mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400`}
+                              bg-transparent 
+                              `}
             onClick={() => sendEmail()}
           >
             <p>Send Email</p>
@@ -378,6 +385,7 @@ const TableRowExt = ({
                 setTimeout(() => {
                   setDeleteCon(false);
                   openCloseTab(false);
+                  socket.emit("re-render", { string: "render" });
                 }, 50);
               }}
             >

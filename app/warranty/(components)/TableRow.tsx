@@ -4,6 +4,7 @@ import TextBoxEditor from "./TextBoxEditor";
 import { BranchType, DataValues } from "../[branch]/page";
 import TableRowExt from "./TableRowExt";
 import Dropdown from "./Dropdown";
+import socket from "@/lib/socket";
 
 type Props = {
   branch: BranchType | null;
@@ -11,13 +12,23 @@ type Props = {
   updateDB: (id: string, column: string, value: string) => void;
   deleteDB: (id: string) => void;
   updateAllDB: (id: string, lastChange: DataValues) => void;
+  setNewEntry: (newValue: React.SetStateAction<boolean>) => void;
+  lockTable: boolean;
 };
 
 type InputState = {
   values: DataValues;
 };
 
-const TableRow = ({ branch, data, updateDB, deleteDB, updateAllDB }: Props) => {
+const TableRow = ({
+  branch,
+  data,
+  updateDB,
+  deleteDB,
+  updateAllDB,
+  setNewEntry,
+  lockTable,
+}: Props) => {
   const initialInputState: InputState = {
     values: {
       service_no: data.service_no,
@@ -36,11 +47,36 @@ const TableRow = ({ branch, data, updateDB, deleteDB, updateAllDB }: Props) => {
       solutions: data.solutions,
       status_desc: data.status_desc,
       remarks: data.remarks,
+      // locker: data.locker,
     },
   };
 
   const [inputValues, setInputValues] = useState<InputState>(initialInputState);
   const { values } = inputValues;
+
+  useEffect(() => {
+    setInputValues({
+      values: {
+        service_no: data.service_no,
+        date: data.date,
+        pic: data.pic,
+        name: data.name,
+        contact: data.contact,
+        status: data.status,
+        email: data.email,
+        address: data.address,
+        purchase_date: data.purchase_date,
+        invoice: data.invoice,
+        received_items: data.received_items,
+        pin: data.pin,
+        issues: data.issues,
+        solutions: data.solutions,
+        status_desc: data.status_desc,
+        remarks: data.remarks,
+        // locker: data.locker,
+      },
+    });
+  }, [data]);
 
   // console.log(values, "check");
 
@@ -68,6 +104,7 @@ const TableRow = ({ branch, data, updateDB, deleteDB, updateAllDB }: Props) => {
     solutions: null,
     status_desc: null,
     remarks: null,
+    // locker: null,
   });
 
   // console.log(lastChangedExtRef);
@@ -156,6 +193,7 @@ const TableRow = ({ branch, data, updateDB, deleteDB, updateAllDB }: Props) => {
   // OpenClose for bottom box ----
   const [accordion, setAccordion] = useState(false);
   const [openTab, setOpenTab] = useState(false);
+  // console.log(accordion, "accordion");
 
   // OpenClose for Row ----
   const [openClose, setOpenClose] = useState({
@@ -169,10 +207,23 @@ const TableRow = ({ branch, data, updateDB, deleteDB, updateAllDB }: Props) => {
   const handleOpenClose = (id: string, open: boolean) => {
     // console.log(id, open, "check");
     setOpenClose({ ...openClose, [id]: open });
+    if (open) {
+      socket.emit("lock-row", { lock: data.service_no });
+      // console.log("lock handleOpenClose");
+    } else {
+      // console.log(accordion, "un lock handleOpenClose");
+      if (accordion === false) {
+        socket.emit("unlock-row", { lock: data.service_no });
+      } else {
+        socket.emit("re-render", { string: "render" });
+      }
+    }
 
+    if (open) return;
+    if (accordion === true) return;
     const lastChange = lastChangedRef.current;
     if (lastChange.column != null && lastChange.value != null) {
-      // console.log("pass");
+      console.log("pass handleOpenClose");
       if (values.service_no != null && values.service_no != "")
         updateDB(values.service_no, lastChange.column, lastChange.value);
       lastChangedRef.current = { column: null, value: null };
@@ -188,14 +239,25 @@ const TableRow = ({ branch, data, updateDB, deleteDB, updateAllDB }: Props) => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (openRef.current && openRef.current.contains(e.target as Node)) {
         setOpenClose({ ...openClose });
+        setTimeout(() => {
+          if (accordion === false) {
+            socket.emit("unlock-row", { lock: data.service_no });
+          } else {
+            socket.emit("re-render", { string: "render" });
+          }
 
+          // console.log(accordion, "unlock outsideclick");
+        }, 50);
+
+        if (accordion === true) return;
         // Update DB with the changes, take values and pass to parent to DB.
         const lastChange = lastChangedRef.current;
         if (lastChange.column != null && lastChange.value != null) {
-          // console.log("pass");
-          if (values.service_no != null && values.service_no != "")
+          // console.log("pass handleOutsideClick");
+          if (values.service_no != null && values.service_no != "") {
             updateDB(values.service_no, lastChange.column, lastChange.value);
-          lastChangedRef.current = { column: null, value: null };
+            lastChangedRef.current = { column: null, value: null };
+          }
         }
 
         clearExtRef();
@@ -206,13 +268,42 @@ const TableRow = ({ branch, data, updateDB, deleteDB, updateAllDB }: Props) => {
     return () => {
       window.removeEventListener("mousedown", handleOutsideClick);
     };
-  }, [openRef]);
+  }, [openRef, accordion]);
 
   // ----
 
   // const populateTemplateWithData = (template: string, data: DataValues) => {
   //   template = template.replace("{{name}}", data.name);
   // };
+
+  // Socket io
+
+  const [lockRow, setLockRow] = useState(false);
+  // const [lockRowOther, setLockRowOther] = useState(false);
+
+  useEffect(() => {
+    const handleLockRow = ({ lock }: { lock: string }) => {
+      if (lock === "" || lock === null) return;
+      if (lock === data.service_no) setLockRow(true);
+      // console.log("lock pass");
+    };
+
+    const handleUnlockRow = ({ lock }: { lock: string }) => {
+      if (lock === "" || lock === null) return;
+      if (lock === data.service_no) setLockRow(false);
+      // console.log("unlock pass");
+    };
+
+    socket.on("lock-row", handleLockRow);
+    socket.on("unlock-row", handleUnlockRow);
+
+    return () => {
+      socket.off("lock-row", handleLockRow);
+      socket.off("unlock-row", handleUnlockRow);
+    };
+  }, []);
+
+  // console.log(data.service_no, data.locker, "locker");
 
   return (
     <div
@@ -221,11 +312,12 @@ const TableRow = ({ branch, data, updateDB, deleteDB, updateAllDB }: Props) => {
       data-open={accordion}
     >
       <button
+        disabled={lockTable || lockRow}
         className={`
                   ${
-                    openTab
-                      ? "bg-zinc-700 mobilehover:hover:bg-accent/80 text-zinc-300"
-                      : "bg-transparent text-transparent"
+                    openTab && !lockTable
+                      ? "bg-zinc-700 mobilehover:hover:bg-accent/80 text-zinc-300 cursor-pointer"
+                      : "bg-transparent text-transparent cursor-default"
                   }
                   absolute left-[-58px]
                           px-2 py-1 rounded-md transition-all border-[1px]
@@ -234,7 +326,16 @@ const TableRow = ({ branch, data, updateDB, deleteDB, updateAllDB }: Props) => {
         onMouseLeave={() => setOpenTab(false)}
         onClick={() => {
           setAccordion(!accordion);
-          if (accordion) handleUpdateAllDB();
+          if (accordion) {
+            // if (data.service_no) updateDB(data.service_no, "locker", "0");
+            setTimeout(() => {
+              handleUpdateAllDB();
+              socket.emit("unlock-row", { lock: data.service_no });
+            }, 50);
+          } else {
+            // if (data.service_no) updateDB(data.service_no, "locker", "1");
+            socket.emit("lock-row", { lock: data.service_no });
+          }
         }}
       >
         <p>{accordion ? "Close" : "Open"}</p>
@@ -269,14 +370,6 @@ const TableRow = ({ branch, data, updateDB, deleteDB, updateAllDB }: Props) => {
             clearExtRef={clearExtRef}
           />
         )}
-        {/* <TextBoxEditor
-          boxSize={110}
-          values={values.pic}
-          id="pic"
-          onInputChange={inputChange}
-          setOpenClose={handleOpenClose}
-          openClose={openClose.pic}
-        /> */}
         <TextBoxEditor
           boxSize={9999}
           values={values.name}
@@ -293,60 +386,6 @@ const TableRow = ({ branch, data, updateDB, deleteDB, updateAllDB }: Props) => {
           setOpenClose={handleOpenClose}
           openClose={openClose.contact}
         />
-        {/* <div
-          role="button"
-          className="max-w-[160px] whitespace-nowrap relative px-2 py-1"
-          onClick={() => setOpenClose({ ...openClose, openStatus: true })}
-        >
-          {branch &&
-            branch.status.map((status, key) => {
-              if (status.type === values.status)
-                return (
-                  <div
-                    key={key}
-                    role="button"
-                    className={`rounded-md w-max px-2 ${status.color}`}
-                  >
-                    <span>{values.status}</span>
-                  </div>
-                );
-            })}
-          {openClose.openStatus && (
-            <div className="z-[2] absolute w-full left-0 top-0 py-2 flex flex-col rounded-md bg-zinc-800">
-              {branch &&
-                branch.status.map((status, key) => {
-                  return (
-                    <div
-                      key={key}
-                      role="button"
-                      className="row-cont px-2 py-1 mobilehover:hover:bg-zinc-700"
-                      onClick={() => {
-                        setInputValues((prev) => {
-                          return {
-                            ...prev,
-                            values: { ...prev.values, status: status.type },
-                          };
-                        });
-                        updateDB(values.service_no, "status", status.type);
-                        setTimeout(() => {
-                          clearExtRef();
-                          setOpenClose((prev) => {
-                            return { ...prev, openStatus: false };
-                          });
-                        }, 50);
-                      }}
-                    >
-                      <div
-                        className={`${status.color} rounded-md w-max leading-none px-2 py-[2px]`}
-                      >
-                        <span>{status.type}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-        </div> */}
         {branch && (
           <Dropdown
             boxSize={160}
@@ -381,6 +420,10 @@ const TableRow = ({ branch, data, updateDB, deleteDB, updateAllDB }: Props) => {
           isExtEmpty={!isExtEmpty(lastChangedExtRef.current)}
         />
       </div>
+      <div
+        data-open={lockRow}
+        className="data-[open=true]:block data-[open=false]:hidden z-[3] absolute bg-red-800/20 w-full h-full left-0 top-0"
+      />
       <div
         data-open={Object.values(openClose).some((value) => value === true)}
         ref={openRef}

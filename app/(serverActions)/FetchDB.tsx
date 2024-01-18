@@ -52,6 +52,15 @@ async function fetchData(
   }
 }
 
+// async function checkExists(
+//   tableName: string,
+//   serviceNo: string
+// ): Promise<boolean> {
+//   const query = `SELECT 1 FROM ?? WHERE service_no = ? LIMIT 1`;
+//   const [rows] = await connection.query(query, [tableName, serviceNo]);
+//   return rows.length > 0;
+// }
+
 async function addData(tableName: string): Promise<void> {
   try {
     let prefix = "";
@@ -151,7 +160,27 @@ async function updateAllData(
   }
 }
 
-export { fetchData, updateData, addData, deleteData, updateAllData };
+async function moveData(
+  fromTable: string,
+  toTable: string,
+  id: string
+): Promise<void> {
+  try {
+    if (id != "") {
+      const queryCheck = `SELECT * FROM ?? WHERE service_no = ?`;
+      const check = await connection.query(queryCheck, [toTable, id]);
+      if (check) {
+        deleteData(toTable, id);
+      }
+      const queryMove = `INSERT INTO ?? SELECT * FROM ?? WHERE service_no = ?`;
+      await connection.query(queryMove, [toTable, fromTable, id]);
+    }
+  } catch (error) {
+    throw new Error(`Database error: ${error}`);
+  }
+}
+
+export { fetchData, updateData, addData, deleteData, updateAllData, moveData };
 
 // const API_URL = "https://intapi.idealtech.com.my";
 // const API_KEY = process.env.DB_API_KEY || ""; // Replace with your actual API key

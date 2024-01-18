@@ -9,32 +9,28 @@ type Props = {};
 const Hero = (props: Props) => {
   const imageSize = 300;
   return (
-    <div className="w-full flex flex-col gap-4 item-center relative">
+    <div className="w-full flex flex-col gap-4 item-center relative h-[100vh]">
       <div
         className="max-w-[1060px] mx-auto w-full flex gap-10 relative justify-center items-center py-8 pb-4 sm:py-8 md:py-[85px] sm:pb-24 md:pb-[150px] px-4 z-[5]
       "
       >
         <div className="texts flex flex-col gap-4 items-center text-center max-w-[500px] w-full">
           <h1 className="leading-none">
-            Customized PC <br /> <b className="text-accent">Water-Cooling</b>{" "}
-            Solutions.
+            Ideal Tech PC <br /> Internal App
           </h1>
-          <p>
-            Prepare yourself, and wallet, to customize the best water-cooling PC
-            you will ever have in your life.
-          </p>
+          <p>Hopefully this helps.</p>
           <div className="flex gap-4 mt-0 sm:mt-8">
             <Link href={"#positions"}>
               <button className="py-2 px-4 sm:py-4 sm:px-8 border-white border-[1px] rounded-lg w-fit mx-auto mobilehover:hover:bg-white/20 transition-all">
                 <p className="text-[10px] sm:text-sm">
-                  <b>Chat with us!</b>
+                  <b>Nothing Yet..</b>
                 </p>
               </button>
             </Link>
-            <Link href={"#positions"}>
+            <Link href={"/warranty"}>
               <button className="py-2 px-4 sm:py-4 sm:px-8 border-transparent border-[1px] rounded-lg bg-accent mobilehover:hover:bg-accent/80 w-fit mx-auto transition-all">
                 <p className="text-[10px] sm:text-sm">
-                  <b>View samples</b>
+                  <b>Warranty Entry</b>
                 </p>
               </button>
             </Link>
