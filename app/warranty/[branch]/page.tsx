@@ -32,6 +32,9 @@ export type BranchType = {
   data_local: string;
   data_other: string;
   name: string;
+  address: string;
+  office: string;
+  whatsapp: string;
   status: BranchStatus[];
   pic: BranchStatus[];
 };
@@ -47,8 +50,13 @@ const branchFormat: BranchFormat = {
       data_local: "ap_local",
       data_other: "ap_other",
       name: "Ampang HQ",
+      address:
+        "No. 17, Jalan Pandan Prima 1, Dataran Pandan Prima, 55100 Kuala Lumpur, Malaysia.",
+      office: "+603 9202 3137",
+      whatsapp: "+6012 427 8782",
       status: [
         { type: "Pending", color: "bg-purple-600 text-purple-100" },
+        { type: "Waiting For", color: "bg-pink-600 text-pink-100" },
         { type: "Completed", color: "bg-emerald-600 text-emerald-100" },
         { type: "Pass SS2", color: "bg-red-600 text-red-100" },
         { type: "From SS2", color: "bg-cyan-600 text-cyan-100" },
@@ -61,8 +69,9 @@ const branchFormat: BranchFormat = {
         { type: "Hanif", color: "bg-purple-600 text-purple-100" },
         { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
         { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
-        { type: "Khai", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
         { type: "Dixon", color: "bg-orange-600 text-orange-100" },
+        { type: "Amir", color: "bg-blue-600 text-blue-100" },
       ],
     },
     {
@@ -70,8 +79,12 @@ const branchFormat: BranchFormat = {
       data_local: "s2_local",
       data_other: "s2_other",
       name: "SS2, PJ",
+      address: "42, Jalan SS 2/55, SS 2, 47300 Petaling Jaya, Selangor.",
+      office: "+603 7876 0076",
+      whatsapp: "+6017 865 0076",
       status: [
         { type: "Pending", color: "bg-purple-600 text-purple-100" },
+        { type: "Waiting For", color: "bg-pink-600 text-pink-100" },
         { type: "Completed", color: "bg-emerald-600 text-emerald-100" },
         { type: "Pass Ampang", color: "bg-red-600 text-red-100" },
         { type: "From Ampang", color: "bg-cyan-600 text-cyan-100" },
@@ -81,6 +94,8 @@ const branchFormat: BranchFormat = {
       pic: [
         { type: "John", color: "bg-purple-600 text-purple-100" },
         { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Akmal", color: "bg-red-600 text-red-100" },
+        { type: "John Shen", color: "bg-cyan-600 text-cyan-100" },
       ],
     },
     {
@@ -88,8 +103,13 @@ const branchFormat: BranchFormat = {
       data_local: "sa_local",
       data_other: "sa_other",
       name: "Setia Alam",
+      address:
+        "No 36-G, Jalan Setia Utama AU U13/AU Setia Alam, 40170 Shah Alam, Selangor.",
+      office: "+603 3358 3713",
+      whatsapp: "+6012 610 1871",
       status: [
         { type: "Pending", color: "bg-purple-600 text-purple-100" },
+        { type: "Waiting For", color: "bg-pink-600 text-pink-100" },
         { type: "Completed", color: "bg-emerald-600 text-emerald-100" },
         { type: "Pass Ampang", color: "bg-red-600 text-red-100" },
         { type: "From Ampang", color: "bg-cyan-600 text-cyan-100" },
@@ -99,15 +119,22 @@ const branchFormat: BranchFormat = {
       pic: [
         { type: "Zaki", color: "bg-purple-600 text-purple-100" },
         { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Jack", color: "bg-red-600 text-red-100" },
+        { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
       ],
     },
     {
       id: "jb",
       data_local: "jb_local",
       data_other: "jb_other",
-      name: "Johor Bharu",
+      name: "Johor Bahru",
+      address:
+        "53, Jln Austin Height 8/8, Taman Mount Austin, 81100 Johor Bahru, Johor.",
+      office: "Pending",
+      whatsapp: "+6016 854 1253",
       status: [
         { type: "Pending", color: "bg-purple-600 text-purple-100" },
+        { type: "Waiting For", color: "bg-pink-600 text-pink-100" },
         { type: "Completed", color: "bg-emerald-600 text-emerald-100" },
         { type: "Pass Ampang", color: "bg-red-600 text-red-100" },
         { type: "From Ampang", color: "bg-cyan-600 text-cyan-100" },
@@ -155,7 +182,7 @@ export type DataValues = {
   solutions: string | null;
   status_desc: string | null;
   remarks: string | null;
-  // locker: string | null;
+  locker: string | null;
 };
 
 // Page types
@@ -208,6 +235,8 @@ const Branch = (props: Props) => {
     other: { pageSize: 10, pageNum: 1, count: 0 },
   });
 
+  // console.log(page);
+
   const handleSetPage = (id: string, obj: Page) => {
     if (id === "local") {
       setPage({ ...page, local: obj });
@@ -236,7 +265,10 @@ const Branch = (props: Props) => {
         searchValues
       ).then((data: any) => {
         setData(data.rows);
-        setPage({ ...page, local: { ...page.local, count: data.count } });
+        setPage((currentPage) => ({
+          ...currentPage,
+          local: { ...currentPage.local, count: data.count },
+        }));
       });
       fetchData(
         branch.data_other,
@@ -245,7 +277,10 @@ const Branch = (props: Props) => {
         searchValues
       ).then((data: any) => {
         setDataOther(data.rows);
-        setPage({ ...page, other: { ...page.other, count: data.count } });
+        setPage((currentPage) => ({
+          ...currentPage,
+          other: { ...currentPage.other, count: data.count },
+        }));
       });
     }
   }, [newEntry, branch, searchValues]);
@@ -316,7 +351,7 @@ const Branch = (props: Props) => {
   };
 
   const updateDB = async (id: string, column: string, value: string) => {
-    console.log("updated DB");
+    // console.log("updated DB");
     try {
       if (branch) {
         if (column === "status") {
@@ -332,7 +367,7 @@ const Branch = (props: Props) => {
   };
 
   const deleteDB = async (id: string) => {
-    console.log("deleted DB");
+    // console.log("deleted DB");
     try {
       if (branch) {
         await deleteData(branch.data_local, id);
@@ -344,7 +379,7 @@ const Branch = (props: Props) => {
   };
 
   const updateDBWithChanges = async (id: string, lastChange: DataValues) => {
-    console.log("updated All DB");
+    // console.log("updated All DB");
     try {
       if (branch) {
         const changes = (
@@ -361,6 +396,7 @@ const Branch = (props: Props) => {
           await updateAllData(branch.data_local, id, changes);
           // Reset logic here if needed
         }
+        // setNewEntry(!newEntry);
       }
     } catch (error) {
       throw new Error(`Database error: ${error}`);
@@ -368,7 +404,7 @@ const Branch = (props: Props) => {
   };
 
   const addDB = async () => {
-    console.log("added DB");
+    // console.log("added DB");
     try {
       if (branch) {
         await addData(branch.data_local);
@@ -400,6 +436,48 @@ const Branch = (props: Props) => {
       socket.off("unlock-row", handleUnlockRow);
       socket.off("re-render", handleRender);
     };
+  }, []);
+
+  // New version of the app is available ---
+
+  // A function to fetch the current version from the server
+  async function fetchVersion(): Promise<string | null> {
+    try {
+      const res = await fetch("/api/version");
+      const data = await res.json();
+      return data.version;
+    } catch (error) {
+      console.error("Failed to fetch version:", error);
+      return null;
+    }
+  }
+
+  // Use setInterval for polling
+  function startVersionPolling(
+    currentVersion: string,
+    onNewVersionDetected: () => void
+  ) {
+    const interval = setInterval(async () => {
+      const serverVersion = await fetchVersion();
+      if (serverVersion && serverVersion !== currentVersion) {
+        clearInterval(interval); // Stop polling once a new version is detected
+        onNewVersionDetected();
+      }
+    }, 60000); // Poll every 60 seconds
+
+    return () => clearInterval(interval); // Return a cleanup function
+  }
+
+  const [isUpdateAvailable, setUpdateAvailable] = useState(false);
+  const currentVersion = process.env.APP_VERSION; // The version the client is currently on
+
+  useEffect(() => {
+    if (!currentVersion) return;
+    const cleanup = startVersionPolling(currentVersion, () => {
+      setUpdateAvailable(true);
+    });
+
+    return cleanup; // Cleanup the interval when the component unmounts
   }, []);
 
   return (
@@ -533,6 +611,33 @@ const Branch = (props: Props) => {
             handleSetPage={handleSetPage}
             lockTable={true}
           />
+        </div>
+      </div>
+      <div
+        data-open={isUpdateAvailable}
+        className="data-[open=true]:block data-[open=false]:hidden fixed z-[2] bg-black/50 w-[100vw] h-[100vh] top-0 left-0"
+      >
+        <div
+          className="
+        max-w-[500px] bg-zinc-900 border-zinc-700 border-[1px] p-8 rounded-md m-auto translate-y-[150%]
+        flex flex-col gap-4
+        "
+        >
+          <h3>Refresh now!</h3>
+          <span>A new version is available.</span>
+          <div className="flex gap-2 justify-end">
+            <button
+              className={`
+                              px-4 py-2 rounded-md transition-all border-[1px]
+                              bg-transparent border-sky-600 text-sky-600
+                              mobilehover:hover:border-sky-400 mobilehover:hover:text-sky-400`}
+              onClick={() => {
+                window.location.reload();
+              }}
+            >
+              <p>Refresh</p>
+            </button>
+          </div>
         </div>
       </div>
       <div className="md:hidden flex justify-center items-center h-[100vh] text-center w-full">

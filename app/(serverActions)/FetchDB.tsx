@@ -22,6 +22,12 @@ type MyDataType = RowDataPacket & {
   remarks: string;
 };
 
+type UserData = RowDataPacket & {
+  id: number;
+  email: string;
+  roles: string;
+};
+
 async function fetchData(
   tableName: string,
   pageSize: number,
@@ -52,14 +58,17 @@ async function fetchData(
   }
 }
 
-// async function checkExists(
-//   tableName: string,
-//   serviceNo: string
-// ): Promise<boolean> {
-//   const query = `SELECT 1 FROM ?? WHERE service_no = ? LIMIT 1`;
-//   const [rows] = await connection.query(query, [tableName, serviceNo]);
-//   return rows.length > 0;
-// }
+async function getMaxSequence(
+  tableName: string,
+  serviceNo: string
+): Promise<number> {
+  const query = `SELECT MAX(service_no) as maxServiceNo FROM ${tableName} WHERE service_no LIKE ?`;
+  const [rows] = await connection.query<RowDataPacket[]>(query, [serviceNo]);
+  if (rows.length > 0 && rows[0].maxServiceNo) {
+    return parseInt(rows[0].maxServiceNo.slice(-3), 10);
+  }
+  return 0;
+}
 
 async function addData(tableName: string): Promise<void> {
   try {
@@ -78,26 +87,44 @@ async function addData(tableName: string): Promise<void> {
     const month = `0${new Date().getMonth() + 1}`.slice(-2); // Get the month in two-digit format
 
     // Query the database to find the last service_no for the current year and month
-    const query = `
-    SELECT service_no FROM ${tableName}
-    WHERE service_no LIKE ?
-    ORDER BY service_no DESC
-    LIMIT 1
-  `;
+
     const likePattern = `${prefix}${year}${month}%`;
-    const [rows] = await connection.query<MyDataType[]>(query, [likePattern]);
 
-    let sequenceNumber = 1; // Default sequence number
-    if (rows.length > 0) {
-      // Extract the numeric part of the service_no and increment it
-      const lastSequenceNumber = parseInt(rows[0].service_no.slice(-3), 10);
-      sequenceNumber = lastSequenceNumber + 1;
-    }
+    const tables = ["ap_local", "s2_local", "sa_local", "jb_local"];
 
-    // Construct the service_no using the prefix, year, month, and next sequence number
+    // Get the highest sequence number across all tables
+    const maxSequences = await Promise.all(
+      tables.map((table) => getMaxSequence(table, likePattern))
+    );
+    const maxSequence = Math.max(...maxSequences, 0);
+
+    // Increment the sequence number
+    const sequenceNumber = maxSequence + 1;
+
+    // Construct the service_no
     const serviceNo = `${prefix}${year}${month}${`00${sequenceNumber}`.slice(
       -3
     )}`;
+
+    //   const query = `
+    //   SELECT service_no FROM ${tableName}
+    //   WHERE service_no LIKE ?
+    //   ORDER BY service_no DESC
+    //   LIMIT 1
+    // `;
+    // const [rows] = await connection.query<MyDataType[]>(query, [likePattern]);
+
+    // let sequenceNumber = 1; // Default sequence number
+    // if (rows.length > 0) {
+    //   // Extract the numeric part of the service_no and increment it
+    //   const lastSequenceNumber = parseInt(rows[0].service_no.slice(-3), 10);
+    //   sequenceNumber = lastSequenceNumber + 1;
+    // }
+
+    // // Construct the service_no using the prefix, year, month, and next sequence number
+    // const serviceNo = `${prefix}${year}${month}${`00${sequenceNumber}`.slice(
+    //   -3
+    // )}`;
 
     const today = new Date();
     const formattedDate = format(today, "dd/MM/yyyy");
@@ -180,61 +207,90 @@ async function moveData(
   }
 }
 
-export { fetchData, updateData, addData, deleteData, updateAllData, moveData };
+async function fetchUsers(): Promise<UserData[]> {
+  try {
+    const query = `SELECT * FROM auth_users`;
+    const [rows] = await connection.query<UserData[]>(query);
 
-// const API_URL = "https://intapi.idealtech.com.my";
-// const API_KEY = process.env.DB_API_KEY || ""; // Replace with your actual API key
+    return rows;
+  } catch (error) {
+    throw new Error(`Database error: ${error}`);
+  }
+}
 
-// async function insertData(tableName: string, data: MyDataType): Promise<any> {
-//   const response = await fetch(`${API_URL}/insert/${tableName}`, {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//       "API-Key": API_KEY,
-//     },
-//     body: JSON.stringify(data),
-//   });
+async function searchUser(
+  email: string | null | undefined
+): Promise<UserData | null> {
+  try {
+    if (email === null || email === undefined) return null;
+    const query = `SELECT * FROM auth_users WHERE email = ?`;
+    const [rows] = await connection.query<UserData[]>(query, [email]);
+    // console.log(rows, "check users");
 
-//   if (!response.ok) {
-//     throw new Error(`Error: ${response.status}`);
-//   }
+    return rows.length > 0 ? rows[0] : null;
+  } catch (error) {
+    throw new Error(`Database error: ${error}`);
+  }
+}
 
-//   return response.json();
-// }
+async function updateDBGeneral(
+  table: string,
+  columnId: string,
+  id: string,
+  column: string,
+  value: string
+): Promise<void> {
+  try {
+    if (id != "") {
+      console.log(table, columnId, id, column, value, "check");
+      const query = `UPDATE ${table} SET ?? = ? WHERE ?? = ?`;
+      await connection.query(query, [column, value, columnId, id]);
+    }
+  } catch (error) {
+    throw new Error(`Database error: ${error}`);
+  }
+}
 
-// async function updateData(
-//   tableName: string,
-//   id: number,
-//   data: Partial<MyDataType>
-// ): Promise<any> {
-//   const response = await fetch(`${API_URL}/update/${tableName}/${id}`, {
-//     method: "PUT",
-//     headers: {
-//       "Content-Type": "application/json",
-//       "API-Key": API_KEY,
-//     },
-//     body: JSON.stringify(data),
-//   });
+async function addDBGeneral(
+  table: string,
+  columnId: string,
+  id: string
+): Promise<void> {
+  try {
+    if (id != "") {
+      const query = `INSERT INTO ${table} (??) VALUES (?)`;
+      await connection.query(query, [columnId, id]);
+    }
+  } catch (error) {
+    throw new Error(`Database error: ${error}`);
+  }
+}
 
-//   if (!response.ok) {
-//     throw new Error(`Error: ${response.status}`);
-//   }
+async function deleteDBGeneral(
+  table: string,
+  columnId: string,
+  id: string
+): Promise<void> {
+  try {
+    if (id != "") {
+      const query = `DELETE FROM ${table} WHERE ?? = ?`;
+      await connection.query(query, [columnId, id]);
+    }
+  } catch (error) {
+    throw new Error(`Database error: ${error}`);
+  }
+}
 
-//   return response.json();
-// }
-
-// async function deleteData(tableName: string, id: number): Promise<any> {
-//   const response = await fetch(`${API_URL}/delete/${tableName}/${id}`, {
-//     method: "DELETE",
-//     headers: {
-//       "Content-Type": "application/json",
-//       "API-Key": API_KEY,
-//     },
-//   });
-
-//   if (!response.ok) {
-//     throw new Error(`Error: ${response.status}`);
-//   }
-
-//   return response.json();
-// }
+export {
+  fetchData,
+  updateData,
+  addData,
+  deleteData,
+  updateAllData,
+  moveData,
+  fetchUsers,
+  searchUser,
+  updateDBGeneral,
+  addDBGeneral,
+  deleteDBGeneral,
+};

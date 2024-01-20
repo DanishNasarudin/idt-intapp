@@ -26,11 +26,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
     });
 
     const mailOption = {
-      from: `Ideal Tech PC <${process.env.EMAIL}>`,
+      from: `Ideal Tech PC Service <${process.env.EMAIL}>`,
       to: data.values.email,
       cc: process.env.EMAIL,
-      replyTo: data.values.email,
-      subject: `Service Invoice for ${data.values.name}`,
+      replyTo: process.env.EMAIL,
+      subject: `Service Receipt: ${data.values.service_no} ${data.values.name}`,
       html: data.template,
     };
 

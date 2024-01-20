@@ -4,6 +4,10 @@ import { Inter } from "next/font/google";
 import Footer from "./(components)/Footer";
 import "./globals.css";
 
+import SessionProvider from "./(hooks)/SessionProvider";
+import { getServerSession } from "next-auth/next";
+import { redirect } from "next/navigation";
+
 const Navbar = dynamic(() => import("./(components)/Navbar"), { ssr: false });
 
 const inter = Inter({ subsets: ["latin"] });
@@ -17,18 +21,23 @@ export const metadata: Metadata = {
   appleWebApp: true,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession();
+  if (!session || !session.user) {
+    redirect("/api/auth/signin");
+  }
   return (
     <html lang="en">
       <body className={`${inter.className} relative`}>
-        {/* <Navbar /> */}
-        <div className="mx-auto">{children}</div>
-        {/* <div className="h-[50vh]"></div> */}
-        <Footer />
+        <SessionProvider session={session}>
+          <div className="mx-auto">{children}</div>
+          {/* <div className="h-[50vh]"></div> */}
+          <Footer />
+        </SessionProvider>
       </body>
     </html>
   );

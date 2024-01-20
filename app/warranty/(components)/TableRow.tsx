@@ -47,7 +47,7 @@ const TableRow = ({
       solutions: data.solutions,
       status_desc: data.status_desc,
       remarks: data.remarks,
-      // locker: data.locker,
+      locker: data.locker,
     },
   };
 
@@ -55,30 +55,35 @@ const TableRow = ({
   const { values } = inputValues;
 
   useEffect(() => {
-    setInputValues({
-      values: {
-        service_no: data.service_no,
-        date: data.date,
-        pic: data.pic,
-        name: data.name,
-        contact: data.contact,
-        status: data.status,
-        email: data.email,
-        address: data.address,
-        purchase_date: data.purchase_date,
-        invoice: data.invoice,
-        received_items: data.received_items,
-        pin: data.pin,
-        issues: data.issues,
-        solutions: data.solutions,
-        status_desc: data.status_desc,
-        remarks: data.remarks,
-        // locker: data.locker,
-      },
-    });
+    if (
+      data !== prevValuesRef.current &&
+      !accordion &&
+      isExtEmpty(lastChangedExtRef.current)
+    )
+      setInputValues({
+        values: {
+          service_no: data.service_no,
+          date: data.date,
+          pic: data.pic,
+          name: data.name,
+          contact: data.contact,
+          status: data.status,
+          email: data.email,
+          address: data.address,
+          purchase_date: data.purchase_date,
+          invoice: data.invoice,
+          received_items: data.received_items,
+          pin: data.pin,
+          issues: data.issues,
+          solutions: data.solutions,
+          status_desc: data.status_desc,
+          remarks: data.remarks,
+          locker: data.locker,
+        },
+      });
   }, [data]);
 
-  // console.log(values, "check");
+  // console.log(values.locker, "check");
 
   // last change for individual cells
   const lastChangedRef = useRef<{
@@ -104,7 +109,7 @@ const TableRow = ({
     solutions: null,
     status_desc: null,
     remarks: null,
-    // locker: null,
+    locker: "0",
   });
 
   // console.log(lastChangedExtRef);
@@ -117,6 +122,7 @@ const TableRow = ({
     const changes: Partial<DataValues> = {};
 
     (Object.keys(values) as Array<keyof DataValues>).forEach((key) => {
+      if (key === "locker") return;
       if (values[key] !== prevValuesRef.current[key]) {
         changes[key] = values[key];
       }
@@ -162,6 +168,7 @@ const TableRow = ({
   const [lastChangeUpdated, setLastChangeUpdated] = useState(false);
   const isExtEmpty = (refObject: DataValues) => {
     for (const key of Object.keys(refObject) as Array<keyof DataValues>) {
+      if (key === "locker") continue;
       if (refObject[key] !== null) {
         return true;
       }
@@ -174,7 +181,7 @@ const TableRow = ({
   const handleUpdateAllDB = async () => {
     if (data.service_no)
       await updateAllDB(data.service_no, lastChangedExtRef.current);
-
+    socket.emit("re-render", { string: "render" });
     clearExtRef();
   };
 
@@ -184,6 +191,7 @@ const TableRow = ({
       keyof typeof lastChangedExtRef.current
     >;
     keys.forEach((key) => {
+      if (key === "locker") return;
       lastChangedExtRef.current[key] = null;
     });
 
@@ -284,26 +292,43 @@ const TableRow = ({
   useEffect(() => {
     const handleLockRow = ({ lock }: { lock: string }) => {
       if (lock === "" || lock === null) return;
-      if (lock === data.service_no) setLockRow(true);
+      if (lock === data.service_no) {
+        setLockRow(true);
+        // if (data.service_no) updateDB(data.service_no, "locker", "1");
+      }
+
       // console.log("lock pass");
     };
 
     const handleUnlockRow = ({ lock }: { lock: string }) => {
       if (lock === "" || lock === null) return;
-      if (lock === data.service_no) setLockRow(false);
+      if (lock === data.service_no) {
+        setLockRow(false);
+        // if (data.service_no) updateDB(data.service_no, "locker", "0");
+      }
       // console.log("unlock pass");
     };
 
+    // const handleUnlockAllRow = (lock: string) => {
+    //   if (lock === "" || lock === null) return;
+    //   if (lock === "unlock") setLockRow(false);
+    //   if (data.service_no) updateDB(data.service_no, "locker", "0");
+    // };
+
     socket.on("lock-row", handleLockRow);
     socket.on("unlock-row", handleUnlockRow);
+    // socket.on("unlock-row-all", handleUnlockAllRow);
 
     return () => {
       socket.off("lock-row", handleLockRow);
       socket.off("unlock-row", handleUnlockRow);
+      // socket.off("unlock-row-all", handleUnlockAllRow);
     };
   }, []);
 
   // console.log(data.service_no, data.locker, "locker");
+  // console.log(accordion ? false : lockRow || values.locker === "1");
+  // console.log(accordion, lockRow, String(values.locker) === "1");
 
   return (
     <div
@@ -312,10 +337,11 @@ const TableRow = ({
       data-open={accordion}
     >
       <button
-        disabled={lockTable || lockRow}
+        // disabled={lockRow}
+        // disabled={accordion ? false : lockRow || String(values.locker) === "1"}
         className={`
                   ${
-                    openTab && !lockTable
+                    openTab
                       ? "bg-zinc-700 mobilehover:hover:bg-accent/80 text-zinc-300 cursor-pointer"
                       : "bg-transparent text-transparent cursor-default"
                   }
@@ -327,13 +353,13 @@ const TableRow = ({
         onClick={() => {
           setAccordion(!accordion);
           if (accordion) {
-            // if (data.service_no) updateDB(data.service_no, "locker", "0");
+            if (data.service_no) updateDB(data.service_no, "locker", "0");
             setTimeout(() => {
               handleUpdateAllDB();
               socket.emit("unlock-row", { lock: data.service_no });
             }, 50);
           } else {
-            // if (data.service_no) updateDB(data.service_no, "locker", "1");
+            if (data.service_no) updateDB(data.service_no, "locker", "1");
             socket.emit("lock-row", { lock: data.service_no });
           }
         }}
@@ -412,6 +438,7 @@ const TableRow = ({
         data-open={accordion}
       >
         <TableRowExt
+          branch={branch}
           onInputChange={inputChange}
           data={values}
           deleteDB={deleteDB}
@@ -421,7 +448,7 @@ const TableRow = ({
         />
       </div>
       <div
-        data-open={lockRow}
+        data-open={accordion ? false : lockRow || String(values.locker) === "1"}
         className="data-[open=true]:block data-[open=false]:hidden z-[3] absolute bg-red-800/20 w-full h-full left-0 top-0"
       />
       <div

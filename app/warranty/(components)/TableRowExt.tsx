@@ -1,12 +1,13 @@
 "use client";
 import React, { useRef, useState } from "react";
 import TextBoxNormal from "./TextBoxNormal";
-import { DataValues } from "../[branch]/page";
+import { BranchType, DataValues } from "../[branch]/page";
 import socket from "@/lib/socket";
 
 import html2pdf from "html2pdf.js";
 
 type Props = {
+  branch: BranchType | null;
   data: DataValues;
   onInputChange: (
     newValue:
@@ -20,6 +21,7 @@ type Props = {
 };
 
 const TableRowExt = ({
+  branch,
   data,
   onInputChange,
   deleteDB,
@@ -57,11 +59,17 @@ const TableRowExt = ({
 
   const downloadPDF = async () => {
     try {
+      if (!branch) return;
+      if (!data) return;
       setDownloadPDFVisual(true);
 
       const response = await fetch("/serviceReceipt.html");
       let template = await response.text();
 
+      template = template.replace("{{logo_display}}", "block");
+      template = template.replace("{{idt_address}}", branch.address);
+      template = template.replace("{{idt_office}}", branch.office);
+      template = template.replace("{{idt_whatsapp}}", branch.whatsapp);
       template = template.replace(
         "{{service_no}}",
         data.service_no ? data.service_no : ""
@@ -113,7 +121,7 @@ const TableRowExt = ({
         .from(element)
         .set(opt)
         .toPdf()
-        .save("IdealTechPC_Service.pdf")
+        .save(`${data.service_no}_IdealTechPC_Service.pdf`)
         .then(() => {
           document.body.removeChild(element);
         });
@@ -131,9 +139,14 @@ const TableRowExt = ({
 
   const sendEmail = async () => {
     try {
+      if (!branch) return;
       const response = await fetch("/serviceReceipt.html");
       let template = await response.text();
 
+      template = template.replace("{{logo_display}}", "none");
+      template = template.replace("{{idt_address}}", branch.address);
+      template = template.replace("{{idt_office}}", branch.office);
+      template = template.replace("{{idt_whatsapp}}", branch.whatsapp);
       template = template.replace(
         "{{service_no}}",
         data.service_no ? data.service_no : ""

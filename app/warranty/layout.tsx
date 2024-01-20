@@ -28,7 +28,7 @@ export default function RootLayout({
         <div className="w-[280px]"></div>
         {children}
       </div>
-      <div className="h-[50vh]" />
+      {/* <div className="h-[50vh]" /> */}
     </div>
   );
 }
