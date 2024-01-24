@@ -30,7 +30,7 @@ const Tables = ({
 }: Props) => {
   return (
     <div className="tab-container py-2">
-      <div className="tab-head flex [&>div]:w-full [&>div]:px-2 [&>div]:py-1">
+      <div className="tab-head flex [&>div]:w-full [&>div]:px-2 [&>div]:py-1 text-zinc-400">
         <div className="max-w-[100px]">
           <span>Date</span>
         </div>

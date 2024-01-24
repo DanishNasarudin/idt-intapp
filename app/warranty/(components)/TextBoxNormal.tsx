@@ -47,13 +47,13 @@ const TextBoxNormal = ({
       relative`}
         >
           <textarea
-            placeholder=" "
+            placeholder=""
             className={`
                   bg-transparent border-[1px] border-zinc-800 outline-none rounded-md resize-none
                   px-2 py-1 h-[${areaSize}] w-full
             `}
             id={id}
-            value={input === null ? " " : input}
+            value={input === null ? "" : input}
             onChange={(e) => {
               onInputChange(e);
             }}
@@ -99,13 +99,13 @@ const TextBoxNormal = ({
       >
         <input
           type="text"
-          placeholder=" "
+          placeholder=""
           className="
                   bg-transparent border-[1px] border-zinc-800 outline-none rounded-md w-full
                   px-2 py-1
             "
           id={id}
-          value={input === null ? " " : input}
+          value={input === null ? "" : input}
           onChange={(e) => {
             onInputChange(e);
           }}

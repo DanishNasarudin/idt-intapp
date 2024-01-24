@@ -71,7 +71,7 @@ const TextBoxEditor = ({
               ref={openClose ? inputRef : null}
               id={id}
               type="text"
-              value={values === null ? " " : values}
+              value={values === null ? "" : values}
               onChange={(e) => {
                 onInputChange(e);
               }}

@@ -2,6 +2,7 @@
 import { RowDataPacket, FieldPacket } from "mysql2";
 import connection from "@/lib/mysql";
 import { format } from "date-fns";
+import { BranchFormat, BranchType } from "../warranty/[branch]/page";
 
 type MyDataType = RowDataPacket & {
   service_no: string;
@@ -32,13 +33,40 @@ async function fetchData(
   tableName: string,
   pageSize: number,
   pageNum: number,
-  search: string
+  search: string,
+  searchBy: string,
+  sortStatus: boolean,
+  sortDate: boolean
 ): Promise<{ rows: MyDataType[]; count: number }> {
   try {
+    let searchFilter;
+    if (searchBy === "By: Service No") {
+      searchFilter = "service_no";
+    } else if (searchBy === "By: Name") {
+      searchFilter = "name";
+    } else if (searchBy === "By: Email") {
+      searchFilter = "email";
+    } else if (searchBy === "By: PIC") {
+      searchFilter = "pic";
+    }
     const searchLike = `%${search}%`;
-    const whereClause = search ? `WHERE service_no LIKE ?` : "";
+    const whereClause = search ? `WHERE ${searchFilter} LIKE ?` : "";
 
-    const query = `SELECT * FROM ?? ${whereClause} ORDER BY service_no DESC LIMIT ? OFFSET ?`;
+    const dateOrder = sortDate ? "date ASC" : "date DESC";
+    const statusOrder = sortStatus
+      ? `CASE status
+                        WHEN 'From Ampang' THEN 1
+                        WHEN 'From SS2' THEN 2
+                        WHEN 'From Setia Alam' THEN 3
+                        WHEN 'From JB' THEN 4
+                         WHEN 'In Queue' THEN 5 
+                         WHEN 'In Progress' THEN 6 
+                         WHEN 'Waiting For' THEN 7 
+                         WHEN 'Completed' THEN 8 
+                         ELSE 9 END, ${dateOrder},`
+      : `${dateOrder},`;
+
+    const query = `SELECT * FROM ?? ${whereClause} ORDER BY ${statusOrder} service_no DESC LIMIT ? OFFSET ?`;
     const queryParams = search
       ? [tableName, searchLike, pageSize, pageSize * (pageNum - 1)]
       : [tableName, pageSize, pageSize * (pageNum - 1)];
@@ -106,29 +134,9 @@ async function addData(tableName: string): Promise<void> {
       -3
     )}`;
 
-    //   const query = `
-    //   SELECT service_no FROM ${tableName}
-    //   WHERE service_no LIKE ?
-    //   ORDER BY service_no DESC
-    //   LIMIT 1
-    // `;
-    // const [rows] = await connection.query<MyDataType[]>(query, [likePattern]);
-
-    // let sequenceNumber = 1; // Default sequence number
-    // if (rows.length > 0) {
-    //   // Extract the numeric part of the service_no and increment it
-    //   const lastSequenceNumber = parseInt(rows[0].service_no.slice(-3), 10);
-    //   sequenceNumber = lastSequenceNumber + 1;
-    // }
-
-    // // Construct the service_no using the prefix, year, month, and next sequence number
-    // const serviceNo = `${prefix}${year}${month}${`00${sequenceNumber}`.slice(
-    //   -3
-    // )}`;
-
     const today = new Date();
     const formattedDate = format(today, "dd/MM/yyyy");
-    const status = "Pending";
+    const status = "In Queue";
 
     const query2 = `INSERT INTO ${tableName} (service_no, date, status) VALUES (?, ?, ?)`;
     await connection.query(query2, [serviceNo, formattedDate, status]);
@@ -204,6 +212,37 @@ async function moveData(
     }
   } catch (error) {
     throw new Error(`Database error: ${error}`);
+  }
+}
+
+async function moveBranchData(
+  toTable: number,
+  id: string,
+  value: string,
+  branch: BranchType | null,
+  branchFormat: BranchFormat
+) {
+  const poolConnect = await connection.getConnection();
+  try {
+    await poolConnect.beginTransaction();
+
+    if (branch === null) throw new Error("Branch is null");
+
+    await moveData(branch.data_local, branch.data_other, id);
+    await updateData(branch.data_local, id, "status", value);
+    await moveData(
+      branch.data_local,
+      branchFormat.branch[toTable].data_local,
+      id
+    );
+    await deleteData(branch.data_local, id);
+
+    await poolConnect.commit();
+  } catch (error) {
+    await poolConnect.rollback();
+    throw new Error(`Database error: ${error}`);
+  } finally {
+    poolConnect.release();
   }
 }
 
@@ -293,4 +332,5 @@ export {
   updateDBGeneral,
   addDBGeneral,
   deleteDBGeneral,
+  moveBranchData,
 };

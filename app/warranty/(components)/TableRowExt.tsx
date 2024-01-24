@@ -5,6 +5,8 @@ import { BranchType, DataValues } from "../[branch]/page";
 import socket from "@/lib/socket";
 
 import html2pdf from "html2pdf.js";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 type Props = {
   branch: BranchType | null;
@@ -67,6 +69,7 @@ const TableRowExt = ({
       let template = await response.text();
 
       template = template.replace("{{logo_display}}", "block");
+      template = template.replace("{{emailgen_display}}", "none");
       template = template.replace("{{idt_address}}", branch.address);
       template = template.replace("{{idt_office}}", branch.office);
       template = template.replace("{{idt_whatsapp}}", branch.whatsapp);
@@ -107,24 +110,57 @@ const TableRowExt = ({
       template = template.replace("{{pic}}", data.pic ? data.pic : "");
       template = template.replace("{{date}}", data.date ? data.date : "");
 
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(template, "text/html");
+      // const parser = new DOMParser();
+      // const doc = parser.parseFromString(template, "text/html");
 
-      const element = doc.body;
+      // const element = doc.body;
 
-      var opt = {
-        margin: 8,
-        image: { type: "jpeg", quality: 1 },
-      };
+      // Open a new window
+      const newWindow = window.open("", "_blank");
+      if (newWindow) {
+        // Write the HTML string to the new window
+        newWindow.document.write(template);
 
-      html2pdf()
-        .from(element)
-        .set(opt)
-        .toPdf()
-        .save(`${data.service_no}_IdealTechPC_Service.pdf`)
-        .then(() => {
-          document.body.removeChild(element);
-        });
+        // Wait for the new window's content to fully load
+        newWindow.document.close();
+        newWindow.onload = async () => {
+          // Render the new window's content to canvas
+          const canvas = await html2canvas(
+            newWindow.document.body.firstElementChild as HTMLElement
+          );
+
+          // Initialize jsPDF
+          const pdf = new jsPDF("p", "pt", "a4");
+
+          // Calculate the aspect ratio of the canvas
+          const canvasAspectRatio = canvas.height / canvas.width;
+          const a4AspectRatio =
+            pdf.internal.pageSize.height / pdf.internal.pageSize.width;
+          let pdfWidth = pdf.internal.pageSize.width;
+          let pdfHeight = pdf.internal.pageSize.height;
+
+          // Adjust dimensions if canvas aspect ratio is less than A4 aspect ratio
+          if (canvasAspectRatio < a4AspectRatio) {
+            pdfHeight = pdfWidth * canvasAspectRatio;
+          } else {
+            pdfWidth = pdfHeight / canvasAspectRatio;
+          }
+
+          // Convert canvas to image data
+          const imgData = canvas.toDataURL("image/png");
+
+          // Add the image to the PDF, fit to page
+          pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+          // Save the PDF
+          pdf.save(`${data.service_no}_IdealTechPC_Service.pdf`);
+
+          // Close the new window
+          newWindow.close();
+        };
+      } else {
+        console.error("Failed to open a new window");
+      }
 
       setTimeout(() => {
         setDownloadPDFVisual(false);
@@ -137,13 +173,22 @@ const TableRowExt = ({
 
   // Send email of the invoice ----
 
+  const [emailH, setEmailH] = useState(false);
+  const [emailLocked, setEmailLocked] = useState(false);
+  const lockDuration = 2000;
+
   const sendEmail = async () => {
+    if (emailLocked) return;
+    setEmailH(true);
+    setEmailLocked(true);
     try {
       if (!branch) return;
       const response = await fetch("/serviceReceipt.html");
       let template = await response.text();
+      let template2 = template;
 
       template = template.replace("{{logo_display}}", "none");
+      template = template.replace("{{emailgen_display}}", "block");
       template = template.replace("{{idt_address}}", branch.address);
       template = template.replace("{{idt_office}}", branch.office);
       template = template.replace("{{idt_whatsapp}}", branch.whatsapp);
@@ -184,16 +229,134 @@ const TableRowExt = ({
       template = template.replace("{{pic}}", data.pic ? data.pic : "");
       template = template.replace("{{date}}", data.date ? data.date : "");
 
-      await fetch("/api/contact", {
-        method: "POST",
-        body: JSON.stringify({ template: template, values: data }),
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
+      template2 = template2.replace("{{logo_display}}", "block");
+      template2 = template2.replace("{{emailgen_display}}", "none");
+      template2 = template2.replace("{{idt_address}}", branch.address);
+      template2 = template2.replace("{{idt_office}}", branch.office);
+      template2 = template2.replace("{{idt_whatsapp}}", branch.whatsapp);
+      template2 = template2.replace(
+        "{{service_no}}",
+        data.service_no ? data.service_no : ""
+      );
+      template2 = template2.replace("{{name}}", data.name ? data.name : "");
+      template2 = template2.replace(
+        "{{contact}}",
+        data.contact ? data.contact : ""
+      );
+      template2 = template2.replace("{{email}}", data.email ? data.email : "");
+      template2 = template2.replace(
+        "{{address}}",
+        data.address ? data.address : ""
+      );
+      template2 = template2.replace(
+        "{{received_items}}",
+        data.received_items ? data.received_items : ""
+      );
+      template2 = template2.replace(
+        "{{purchase_date}}",
+        data.purchase_date ? data.purchase_date : ""
+      );
+      template2 = template2.replace(
+        "{{invoice}}",
+        data.invoice ? data.invoice : ""
+      );
+      template2 = template2.replace(
+        "{{issues}}",
+        data.issues ? data.issues.replace(/\n/g, "<br>") : ""
+      );
+      template2 = template2.replace(
+        "{{solutions}}",
+        data.solutions ? data.solutions.replace(/\n/g, "<br>") : ""
+      );
+      template2 = template2.replace("{{pic}}", data.pic ? data.pic : "");
+      template2 = template2.replace("{{date}}", data.date ? data.date : "");
+
+      let uploadedFilePath = "";
+      const newWindow = window.open("", "_blank");
+      if (newWindow) {
+        // Write the HTML string to the new window
+        newWindow.document.write(template2);
+
+        // Wait for the new window's content to fully load
+        newWindow.document.close();
+        newWindow.onload = async () => {
+          // Render the new window's content to canvas
+          const canvas = await html2canvas(
+            newWindow.document.body.firstElementChild as HTMLElement
+          );
+
+          // Initialize jsPDF
+          const pdf = new jsPDF("p", "pt", "a4");
+
+          // Calculate the aspect ratio of the canvas
+          const canvasAspectRatio = canvas.height / canvas.width;
+          const a4AspectRatio =
+            pdf.internal.pageSize.height / pdf.internal.pageSize.width;
+          let pdfWidth = pdf.internal.pageSize.width;
+          let pdfHeight = pdf.internal.pageSize.height;
+
+          // Adjust dimensions if canvas aspect ratio is less than A4 aspect ratio
+          if (canvasAspectRatio < a4AspectRatio) {
+            pdfHeight = pdfWidth * canvasAspectRatio;
+          } else {
+            pdfWidth = pdfHeight / canvasAspectRatio;
+          }
+
+          // Convert canvas to image data
+          const imgData = canvas.toDataURL("image/png");
+
+          // Add the image to the PDF, fit to page
+          pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+          // Save the PDF
+          // pdf.save(`${data.service_no}_IdealTechPC_Service.pdf`);
+          const pdfOut = pdf.output("datauristring");
+
+          uploadedFilePath = pdfOut;
+
+          // Close the new window
+          newWindow.close();
+
+          await fetch("/api/contact", {
+            method: "POST",
+            body: JSON.stringify({
+              template: template,
+              values: data,
+              attach: uploadedFilePath,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          });
+        };
+      } else {
+        console.error("Failed to open a new window");
+      }
+
+      // await fetch("/api/contact", {
+      //   method: "POST",
+      //   body: JSON.stringify({
+      //     template: template,
+      //     values: data,
+      //     attach: uploadedFilePath,
+      //   }),
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Accept: "application/json",
+      //   },
+      // });
+      setTimeout(() => {
+        setEmailH(false);
+      }, 2000);
+      setTimeout(() => {
+        setEmailLocked(false);
+      }, lockDuration);
     } catch (error) {
       console.error("Failed to generate PDF", error);
+      setTimeout(() => {
+        setEmailLocked(false);
+      }, lockDuration);
     }
   };
 
@@ -320,19 +483,27 @@ const TableRowExt = ({
             <p>{copyValuesH ? "Copied!" : "Copy"}</p>
           </button>
           <button
-            disabled={data.email === "" || data.email === null}
+            disabled={data.email === "" || data.email === null || emailLocked}
             className={`
             ${
               data.email === "" || data.email === null
-                ? "border-zinc-800 text-zinc-800"
-                : "border-zinc-600 text-zinc-600 mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400"
+                ? `border-zinc-800 text-zinc-800`
+                : `${
+                    emailH
+                      ? "border-green-600 text-green-600"
+                      : `border-zinc-600 text-zinc-600 ${
+                          emailLocked
+                            ? ""
+                            : "mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400"
+                        }`
+                  }`
             }
                               px-4 py-2 rounded-md transition-all border-[1px]
                               bg-transparent 
                               `}
             onClick={() => sendEmail()}
           >
-            <p>Send Email</p>
+            <p>{emailH ? "Email sent!" : "Send Email"}</p>
           </button>
           <button
             disabled={isExtEmpty}

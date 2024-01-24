@@ -1,3 +1,4 @@
+import { stringify } from "querystring";
 import React from "react";
 import { BranchStatus, DataValues } from "../[branch]/page";
 
@@ -53,32 +54,33 @@ const Dropdown = ({
         <div className="z-[2] absolute w-full left-0 top-0 py-2 flex flex-col rounded-md bg-zinc-800">
           {status &&
             status.map((status, key) => {
-              return (
-                <div
-                  key={key}
-                  role="button"
-                  className="row-cont px-2 py-1 mobilehover:hover:bg-zinc-700"
-                  onClick={() => {
-                    setInputValues((prev) => {
-                      return {
-                        ...prev,
-                        values: { ...prev.values, [buttonId]: status.type },
-                      };
-                    });
-                    updateDB(id ? id : "", buttonId, status.type);
-                    setTimeout(() => {
-                      clearExtRef();
-                      setOpenClose(buttonId, false);
-                    }, 50);
-                  }}
-                >
+              if (!status.type.includes("From"))
+                return (
                   <div
-                    className={`${status.color} rounded-md w-max leading-none px-2 py-[2px]`}
+                    key={key}
+                    role="button"
+                    className="row-cont px-2 py-1 mobilehover:hover:bg-zinc-700"
+                    onClick={() => {
+                      setInputValues((prev) => {
+                        return {
+                          ...prev,
+                          values: { ...prev.values, [buttonId]: status.type },
+                        };
+                      });
+                      updateDB(id ? id : "", buttonId, status.type);
+                      setTimeout(() => {
+                        clearExtRef();
+                        setOpenClose(buttonId, false);
+                      }, 50);
+                    }}
                   >
-                    <span>{status.type}</span>
+                    <div
+                      className={`${status.color} rounded-md w-max leading-none px-2 py-[2px]`}
+                    >
+                      <span>{status.type}</span>
+                    </div>
                   </div>
-                </div>
-              );
+                );
             })}
         </div>
       )}

@@ -58,7 +58,7 @@ const TableRow = ({
     if (
       data !== prevValuesRef.current &&
       !accordion &&
-      isExtEmpty(lastChangedExtRef.current)
+      !isExtEmpty(lastChangedExtRef.current)
     )
       setInputValues({
         values: {
@@ -210,6 +210,7 @@ const TableRow = ({
     name: false,
     contact: false,
     service_no: false,
+    date: false,
   });
 
   const handleOpenClose = (id: string, open: boolean) => {
@@ -328,7 +329,15 @@ const TableRow = ({
 
   // console.log(data.service_no, data.locker, "locker");
   // console.log(accordion ? false : lockRow || values.locker === "1");
-  // console.log(accordion, lockRow, String(values.locker) === "1");
+  // if (data && data.service_no === "WSS2401002") {
+  //   console.log(accordion, lockRow, String(values.locker) === "1", "Locker");
+  //   console.log(
+  //     data !== prevValuesRef.current,
+  //     !accordion,
+  //     isExtEmpty(lastChangedExtRef.current),
+  //     lastChangedExtRef.current
+  //   );
+  // }
 
   return (
     <div
@@ -357,6 +366,7 @@ const TableRow = ({
             setTimeout(() => {
               handleUpdateAllDB();
               socket.emit("unlock-row", { lock: data.service_no });
+              // console.log("pass unlock");
             }, 50);
           } else {
             if (data.service_no) updateDB(data.service_no, "locker", "1");
@@ -367,13 +377,21 @@ const TableRow = ({
         <p>{accordion ? "Close" : "Open"}</p>
       </button>
       <div
-        className="tab-row-top w-full flex [&>div]:w-full [&>div]:border-l-[1px] [&>div]:border-zinc-800 whitespace-nowrap"
+        className="tab-row-top w-full flex [&>div]:w-full [&>div]:border-l-[1px] [&>*:first-child]:border-l-[0px] [&>div]:border-zinc-800 whitespace-nowrap"
         onMouseEnter={() => setOpenTab(true)}
         onMouseLeave={() => setOpenTab(false)}
       >
-        <div className="max-w-[100px] !border-l-[0px] overflow-hidden px-2 py-1">
+        {/* <div className="max-w-[100px] !border-l-[0px] overflow-hidden px-2 py-1">
           <span>{values.date}</span>
-        </div>
+        </div> */}
+        <TextBoxEditor
+          boxSize={100}
+          values={values.date}
+          id="date"
+          onInputChange={inputChange}
+          setOpenClose={handleOpenClose}
+          openClose={openClose.date}
+        />
         <TextBoxEditor
           boxSize={120}
           values={values.service_no}

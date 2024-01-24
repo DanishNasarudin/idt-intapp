@@ -73,7 +73,7 @@ const TextBoxEditorStd = ({
               ref={openClose ? inputRef : null}
               id={buttonId}
               type="text"
-              value={inputLocal === null ? " " : inputLocal}
+              value={inputLocal === null ? "" : inputLocal}
               onChange={(e) => {
                 setInputLocal(e.target.value);
                 setInput.current = e.target.value;

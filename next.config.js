@@ -2,6 +2,7 @@
 const nextConfig = {
   experimental: {
     appDir: true,
+    serverComponentsExternalPackages: ["puppeteer"],
   },
   compiler: {
     // Enables the styled-components SWC transform

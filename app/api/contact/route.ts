@@ -8,10 +8,14 @@ export async function POST(req: NextRequest, res: NextResponse) {
     return NextResponse.json({ message: "Bad request" }, { status: 500 });
   }
 
-  // const fileName =
-  //   process.env.NODE_ENV === "production"
-  //     ? data.attach.split("/").pop()
-  //     : data.attach.split("\\").pop();
+  const fileName =
+    process.env.NODE_ENV === "production"
+      ? data.attach.split("/").pop()
+      : data.attach.split("\\").pop();
+
+  // Convert the Data URI to a Buffer
+  const pdfBase64 = data.attach.split("base64,").pop();
+  const pdfBuffer = Buffer.from(pdfBase64, "base64");
 
   try {
     const transporter = nodemailer.createTransport({
@@ -32,6 +36,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
       replyTo: process.env.EMAIL,
       subject: `Service Receipt: ${data.values.service_no} ${data.values.name}`,
       html: data.template,
+      attachments: [
+        {
+          filename: `${data.values.service_no}_IdealTechPC_Service.pdf`,
+          content: pdfBuffer,
+          contentType: "application/pdf",
+        },
+      ],
     };
 
     await transporter.sendMail(mailOption);

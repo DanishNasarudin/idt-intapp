@@ -5,6 +5,7 @@ import {
   addData,
   deleteData,
   fetchData,
+  moveBranchData,
   moveData,
   updateAllData,
   updateData,
@@ -17,6 +18,8 @@ import {
 import Tables from "../(sections)/Tables";
 import { useDebounce } from "use-debounce";
 import socket from "@/lib/socket";
+import DropdownIdv from "../(components)/DropdownIdv";
+import { Options } from "../settings/page";
 
 type Props = {};
 
@@ -39,7 +42,7 @@ export type BranchType = {
   pic: BranchStatus[];
 };
 
-type BranchFormat = {
+export type BranchFormat = {
   branch: BranchType[];
 };
 
@@ -55,7 +58,8 @@ const branchFormat: BranchFormat = {
       office: "+603 9202 3137",
       whatsapp: "+6012 427 8782",
       status: [
-        { type: "Pending", color: "bg-purple-600 text-purple-100" },
+        { type: "In Queue", color: "bg-fuchsia-600 text-fuchsia-100" },
+        { type: "In Progress", color: "bg-purple-600 text-purple-100" },
         { type: "Waiting For", color: "bg-pink-600 text-pink-100" },
         { type: "Completed", color: "bg-emerald-600 text-emerald-100" },
         { type: "Pass SS2", color: "bg-red-600 text-red-100" },
@@ -83,7 +87,8 @@ const branchFormat: BranchFormat = {
       office: "+603 7876 0076",
       whatsapp: "+6017 865 0076",
       status: [
-        { type: "Pending", color: "bg-purple-600 text-purple-100" },
+        { type: "In Queue", color: "bg-fuchsia-600 text-fuchsia-100" },
+        { type: "In Progress", color: "bg-purple-600 text-purple-100" },
         { type: "Waiting For", color: "bg-pink-600 text-pink-100" },
         { type: "Completed", color: "bg-emerald-600 text-emerald-100" },
         { type: "Pass Ampang", color: "bg-red-600 text-red-100" },
@@ -108,7 +113,8 @@ const branchFormat: BranchFormat = {
       office: "+603 3358 3713",
       whatsapp: "+6012 610 1871",
       status: [
-        { type: "Pending", color: "bg-purple-600 text-purple-100" },
+        { type: "In Queue", color: "bg-fuchsia-600 text-fuchsia-100" },
+        { type: "In Progress", color: "bg-purple-600 text-purple-100" },
         { type: "Waiting For", color: "bg-pink-600 text-pink-100" },
         { type: "Completed", color: "bg-emerald-600 text-emerald-100" },
         { type: "Pass Ampang", color: "bg-red-600 text-red-100" },
@@ -198,6 +204,15 @@ export type Paginate = {
   other: Page;
 };
 
+// Search options
+
+const searchOptions: Options[] = [
+  { option: "By: Service No", color: "bg-purple-600 text-purple-100" },
+  { option: "By: Name", color: "bg-pink-600 text-pink-100" },
+  { option: "By: Email", color: "bg-emerald-600 text-emerald-100" },
+  { option: "By: PIC", color: "bg-red-600 text-red-100" },
+];
+
 const Branch = (props: Props) => {
   // Input handler -------------------
   const [inputValues, setInputValues] = useState<InputState>(initialInputState);
@@ -230,6 +245,8 @@ const Branch = (props: Props) => {
   const [newEntry, setNewEntry] = useState(false);
   // console.log(data);
   // console.log(newEntry);
+
+  // Page paginations
   const [page, setPage] = useState<Paginate>({
     local: { pageSize: 10, pageNum: 1, count: 0 },
     other: { pageSize: 10, pageNum: 1, count: 0 },
@@ -247,6 +264,16 @@ const Branch = (props: Props) => {
   // console.log(page, "pages");
   // console.log(Math.floor(page.count / page.pageSize) + 1, "check");
 
+  // Sort and filter toggles ----
+
+  const [sortStatus, setSortStatus] = useState(false);
+  const [sortDate, setSortDate] = useState(false);
+
+  // Search filtered options ----
+
+  const searchFilter = useRef(searchOptions[0].option || "");
+  // console.log(searchFilter);
+
   useEffect(() => {
     const pathArray = pathname!.split("/");
     const id = pathArray[pathArray.length - 1];
@@ -262,7 +289,10 @@ const Branch = (props: Props) => {
         branch.data_local,
         page.local.pageSize,
         page.local.pageNum,
-        searchValues
+        searchValues,
+        searchFilter.current,
+        sortStatus,
+        sortDate
       ).then((data: any) => {
         setData(data.rows);
         setPage((currentPage) => ({
@@ -274,7 +304,10 @@ const Branch = (props: Props) => {
         branch.data_other,
         page.other.pageSize,
         page.other.pageNum,
-        searchValues
+        searchValues,
+        searchFilter.current,
+        sortStatus,
+        sortDate
       ).then((data: any) => {
         setDataOther(data.rows);
         setPage((currentPage) => ({
@@ -301,14 +334,15 @@ const Branch = (props: Props) => {
   const moveDB = async (toTable: number, id: string, value: string) => {
     try {
       if (branch === null) return;
-      await moveData(branch.data_local, branch.data_other, id);
-      await updateData(branch.data_local, id, "status", value);
-      await moveData(
-        branch.data_local,
-        branchFormat.branch[toTable].data_local,
-        id
-      );
-      await deleteData(branch.data_local, id);
+      // await moveData(branch.data_local, branch.data_other, id);
+      // await updateData(branch.data_local, id, "status", value);
+      // await moveData(
+      //   branch.data_local,
+      //   branchFormat.branch[toTable].data_local,
+      //   id
+      // );
+      // await deleteData(branch.data_local, id);
+      await moveBranchData(toTable, id, value, branch, branchFormat);
       setNewEntry(!newEntry);
     } catch (error) {
       throw new Error(`Database error: ${error}`);
@@ -416,6 +450,7 @@ const Branch = (props: Props) => {
   };
 
   // socket receiver ----
+  // console.log(newEntry);
 
   useEffect(() => {
     const handleUnlockRow = ({ lock }: { lock: string }) => {
@@ -482,7 +517,7 @@ const Branch = (props: Props) => {
 
   return (
     <>
-      <div className="hidden md:flex flex-col gap-16 w-full px-16 py-4 bg-">
+      <div className="hidden md:flex flex-col gap-16 w-full px-16 py-4 bg">
         <div className="top nav w-full flex justify-end">
           <Avatar className="rounded-full w-8">
             <AvatarImage src="https://idealtech.com.my/wp-content/uploads/2023/03/IDT_LOGO-150x150.png" />
@@ -491,66 +526,124 @@ const Branch = (props: Props) => {
         </div>
         <div className="main-table flex flex-col gap-4">
           <h2>{branch?.name} Warranty</h2>
-          <div className="flex justify-between">
-            <p
-              className={`
-              bg-transparent border-zinc-800 border-[1px] px-4 py-2 rounded-md flex gap-2 w-[250px]
-              ${searchFocus ? "!border-zinc-400" : ""}`}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                className="fill-white w-4"
-              >
-                <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path>
-              </svg>
-              <input
-                type="text"
-                value={values.search}
-                name="search"
-                onChange={(e) => inputChange(e)}
-                onBlur={() => {
-                  setTimeout(() => {
-                    setSearchFocus(false);
-                  }, 100);
-                }}
-                onFocus={() => setSearchFocus(true)}
-                className={`bg-transparent outline-none w-full`}
-                placeholder="Search Service No"
-              />
-            </p>
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between">
+              <div className="flex gap-4 items-center">
+                <p
+                  className={`
+                  bg-transparent border-zinc-800 border-[1px] px-4 py-2 rounded-md flex gap-2 w-[210px]
+                  ${searchFocus ? "!border-zinc-400" : ""}`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    className="fill-white w-4"
+                  >
+                    <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path>
+                  </svg>
+                  <input
+                    type="text"
+                    value={values.search}
+                    name="search"
+                    onChange={(e) => inputChange(e)}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        setSearchFocus(false);
+                      }, 100);
+                    }}
+                    onFocus={() => setSearchFocus(true)}
+                    className={`bg-transparent outline-none w-full`}
+                    placeholder="Search"
+                  />
+                </p>
+                <DropdownIdv
+                  minSize="140px"
+                  values={searchFilter.current}
+                  options={searchOptions}
+                  setValues={searchFilter}
+                  updateDB={() => {
+                    return;
+                  }}
+                />
+              </div>
+              <div className="flex gap-4">
+                <button
+                  className={`
+                            px-4 py-2 rounded-md transition-all border-[1px]
+                            bg-transparent border-zinc-600 text-zinc-600
+                            mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400`}
+                  onClick={() => {
+                    setTimeout(() => {
+                      setNewEntry(!newEntry);
+                      // console.log("pass");
+                      socket.emit("re-render", { string: "render" });
+                    }, 50);
+                  }}
+                >
+                  <p>Refresh Data</p>
+                </button>
+                <button
+                  className={`
+                            px-4 py-2 rounded-md transition-all border-[1px]
+                            border-transparent bg-accent
+                            mobilehover:hover:bg-accent/80`}
+                  onClick={() => {
+                    addDB();
+                    socket.emit("re-render", { string: "render" });
+                  }}
+                >
+                  <p>
+                    <b>New Entry</b>
+                  </p>
+                </button>
+              </div>
+            </div>
             <div className="flex gap-4">
               <button
                 className={`
-                          px-4 py-2 rounded-md transition-all border-[1px]
-                          bg-transparent border-zinc-600 text-zinc-600
-                          mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400`}
+                ${
+                  sortStatus
+                    ? "border-accent/60 text-accent/60 mobilehover:hover:border-accent mobilehover:hover:text-accent"
+                    : "border-zinc-600 text-zinc-600 mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400"
+                }
+                            px-4 py-2 rounded-md transition-all border-[1px]
+                            bg-transparent 
+                            `}
                 onClick={() => {
-                  setTimeout(() => {
+                  setTimeout(async () => {
+                    await setSortStatus(!sortStatus);
                     setNewEntry(!newEntry);
-                    // console.log("pass");
                     socket.emit("re-render", { string: "render" });
                   }, 50);
                 }}
               >
-                <p>Refresh Data</p>
+                <p>
+                  Sort by: {sortStatus ? "Status >" : ""} Date {">"} Service No{" "}
+                </p>
               </button>
               <button
                 className={`
-                          px-4 py-2 rounded-md transition-all border-[1px]
-                          border-transparent bg-accent
-                          mobilehover:hover:bg-accent/80`}
+                ${
+                  sortDate
+                    ? "border-accent/60 text-accent/60 mobilehover:hover:border-accent mobilehover:hover:text-accent"
+                    : "border-zinc-600 text-zinc-600 mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400"
+                }
+                            px-4 py-2 rounded-md transition-all border-[1px]
+                            bg-transparent 
+                            `}
                 onClick={() => {
-                  addDB();
-                  socket.emit("re-render", { string: "render" });
+                  setTimeout(async () => {
+                    await setSortDate(!sortDate);
+                    setNewEntry(!newEntry);
+                    socket.emit("re-render", { string: "render" });
+                  }, 50);
                 }}
               >
-                <p>
-                  <b>New Entry</b>
-                </p>
+                <p>{sortDate ? "Date Ascending" : "Date Descending"}</p>
               </button>
+              <span className="text-zinc-400"></span>
             </div>
           </div>
           <Tables
