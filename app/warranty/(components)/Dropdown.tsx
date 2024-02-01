@@ -7,6 +7,7 @@ type Props = {
   id: string | null;
   buttonId: string;
   status: BranchStatus[];
+  status_all: BranchStatus[];
   values: string | null;
   setOpenClose: (id: string, newValue: boolean) => void;
   openClose: boolean;
@@ -24,6 +25,7 @@ const Dropdown = ({
   id,
   buttonId,
   status,
+  status_all,
   values,
   setOpenClose,
   openClose,
@@ -37,8 +39,8 @@ const Dropdown = ({
       className={`max-w-[${boxSize}px] whitespace-nowrap relative px-2 py-1`}
       onClick={() => setOpenClose(buttonId, true)}
     >
-      {status &&
-        status.map((status, key) => {
+      {status_all &&
+        status_all.map((status, key) => {
           if (status.type === values)
             return (
               <div
@@ -51,7 +53,7 @@ const Dropdown = ({
             );
         })}
       {openClose && (
-        <div className="z-[2] absolute w-full left-0 top-0 py-2 flex flex-col rounded-md bg-zinc-800">
+        <div className="z-[2] absolute w-min left-0 top-0 py-2 flex flex-col rounded-md bg-zinc-800">
           {status &&
             status.map((status, key) => {
               if (!status.type.includes("From"))

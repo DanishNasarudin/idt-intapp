@@ -3,6 +3,7 @@ import { RowDataPacket, FieldPacket } from "mysql2";
 import connection from "@/lib/mysql";
 import { format } from "date-fns";
 import { BranchFormat, BranchType } from "../warranty/[branch]/page";
+import { clerkClient } from "@clerk/nextjs";
 
 type MyDataType = RowDataPacket & {
   service_no: string;
@@ -135,7 +136,7 @@ async function addData(tableName: string): Promise<void> {
     )}`;
 
     const today = new Date();
-    const formattedDate = format(today, "dd/MM/yyyy");
+    const formattedDate = format(today, "yyyy-MM-dd");
     const status = "In Queue";
 
     const query2 = `INSERT INTO ${tableName} (service_no, date, status) VALUES (?, ?, ?)`;
@@ -320,6 +321,253 @@ async function deleteDBGeneral(
   }
 }
 
+async function countDB(
+  tableName: string,
+  searchBy: string,
+  search: string
+): Promise<{ count: number }> {
+  try {
+    if (search === "") {
+      const countQuery = `SELECT COUNT(*) AS count FROM ??`;
+      const [countRows] = (await connection.query(countQuery, [tableName])) as [
+        RowDataPacket[],
+        FieldPacket[]
+      ];
+
+      const count = countRows[0].count as number;
+      return { count };
+    } else {
+      const countQuery = `SELECT COUNT(*) AS count FROM ?? WHERE ?? LIKE ?`;
+      const [countRows] = (await connection.query(countQuery, [
+        tableName,
+        searchBy,
+        search,
+      ])) as [RowDataPacket[], FieldPacket[]];
+
+      const count = countRows[0].count as number;
+      return { count };
+    }
+  } catch (error) {
+    throw new Error(`Database error: ${error}`);
+  }
+}
+
+type CountAllDBType = {
+  complete: number;
+  total: number;
+  other: number;
+  pass: number;
+  leadboard: { name: string; count: number }[];
+  status: {
+    completed: number;
+    waiting: number;
+    inProgress: number;
+    inQueue: number;
+    fromAP: number;
+    fromS2: number;
+    fromSA: number;
+    fromJB: number;
+  };
+};
+
+async function countAllDB(
+  local: string,
+  prefix: string,
+  leadList: string[]
+): Promise<CountAllDBType> {
+  try {
+    const completeCount = await countDB(
+      `${local}_local`,
+      "status",
+      "Completed"
+    );
+    const totalCount = await countDB(`${local}_local`, "", "");
+    const otherCount = await countDB(
+      `${local}_local`,
+      "service_no",
+      `%${prefix}%`
+    );
+    const other = totalCount.count - otherCount.count;
+    const passCount = await countDB(`${local}_other`, "", "");
+    const lead = await countLeadDB(`${local}_local`, "pic", leadList);
+    const statusP = await countDB(`${local}_local`, "status", "In Progress");
+    const statusQ = await countDB(`${local}_local`, "status", "In Queue");
+    const statusW = await countDB(`${local}_local`, "status", "Waiting For");
+    const statusAP = await countDB(`${local}_local`, "status", "From Ampang");
+    const statusS2 = await countDB(`${local}_local`, "status", "From SS2");
+    const statusSA = await countDB(
+      `${local}_local`,
+      "status",
+      "From Setia Alam"
+    );
+    const statusJB = await countDB(`${local}_local`, "status", "From JB");
+
+    return {
+      complete: completeCount.count,
+      total: totalCount.count,
+      other,
+      pass: passCount.count,
+      leadboard: lead,
+      status: {
+        completed: completeCount.count,
+        waiting: statusW.count,
+        inProgress: statusP.count,
+        inQueue: statusQ.count,
+        fromAP: statusAP.count,
+        fromS2: statusS2.count,
+        fromSA: statusSA.count,
+        fromJB: statusJB.count,
+      },
+    };
+  } catch (error) {
+    throw new Error(`Database error: ${error}`);
+  }
+}
+
+type CountLead = {
+  name: string;
+  count: number;
+};
+
+async function countLeadDB(
+  tableName: string,
+  columnName: string,
+  array: string[]
+): Promise<{ name: string; count: number }[]> {
+  try {
+    const counts = await Promise.all(
+      array.map(async (data) => {
+        const countQuery = `SELECT COUNT(*) AS count FROM ?? WHERE ?? = ?`;
+        const [countRows] = (await connection.query(countQuery, [
+          tableName,
+          columnName,
+          data,
+        ])) as [RowDataPacket[], FieldPacket[]];
+
+        const count = countRows[0].count as number;
+        return { name: data, count };
+      })
+    );
+    counts.sort((a, b) => b.count - a.count);
+
+    return counts;
+  } catch (error) {
+    throw new Error(`Database error: ${error}`);
+  }
+}
+
+async function fetchClerkUser(): Promise<
+  { id: number; email: string | null; roles: string }[]
+> {
+  // console.log(userId);
+  try {
+    const users = await clerkClient.users.getUserList({ limit: 20 });
+    const listUsers = users.reverse().map((user, key) => {
+      return {
+        id: key,
+        email: user.emailAddresses[0]
+          ? user.emailAddresses[0].emailAddress
+          : null,
+        roles: user.privateMetadata.role
+          ? (user.privateMetadata.role as string)
+          : "",
+      };
+    });
+    // console.log(listUsers);
+    return listUsers;
+  } catch (error) {
+    throw new Error(`Database error 1: ${error}`);
+  }
+}
+
+async function createClerkUser(email: string): Promise<void> {
+  // console.log(userId);
+  try {
+    await clerkClient.users.createUser({
+      emailAddress: [email],
+      privateMetadata: { role: "Normal" },
+    });
+  } catch (error) {
+    throw new Error(`Database error 2: ${error}`);
+  }
+}
+
+async function updateClerkUser(prevEmail: string, role: string): Promise<void> {
+  // console.log(userId);
+  try {
+    const users = await clerkClient.users.getUserList({ limit: 20 });
+    const listUsers = users.reverse().map((user, key) => {
+      return {
+        id: user.id,
+        email: user.emailAddresses[0]
+          ? user.emailAddresses[0].emailAddress
+          : null,
+        roles: user.privateMetadata.role,
+      };
+    });
+
+    const userIdSearch = listUsers.filter((user) => user.email === prevEmail);
+    const userId = userIdSearch[0].id;
+    // console.log(users);
+
+    await clerkClient.users.updateUser(userId, {
+      privateMetadata: { role: role },
+    });
+  } catch (error) {
+    throw new Error(`Database error 3: ${error}`);
+  }
+}
+
+async function deleteClerkUser(prevEmail: string): Promise<void> {
+  // console.log(userId);
+  try {
+    const users = await clerkClient.users.getUserList({ limit: 20 });
+    const listUsers = users.reverse().map((user, key) => {
+      return {
+        id: user.id,
+        email: user.emailAddresses[0]
+          ? user.emailAddresses[0].emailAddress
+          : null,
+        roles: user.privateMetadata.role,
+      };
+    });
+
+    const userIdSearch = listUsers.filter((user) => user.email === prevEmail);
+    const userId = userIdSearch[0].id;
+    // console.log(users);
+
+    await clerkClient.users.deleteUser(userId);
+  } catch (error) {
+    throw new Error(`Database error 4: ${error}`);
+  }
+}
+
+async function adminClerkUser(id: string): Promise<boolean> {
+  // console.log(userId);
+  try {
+    const users = await clerkClient.users.getUserList({ limit: 20 });
+    const listUsers = users.reverse().map((user, key) => {
+      return {
+        id: user.id,
+        email: user.emailAddresses[0]
+          ? user.emailAddresses[0].emailAddress
+          : null,
+        roles: user.privateMetadata.role
+          ? (user.privateMetadata.role as string)
+          : "",
+      };
+    });
+
+    const userIdSearch = listUsers.filter((user) => user.id === id);
+    const userId = userIdSearch[0];
+    // console.log(listUsers);
+    if (userId.roles === "Admin") return true;
+    else return false;
+  } catch (error) {
+    throw new Error(`Database error 5: ${error}`);
+  }
+}
+
 export {
   fetchData,
   updateData,
@@ -333,4 +581,12 @@ export {
   addDBGeneral,
   deleteDBGeneral,
   moveBranchData,
+  countDB,
+  countAllDB,
+  countLeadDB,
+  fetchClerkUser,
+  createClerkUser,
+  updateClerkUser,
+  deleteClerkUser,
+  adminClerkUser,
 };

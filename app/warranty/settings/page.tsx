@@ -9,6 +9,7 @@ import DropdownStd from "../(components)/DropdownStd";
 import {
   addDBGeneral,
   deleteDBGeneral,
+  fetchClerkUser,
   fetchUsers,
   updateDBGeneral,
 } from "@/app/(serverActions)/FetchDB";
@@ -17,7 +18,7 @@ import UserSettings from "../(sections)/UserSettings";
 type Props = {};
 
 export type UserType = {
-  id: number;
+  id: string;
   email: string;
   roles: string;
 };
@@ -53,7 +54,8 @@ const Settings = (props: Props) => {
   const [data, setData] = useState<UserType[]>([]);
 
   useEffect(() => {
-    fetchUsers().then((users: UserType[]) => setData(users));
+    // fetchUsers().then((users: UserType[]) => setData(users));
+    // fetchClerkUser();
   }, [render]);
 
   // update data
@@ -100,10 +102,10 @@ const Settings = (props: Props) => {
     <>
       <div className="hidden md:flex flex-col gap-16 w-full px-16 py-4">
         <div className="top nav w-full flex justify-end">
-          <Avatar className="rounded-full w-8">
+          {/* <Avatar className="rounded-full w-8">
             <AvatarImage src="https://idealtech.com.my/wp-content/uploads/2023/03/IDT_LOGO-150x150.png" />
             <AvatarFallback>IT</AvatarFallback>
-          </Avatar>
+          </Avatar> */}
         </div>
         {/* <div className="main-set">
           <h2>Users</h2>
@@ -153,7 +155,7 @@ const Settings = (props: Props) => {
         </div> */}
         <UserSettings
           dataOptions={dropdownOptions.users}
-          dataValues={data}
+          // dataValues={data}
           updateDB={updateDB}
           addDB={addDB}
           deleteDB={deleteDB}

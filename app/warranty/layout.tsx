@@ -7,16 +7,16 @@ const Navbar = dynamic(() => import("./(components)/Navbar"), { ssr: false });
 
 // const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "Ideal Tech PC Internal App",
-  description: "Internal",
-  icons: {
-    icon: "/icon?<generated>",
-  },
-  appleWebApp: true,
-};
+// export const metadata: Metadata = {
+//   title: "Ideal Tech PC Internal App",
+//   description: "Internal",
+//   icons: {
+//     icon: "/icon?<generated>",
+//   },
+//   appleWebApp: true,
+// };
 
-export default function RootLayout({
+export default function WarrantyLayout({
   children,
 }: {
   children: React.ReactNode;

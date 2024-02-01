@@ -4,11 +4,17 @@ import DropdownStd from "../(components)/DropdownStd";
 import TableRowUser from "../(components)/TableRowUser";
 import TextBoxEditorStd from "../(components)/TextBoxEditorStd";
 import { Options, UserType, OpenClose } from "../settings/page";
-import { useSession } from "next-auth/react";
-import { searchUser } from "@/app/(serverActions)/FetchDB";
+// import { useSession } from "next-auth/react";
+import {
+  adminClerkUser,
+  createClerkUser,
+  fetchClerkUser,
+  searchUser,
+} from "@/app/(serverActions)/FetchDB";
+import { useUser } from "@clerk/nextjs";
 
 type Props = {
-  dataValues: UserType[];
+  // dataValues: UserType[];
   dataOptions: Options[];
   updateDB: (
     table: string,
@@ -28,45 +34,90 @@ type UserData = {
 };
 
 const UserSettings = ({
-  dataValues,
+  // dataValues,
   dataOptions,
   updateDB,
   addDB,
   deleteDB,
 }: Props) => {
-  const { data: session } = useSession();
-  const [isAdmin, setAdmin] = useState(false);
+  // const { data: session } = useSession();
+  const [isAdmin, setAdmin] = useState(true);
+  const [dataValues, setData] = useState<UserType[]>([]);
+  const [render, setRender] = useState(false);
+  // console.log(dataValues);
+  const { user, isLoaded } = useUser();
 
   useEffect(() => {
-    const checkUser = async () => {
-      if (session?.user?.email) {
-        const check: UserData | null = await searchUser(session.user.email);
-        if (check && check.roles === "Admin") return true;
-      }
-      return false;
-    };
+    //  fetchUsers().then((users: UserType[]) => setData(users));
+    fetchClerkUser().then((users: any) => setData(users));
+  }, [render, isLoaded]);
 
-    checkUser().then((isAdmin) => {
-      setAdmin(isAdmin);
-    });
-  }, [session]);
+  const [searchFocus, setSearchFocus] = useState(false);
+  const [search, setSearch] = useState("");
+  const searchRef = useRef("");
+
+  useEffect(() => {
+    const check = async () => {
+      if (isLoaded && user !== null) {
+        const checkAdmin = adminClerkUser(user.id);
+        if (await checkAdmin) setAdmin(true);
+        else setAdmin(false);
+      }
+    };
+    check();
+  }, [isLoaded]);
+
   return (
     <div className="relative">
       <h2>Users</h2>
-      <div className="flex justify- py-4">
+      <div className="flex  py-4 gap-4">
         <button
+          disabled={!(searchRef.current !== "")}
           className={`
+          ${
+            searchRef.current !== ""
+              ? "bg-accent mobilehover:hover:bg-accent/80"
+              : "bg-zinc-600 mobilehover:hover:bg-zinc-600/80"
+          }
                           px-4 py-2 rounded-md transition-all border-[1px]
-                          border-transparent bg-accent
-                          mobilehover:hover:bg-accent/80`}
-          onClick={() => {
-            addDB("auth_users", "roles", "Normal");
+                          border-transparent 
+                          `}
+          onClick={async () => {
+            if (searchRef.current !== "") {
+              await createClerkUser(searchRef.current);
+              setRender(!render);
+              searchRef.current = "";
+              setSearch("");
+            }
           }}
         >
           <p>
             <b>New User</b>
           </p>
         </button>
+        <p
+          className={`
+                  bg-transparent border-zinc-800 border-[1px] px-4 py-2 rounded-md flex gap-2 w-[210px]
+                  ${searchFocus ? "!border-zinc-400" : ""}`}
+        >
+          <input
+            type="text"
+            value={search}
+            name="search"
+            onChange={(e) => {
+              searchRef.current = e.target.value;
+              setSearch((prev) => (prev = e.target.value));
+            }}
+            onBlur={() => {
+              setTimeout(() => {
+                setSearchFocus(false);
+              }, 100);
+            }}
+            onFocus={() => setSearchFocus(true)}
+            className={`bg-transparent outline-none w-full`}
+            placeholder="Email"
+          />
+        </p>
       </div>
       <div className="user-tab">
         <div className="tab-head flex [&>div]:w-full [&>div]:px-2 [&>div]:py-1">
@@ -91,6 +142,7 @@ const UserSettings = ({
                   dataValues={data}
                   updateDB={updateDB}
                   deleteDB={deleteDB}
+                  setRender={setRender}
                 />
               );
             })}
@@ -103,5 +155,5 @@ const UserSettings = ({
     </div>
   );
 };
-
+export const dynamic = "force-dynamic";
 export default UserSettings;

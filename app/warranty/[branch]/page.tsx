@@ -20,6 +20,7 @@ import { useDebounce } from "use-debounce";
 import socket from "@/lib/socket";
 import DropdownIdv from "../(components)/DropdownIdv";
 import { Options } from "../settings/page";
+import { Toaster, toast } from "sonner";
 
 type Props = {};
 
@@ -40,6 +41,7 @@ export type BranchType = {
   whatsapp: string;
   status: BranchStatus[];
   pic: BranchStatus[];
+  all_pic: BranchStatus[];
 };
 
 export type BranchFormat = {
@@ -77,6 +79,22 @@ const branchFormat: BranchFormat = {
         { type: "Dixon", color: "bg-orange-600 text-orange-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
       ],
+      all_pic: [
+        { type: "Hanif", color: "bg-purple-600 text-purple-100" },
+        { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
+        { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Dixon", color: "bg-orange-600 text-orange-100" },
+        { type: "Amir", color: "bg-blue-600 text-blue-100" },
+        { type: "John", color: "bg-purple-600 text-purple-100" },
+        { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Akmal", color: "bg-red-600 text-red-100" },
+        { type: "John Shen", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Zaki", color: "bg-purple-600 text-purple-100" },
+        { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Jack", color: "bg-red-600 text-red-100" },
+        { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
+      ],
     },
     {
       id: "ss2-pj",
@@ -101,6 +119,22 @@ const branchFormat: BranchFormat = {
         { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
         { type: "Akmal", color: "bg-red-600 text-red-100" },
         { type: "John Shen", color: "bg-cyan-600 text-cyan-100" },
+      ],
+      all_pic: [
+        { type: "Hanif", color: "bg-purple-600 text-purple-100" },
+        { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
+        { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Dixon", color: "bg-orange-600 text-orange-100" },
+        { type: "Amir", color: "bg-blue-600 text-blue-100" },
+        { type: "John", color: "bg-purple-600 text-purple-100" },
+        { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Akmal", color: "bg-red-600 text-red-100" },
+        { type: "John Shen", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Zaki", color: "bg-purple-600 text-purple-100" },
+        { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Jack", color: "bg-red-600 text-red-100" },
+        { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
       ],
     },
     {
@@ -128,6 +162,22 @@ const branchFormat: BranchFormat = {
         { type: "Jack", color: "bg-red-600 text-red-100" },
         { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
       ],
+      all_pic: [
+        { type: "Hanif", color: "bg-purple-600 text-purple-100" },
+        { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
+        { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Dixon", color: "bg-orange-600 text-orange-100" },
+        { type: "Amir", color: "bg-blue-600 text-blue-100" },
+        { type: "John", color: "bg-purple-600 text-purple-100" },
+        { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Akmal", color: "bg-red-600 text-red-100" },
+        { type: "John Shen", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Zaki", color: "bg-purple-600 text-purple-100" },
+        { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Jack", color: "bg-red-600 text-red-100" },
+        { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
+      ],
     },
     {
       id: "jb",
@@ -148,6 +198,22 @@ const branchFormat: BranchFormat = {
       pic: [
         { type: "Dixon", color: "bg-purple-600 text-purple-100" },
         { type: "Ghost1", color: "bg-emerald-600 text-emerald-100" },
+      ],
+      all_pic: [
+        { type: "Hanif", color: "bg-purple-600 text-purple-100" },
+        { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
+        { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Dixon", color: "bg-orange-600 text-orange-100" },
+        { type: "Amir", color: "bg-blue-600 text-blue-100" },
+        { type: "John", color: "bg-purple-600 text-purple-100" },
+        { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Akmal", color: "bg-red-600 text-red-100" },
+        { type: "John Shen", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Zaki", color: "bg-purple-600 text-purple-100" },
+        { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Jack", color: "bg-red-600 text-red-100" },
+        { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
       ],
     },
   ],
@@ -174,6 +240,8 @@ const initialInputState: InputState = {
 export type DataValues = {
   service_no: string | null;
   date: string | null;
+  idt_pc: string | null;
+  received_by: string | null;
   pic: string | null;
   name: string | null;
   contact: string | null;
@@ -211,6 +279,7 @@ const searchOptions: Options[] = [
   { option: "By: Name", color: "bg-pink-600 text-pink-100" },
   { option: "By: Email", color: "bg-emerald-600 text-emerald-100" },
   { option: "By: PIC", color: "bg-red-600 text-red-100" },
+  { option: "By: Received Items", color: "bg-cyan-600 text-cyan-100" },
 ];
 
 const Branch = (props: Props) => {
@@ -344,6 +413,7 @@ const Branch = (props: Props) => {
       // await deleteData(branch.data_local, id);
       await moveBranchData(toTable, id, value, branch, branchFormat);
       setNewEntry(!newEntry);
+      toast.success("Moved data.");
     } catch (error) {
       throw new Error(`Database error: ${error}`);
     }
@@ -393,9 +463,11 @@ const Branch = (props: Props) => {
         } else {
           await updateData(branch.data_local, id, column, value);
           setNewEntry(!newEntry);
+          // toast.success("Updated data.");
         }
       }
     } catch (error) {
+      toast.error("Failed to move/update data.");
       throw new Error(`Database error: ${error}`);
     }
   };
@@ -406,8 +478,10 @@ const Branch = (props: Props) => {
       if (branch) {
         await deleteData(branch.data_local, id);
         setNewEntry(!newEntry);
+        toast.warning("Deleted data.");
       }
     } catch (error) {
+      toast.error("Failed to delete data.");
       throw new Error(`Database error: ${error}`);
     }
   };
@@ -429,10 +503,12 @@ const Branch = (props: Props) => {
         if (Object.keys(changes).length > 0) {
           await updateAllData(branch.data_local, id, changes);
           // Reset logic here if needed
+          // toast.success("Updated all data.");
         }
         // setNewEntry(!newEntry);
       }
     } catch (error) {
+      toast.error("Failed to update data.");
       throw new Error(`Database error: ${error}`);
     }
   };
@@ -443,8 +519,10 @@ const Branch = (props: Props) => {
       if (branch) {
         await addData(branch.data_local);
         setNewEntry(!newEntry);
+        toast.success("Added new data.");
       }
     } catch (error) {
+      toast.error("Failed to add data.");
       throw new Error(`Database error: ${error}`);
     }
   };
@@ -475,54 +553,44 @@ const Branch = (props: Props) => {
 
   // New version of the app is available ---
 
-  // A function to fetch the current version from the server
-  async function fetchVersion(): Promise<string | null> {
-    try {
-      const res = await fetch("/api/version");
-      const data = await res.json();
-      return data.version;
-    } catch (error) {
-      console.error("Failed to fetch version:", error);
-      return null;
-    }
-  }
-
-  // Use setInterval for polling
-  function startVersionPolling(
-    currentVersion: string,
-    onNewVersionDetected: () => void
-  ) {
-    const interval = setInterval(async () => {
-      const serverVersion = await fetchVersion();
-      if (serverVersion && serverVersion !== currentVersion) {
-        clearInterval(interval); // Stop polling once a new version is detected
-        onNewVersionDetected();
-      }
-    }, 60000); // Poll every 60 seconds
-
-    return () => clearInterval(interval); // Return a cleanup function
-  }
-
-  const [isUpdateAvailable, setUpdateAvailable] = useState(false);
-  const currentVersion = process.env.APP_VERSION; // The version the client is currently on
+  const [disconnected, setDisconnected] = useState(false);
 
   useEffect(() => {
-    if (!currentVersion) return;
-    const cleanup = startVersionPolling(currentVersion, () => {
-      setUpdateAvailable(true);
-    });
+    const handleDisconnect = () => {
+      // console.log("Disconnected from server");
+      setDisconnected(true);
+    };
 
-    return cleanup; // Cleanup the interval when the component unmounts
-  }, []);
+    const handleReconnect = () => {
+      // console.log("Reconnected to server");
+      // if (disconnected) {
+      //   // Prompt user to refresh the page
+      //   alert(
+      //     "A new version of the app is available. Please refresh the page."
+      //   );
+      // }
+    };
+
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect", handleReconnect);
+
+    return () => {
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect", handleReconnect);
+    };
+  }, [disconnected]);
 
   return (
     <>
-      <div className="hidden md:flex flex-col gap-16 w-full px-16 py-4 bg">
+      <div className="hidden md:flex flex-col gap-16 w-full px-16 py-4">
         <div className="top nav w-full flex justify-end">
+          {/* <button className="" onClick={() => signOut()}>
+            Sign Out
+          </button>
           <Avatar className="rounded-full w-8">
             <AvatarImage src="https://idealtech.com.my/wp-content/uploads/2023/03/IDT_LOGO-150x150.png" />
             <AvatarFallback>IT</AvatarFallback>
-          </Avatar>
+          </Avatar> */}
         </div>
         <div className="main-table flex flex-col gap-4">
           <h2>{branch?.name} Warranty</h2>
@@ -707,8 +775,8 @@ const Branch = (props: Props) => {
         </div>
       </div>
       <div
-        data-open={isUpdateAvailable}
-        className="data-[open=true]:block data-[open=false]:hidden fixed z-[2] bg-black/50 w-[100vw] h-[100vh] top-0 left-0"
+        data-open={disconnected}
+        className="data-[open=true]:block data-[open=false]:hidden fixed z-[4] bg-black/50 w-[100vw] h-[100vh] top-0 left-0"
       >
         <div
           className="
@@ -719,6 +787,17 @@ const Branch = (props: Props) => {
           <h3>Refresh now!</h3>
           <span>A new version is available.</span>
           <div className="flex gap-2 justify-end">
+            <button
+              className={`
+                              px-4 py-2 rounded-md transition-all border-[1px]
+                              bg-transparent border-zinc-600 text-zinc-600
+                              mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400`}
+              onClick={() => {
+                setDisconnected(false);
+              }}
+            >
+              <p>Cancel</p>
+            </button>
             <button
               className={`
                               px-4 py-2 rounded-md transition-all border-[1px]
@@ -736,6 +815,7 @@ const Branch = (props: Props) => {
       <div className="md:hidden flex justify-center items-center h-[100vh] text-center w-full">
         <h2>Use Desktop PC</h2>
       </div>
+      <Toaster richColors theme="dark" closeButton />
     </>
   );
 };

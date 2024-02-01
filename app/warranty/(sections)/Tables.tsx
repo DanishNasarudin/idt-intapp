@@ -34,19 +34,25 @@ const Tables = ({
         <div className="max-w-[100px]">
           <span>Date</span>
         </div>
-        <div className="max-w-[120px]">
+        <div className="max-w-[110px]">
           <span>Service No</span>
         </div>
-        <div className="max-w-[110px]">
-          <span>PIC</span>
+        <div className="max-w-[80px]">
+          <span>IDT PC?</span>
+        </div>
+        <div className="max-w-[100px]">
+          <span>Received by</span>
+        </div>
+        <div className="max-w-[100px]">
+          <span>Serviced by</span>
         </div>
         <div className="max-w-[9999px]">
           <span>Name</span>
         </div>
-        <div className="max-w-[160px]">
+        <div className="max-w-[120px]">
           <span>Contact</span>
         </div>
-        <div className="max-w-[160px]">
+        <div className="max-w-[120px]">
           <span>Status</span>
         </div>
       </div>

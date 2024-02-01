@@ -1,12 +1,16 @@
 "use client";
-import { deleteDBGeneral } from "@/app/(serverActions)/FetchDB";
+import {
+  deleteClerkUser,
+  deleteDBGeneral,
+  updateClerkUser,
+} from "@/app/(serverActions)/FetchDB";
 import React, { useEffect, useRef, useState } from "react";
 import DropdownStd from "../(components)/DropdownStd";
 import TextBoxEditorStd from "../(components)/TextBoxEditorStd";
 import { Options, UserType, OpenClose } from "../settings/page";
 
 type Props = {
-  keyId: number;
+  keyId: string;
   dataValues: UserType;
   dataOptions: Options[];
   updateDB: (
@@ -17,6 +21,7 @@ type Props = {
     value: string
   ) => void;
   deleteDB: (table: string, columnId: string, id: string) => void;
+  setRender: (val: React.SetStateAction<boolean>) => void;
 };
 
 const TableRowUser = ({
@@ -25,10 +30,15 @@ const TableRowUser = ({
   dataOptions,
   updateDB,
   deleteDB,
+  setRender,
 }: Props) => {
   const inputId = useRef(dataValues.id || "");
   const inputRole = useRef(dataValues.roles || "");
   const inputEmail = useRef(dataValues.email || "");
+  const prevValue = useRef(
+    { email: dataValues.email, role: dataValues.roles } || ""
+  );
+  // const [render, setRender] =useState(false)
 
   // OpenClose for Row ----
   const [openClose, setOpenClose] = useState({
@@ -60,22 +70,24 @@ const TableRowUser = ({
     };
   }, [openRef]);
 
-  const updateUserDB = () => {
+  const updateUserDB = async () => {
     // console.log(inputEmail.current, inputRole.current, "pass");
-    updateDB(
-      "auth_users",
-      "id",
-      String(inputId.current),
-      "roles",
-      inputRole.current
-    );
-    updateDB(
-      "auth_users",
-      "id",
-      String(inputId.current),
-      "email",
-      inputEmail.current
-    );
+    // updateDB(
+    //   "auth_users",
+    //   "id",
+    //   String(inputId.current),
+    //   "roles",
+    //   inputRole.current
+    // );
+    // updateDB(
+    //   "auth_users",
+    //   "id",
+    //   String(inputId.current),
+    //   "email",
+    //   inputEmail.current
+    // );
+    await updateClerkUser(prevValue.current.email, inputRole.current);
+    setRender((prev) => !prev);
   };
 
   return (
@@ -113,8 +125,10 @@ const TableRowUser = ({
             text-red-500/80 underline
             mobilehover:hover:text-red-200
                            transition-all`}
-            onClick={() => {
-              deleteDB("auth_users", "id", String(keyId));
+            onClick={async () => {
+              // deleteDB("auth_users", "id", String(keyId));
+              await deleteClerkUser(prevValue.current.email);
+              setRender((prev) => !prev);
             }}
           >
             <p>Delete</p>

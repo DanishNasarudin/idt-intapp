@@ -67,7 +67,7 @@ const DropdownIdv = ({ minSize, values, options, setValues }: Props) => {
         <p>{inputValues}</p>
       </button>
       {openClose && (
-        <div className="z-[2] absolute w-full left-0 top-[100%] py-2 flex flex-col rounded-md bg-zinc-800">
+        <div className="z-[2] absolute w-min left-0 top-[100%] py-2 flex flex-col rounded-md bg-zinc-800">
           {optionValues &&
             optionValues.map((options, key) => {
               return (

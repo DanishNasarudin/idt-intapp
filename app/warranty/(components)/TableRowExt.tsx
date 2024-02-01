@@ -8,6 +8,8 @@ import html2pdf from "html2pdf.js";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
+import { Toaster, toast } from "sonner";
+
 type Props = {
   branch: BranchType | null;
   data: DataValues;
@@ -43,8 +45,10 @@ const TableRowExt = ({
         .join("\n");
 
       await navigator.clipboard.writeText(dataString);
+      toast.success("Data Copied!");
       // console.log("Data copied to clipboard");
     } catch (error) {
+      toast.success("Failed to copy data.");
       console.error("Failed to copy data to clipboard", error);
     } finally {
       setTimeout(() => {
@@ -107,6 +111,10 @@ const TableRowExt = ({
         "{{solutions}}",
         data.solutions ? data.solutions.replace(/\n/g, "<br>") : ""
       );
+      template = template.replace(
+        "{{received_by}}",
+        data.received_by ? data.received_by : ""
+      );
       template = template.replace("{{pic}}", data.pic ? data.pic : "");
       template = template.replace("{{date}}", data.date ? data.date : "");
 
@@ -166,8 +174,10 @@ const TableRowExt = ({
         setDownloadPDFVisual(false);
       }, 1000);
       // console.log("pass2");
+      return true;
     } catch (error) {
       console.error("Failed to generate PDF", error);
+      return false;
     }
   };
 
@@ -226,6 +236,10 @@ const TableRowExt = ({
         "{{solutions}}",
         data.solutions ? data.solutions.replace(/\n/g, "<br>") : ""
       );
+      template = template.replace(
+        "{{received_by}}",
+        data.received_by ? data.received_by : ""
+      );
       template = template.replace("{{pic}}", data.pic ? data.pic : "");
       template = template.replace("{{date}}", data.date ? data.date : "");
 
@@ -268,95 +282,100 @@ const TableRowExt = ({
         "{{solutions}}",
         data.solutions ? data.solutions.replace(/\n/g, "<br>") : ""
       );
+      template2 = template2.replace(
+        "{{received_by}}",
+        data.received_by ? data.received_by : ""
+      );
       template2 = template2.replace("{{pic}}", data.pic ? data.pic : "");
       template2 = template2.replace("{{date}}", data.date ? data.date : "");
 
-      let uploadedFilePath = "";
-      const newWindow = window.open("", "_blank");
-      if (newWindow) {
-        // Write the HTML string to the new window
-        newWindow.document.write(template2);
+      // let uploadedFilePath = "";
+      // const newWindow = window.open("", "_blank");
+      // if (newWindow) {
+      //   // Write the HTML string to the new window
+      //   newWindow.document.write(template2);
 
-        // Wait for the new window's content to fully load
-        newWindow.document.close();
-        newWindow.onload = async () => {
-          // Render the new window's content to canvas
-          const canvas = await html2canvas(
-            newWindow.document.body.firstElementChild as HTMLElement
-          );
+      //   // Wait for the new window's content to fully load
+      //   newWindow.document.close();
+      //   newWindow.onload = async () => {
+      //     // Render the new window's content to canvas
+      //     const canvas = await html2canvas(
+      //       newWindow.document.body.firstElementChild as HTMLElement
+      //     );
 
-          // Initialize jsPDF
-          const pdf = new jsPDF("p", "pt", "a4");
+      //     // Initialize jsPDF
+      //     const pdf = new jsPDF("p", "pt", "a4");
 
-          // Calculate the aspect ratio of the canvas
-          const canvasAspectRatio = canvas.height / canvas.width;
-          const a4AspectRatio =
-            pdf.internal.pageSize.height / pdf.internal.pageSize.width;
-          let pdfWidth = pdf.internal.pageSize.width;
-          let pdfHeight = pdf.internal.pageSize.height;
+      //     // Calculate the aspect ratio of the canvas
+      //     const canvasAspectRatio = canvas.height / canvas.width;
+      //     const a4AspectRatio =
+      //       pdf.internal.pageSize.height / pdf.internal.pageSize.width;
+      //     let pdfWidth = pdf.internal.pageSize.width;
+      //     let pdfHeight = pdf.internal.pageSize.height;
 
-          // Adjust dimensions if canvas aspect ratio is less than A4 aspect ratio
-          if (canvasAspectRatio < a4AspectRatio) {
-            pdfHeight = pdfWidth * canvasAspectRatio;
-          } else {
-            pdfWidth = pdfHeight / canvasAspectRatio;
-          }
+      //     // Adjust dimensions if canvas aspect ratio is less than A4 aspect ratio
+      //     if (canvasAspectRatio < a4AspectRatio) {
+      //       pdfHeight = pdfWidth * canvasAspectRatio;
+      //     } else {
+      //       pdfWidth = pdfHeight / canvasAspectRatio;
+      //     }
 
-          // Convert canvas to image data
-          const imgData = canvas.toDataURL("image/png");
+      //     // Convert canvas to image data
+      //     const imgData = canvas.toDataURL("image/png");
 
-          // Add the image to the PDF, fit to page
-          pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      //     // Add the image to the PDF, fit to page
+      //     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
 
-          // Save the PDF
-          // pdf.save(`${data.service_no}_IdealTechPC_Service.pdf`);
-          const pdfOut = pdf.output("datauristring");
+      //     // Save the PDF
+      //     // pdf.save(`${data.service_no}_IdealTechPC_Service.pdf`);
+      //     const pdfOut = pdf.output("datauristring");
 
-          uploadedFilePath = pdfOut;
+      //     uploadedFilePath = pdfOut;
 
-          // Close the new window
-          newWindow.close();
+      //     // Close the new window
+      //     newWindow.close();
 
-          await fetch("/api/contact", {
-            method: "POST",
-            body: JSON.stringify({
-              template: template,
-              values: data,
-              attach: uploadedFilePath,
-            }),
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-          });
-        };
-      } else {
-        console.error("Failed to open a new window");
-      }
+      //     await fetch("/api/contact", {
+      //       method: "POST",
+      //       body: JSON.stringify({
+      //         template: template,
+      //         values: data,
+      //         attach: uploadedFilePath,
+      //       }),
+      //       headers: {
+      //         "Content-Type": "application/json",
+      //         Accept: "application/json",
+      //       },
+      //     });
+      //   };
+      // } else {
+      //   console.error("Failed to open a new window");
+      // }
 
-      // await fetch("/api/contact", {
-      //   method: "POST",
-      //   body: JSON.stringify({
-      //     template: template,
-      //     values: data,
-      //     attach: uploadedFilePath,
-      //   }),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Accept: "application/json",
-      //   },
-      // });
+      await fetch("/api/contact", {
+        method: "POST",
+        body: JSON.stringify({
+          template: template,
+          values: data,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
       setTimeout(() => {
         setEmailH(false);
       }, 2000);
       setTimeout(() => {
         setEmailLocked(false);
       }, lockDuration);
+      return true;
     } catch (error) {
       console.error("Failed to generate PDF", error);
       setTimeout(() => {
         setEmailLocked(false);
       }, lockDuration);
+      return false;
     }
   };
 
@@ -464,7 +483,16 @@ const TableRowExt = ({
                               px-4 py-2 rounded-md transition-all border-[1px]
                               bg-transparent 
                               `}
-            onClick={() => downloadPDF()}
+            onClick={() => {
+              const promise = () => downloadPDF();
+              toast.promise(promise, {
+                loading: "Generating PDF...",
+                success: () => {
+                  return `PDF Generated!`;
+                },
+                error: "Failed to generate PDF.",
+              });
+            }}
           >
             <p>{downloadPDFVisual ? "Downloading.." : "Print PDF"}</p>
           </button>
@@ -489,7 +517,7 @@ const TableRowExt = ({
               data.email === "" || data.email === null
                 ? `border-zinc-800 text-zinc-800`
                 : `${
-                    emailH
+                    false
                       ? "border-green-600 text-green-600"
                       : `border-zinc-600 text-zinc-600 ${
                           emailLocked
@@ -501,9 +529,18 @@ const TableRowExt = ({
                               px-4 py-2 rounded-md transition-all border-[1px]
                               bg-transparent 
                               `}
-            onClick={() => sendEmail()}
+            onClick={() => {
+              const promise = () => sendEmail();
+              toast.promise(promise, {
+                loading: "Sending email...",
+                success: () => {
+                  return `Email Sent!`;
+                },
+                error: "Email failed to send.",
+              });
+            }}
           >
-            <p>{emailH ? "Email sent!" : "Send Email"}</p>
+            <p>{false ? "Email sent!" : "Send Email"}</p>
           </button>
           <button
             disabled={isExtEmpty}
@@ -578,6 +615,7 @@ const TableRowExt = ({
           </div>
         </div>
       </div>
+      <Toaster richColors theme="dark" closeButton />
     </div>
   );
 };

@@ -33,6 +33,8 @@ const TableRow = ({
     values: {
       service_no: data.service_no,
       date: data.date,
+      idt_pc: data.idt_pc,
+      received_by: data.received_by,
       pic: data.pic,
       name: data.name,
       contact: data.contact,
@@ -64,6 +66,8 @@ const TableRow = ({
         values: {
           service_no: data.service_no,
           date: data.date,
+          idt_pc: data.idt_pc,
+          received_by: data.received_by,
           pic: data.pic,
           name: data.name,
           contact: data.contact,
@@ -95,6 +99,8 @@ const TableRow = ({
   const lastChangedExtRef = useRef<DataValues>({
     service_no: null,
     date: null,
+    idt_pc: null,
+    received_by: null,
     pic: null,
     name: null,
     contact: null,
@@ -179,10 +185,11 @@ const TableRow = ({
   // update All DB and reset lastChangedExtRef ----
 
   const handleUpdateAllDB = async () => {
-    if (data.service_no)
+    if (data.service_no) {
       await updateAllDB(data.service_no, lastChangedExtRef.current);
-    socket.emit("re-render", { string: "render" });
-    clearExtRef();
+      socket.emit("re-render", { string: "render" });
+      clearExtRef();
+    }
   };
 
   const clearExtRef = () => {
@@ -206,6 +213,8 @@ const TableRow = ({
   // OpenClose for Row ----
   const [openClose, setOpenClose] = useState({
     status: false,
+    idt_pc: false,
+    received_by: false,
     pic: false,
     name: false,
     contact: false,
@@ -339,6 +348,31 @@ const TableRow = ({
   //   );
   // }
 
+  // alert if date is past 3 days ----
+
+  const [isDateOld, setIsDateOld] = useState(false);
+
+  useEffect(() => {
+    const today = new Date();
+
+    if (data.date === null) return;
+
+    // Assuming data.date is in 'DD/MM/YYYY' format
+    const [day, month, year] = data.date.split("/").map(Number);
+    const currentDate = new Date(year, month - 1, day);
+
+    // Calculate the difference in days
+    const diffTime = Math.abs(today.getTime() - currentDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // Check if the difference is more than 5 days
+    if (diffDays > 5 && data.status !== "Completed") {
+      setIsDateOld(true);
+    } else {
+      setIsDateOld(false);
+    }
+  }, [data.date]);
+
   return (
     <div
       className="tab-row border-t-[1px] border-zinc-800 relative
@@ -376,6 +410,17 @@ const TableRow = ({
       >
         <p>{accordion ? "Close" : "Open"}</p>
       </button>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        className={`${
+          isDateOld ? "block" : "hidden"
+        } fill-red-500 absolute left-[100%] top-1`}
+      >
+        <path d="M17 2H7C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5z"></path>
+      </svg>
       <div
         className="tab-row-top w-full flex [&>div]:w-full [&>div]:border-l-[1px] [&>*:first-child]:border-l-[0px] [&>div]:border-zinc-800 whitespace-nowrap"
         onMouseEnter={() => setOpenTab(true)}
@@ -393,7 +438,7 @@ const TableRow = ({
           openClose={openClose.date}
         />
         <TextBoxEditor
-          boxSize={120}
+          boxSize={110}
           values={values.service_no}
           id="service_no"
           onInputChange={inputChange}
@@ -402,10 +447,47 @@ const TableRow = ({
         />
         {branch && (
           <Dropdown
-            boxSize={110}
+            boxSize={80}
+            id={values.service_no}
+            buttonId="idt_pc"
+            status={[
+              { type: "Yes", color: "bg-accent/80 text-white" },
+              { type: "No", color: "bg-zinc-600 text-zinc-200" },
+            ]}
+            status_all={[
+              { type: "Yes", color: "bg-accent/80 text-white" },
+              { type: "No", color: "bg-zinc-600 text-zinc-200" },
+            ]}
+            values={values.idt_pc}
+            setOpenClose={handleOpenClose}
+            openClose={openClose.idt_pc}
+            setInputValues={setInputValues}
+            updateDB={updateDB}
+            clearExtRef={clearExtRef}
+          />
+        )}
+        {branch && (
+          <Dropdown
+            boxSize={100}
+            id={values.service_no}
+            buttonId="received_by"
+            status={branch.pic}
+            status_all={branch.all_pic}
+            values={values.received_by}
+            setOpenClose={handleOpenClose}
+            openClose={openClose.received_by}
+            setInputValues={setInputValues}
+            updateDB={updateDB}
+            clearExtRef={clearExtRef}
+          />
+        )}
+        {branch && (
+          <Dropdown
+            boxSize={100}
             id={values.service_no}
             buttonId="pic"
             status={branch.pic}
+            status_all={branch.all_pic}
             values={values.pic}
             setOpenClose={handleOpenClose}
             openClose={openClose.pic}
@@ -423,7 +505,7 @@ const TableRow = ({
           openClose={openClose.name}
         />
         <TextBoxEditor
-          boxSize={160}
+          boxSize={120}
           values={values.contact}
           id="contact"
           onInputChange={inputChange}
@@ -432,10 +514,11 @@ const TableRow = ({
         />
         {branch && (
           <Dropdown
-            boxSize={160}
+            boxSize={120}
             id={values.service_no}
             buttonId="status"
             status={branch.status}
+            status_all={branch.status}
             values={values.status}
             setOpenClose={handleOpenClose}
             openClose={openClose.status}
