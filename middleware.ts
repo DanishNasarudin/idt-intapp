@@ -29,6 +29,11 @@ export default authMiddleware({
     if (process.env.NODE_ENV !== "production") {
       return NextResponse.next();
     }
+    if (req.nextUrl.pathname === "/") {
+      // Handle redirect
+      const newURL = new URL("/home", hostURL);
+      return NextResponse.redirect(newURL);
+    }
     if (!auth.userId && !auth.isPublicRoute) {
       // Handle users who aren't authenticated
       return redirectToSignIn({ returnBackUrl: hostURL });
@@ -48,6 +53,7 @@ export default authMiddleware({
       }
     }
   },
+  publicRoutes: ["/home", "/info"], // unprotected pages
 });
 
 export const config = {

@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import hero from "@/public/hero-graphic.webp";
@@ -7,6 +8,16 @@ import heromob from "@/public/hero-graphic-mob.webp";
 type Props = {};
 
 const Hero = (props: Props) => {
+  useEffect(() => {
+    // if (
+    //   localStorage.getItem("dark-mode") === "true" ||
+    //   (!("dark-mode" in localStorage) &&
+    //     window.matchMedia("(prefers-color-scheme: dark)").matches)
+    // ) {
+    //   document.documentElement.classList.add("dark");
+    // }
+    document.documentElement.classList.add("dark");
+  }, []);
   const imageSize = 300;
   return (
     <div className="w-full flex flex-col gap-4 item-center relative h-[100vh]">
@@ -20,10 +31,10 @@ const Hero = (props: Props) => {
           </h1>
           <p>Hopefully this helps.</p>
           <div className="flex gap-4 mt-0 sm:mt-8">
-            <Link href={"#positions"}>
+            <Link href={"/info"}>
               <button className="py-2 px-4 sm:py-4 sm:px-8 border-white border-[1px] rounded-lg w-fit mx-auto mobilehover:hover:bg-white/20 transition-all">
                 <p className="text-[10px] sm:text-sm">
-                  <b>Nothing Yet..</b>
+                  <b>Customers</b>
                 </p>
               </button>
             </Link>

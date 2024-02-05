@@ -43,10 +43,17 @@ module.exports = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       colors: {
+        bgDark: "hsl(0 0 6)",
+        bgLight: "hsl(0 0 97)",
         primary: "#0F0F0F",
         secondary: "#D9D9D9",
         accent: "#009BFF",
-        "nav-bg": "#1E1E1E",
+        accentHov: "rgb(0 155 255 / 0.8)",
+        btnOut: "rgb(82 82 91 / 1)",
+        btnOutHov: "rgb(161 161 170 / 1)",
+        "btnOut-green": "rgb(22 163 74 / 1)",
+        "btnOutHov-green": "rgb(74 222 128 / 1)",
+        "btnOut-disable": "rgb(39 39 42 / 1)",
       },
       screens: {
         offer: "620px",
@@ -54,7 +61,7 @@ module.exports = {
       },
     },
     screens: {
-      xs: "480px",
+      xs: "600px",
       sm: "768px",
       md: "900px",
     },

@@ -35,7 +35,9 @@ export default async function RootLayout({
           },
         }}
       >
-        <body className={`${inter.className} relative`}>
+        <body
+          className={`${inter.className} relative text-zinc-900 dark:text-white bg-bgLight dark:bg-bgDark`}
+        >
           <div className="mx-auto">{children}</div>
           {/* <div className="h-[50vh]"></div> */}
           <Footer />

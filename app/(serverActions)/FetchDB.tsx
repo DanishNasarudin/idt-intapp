@@ -87,6 +87,40 @@ async function fetchData(
   }
 }
 
+type SearchDataType = RowDataPacket & {
+  service_no: string;
+  date: string;
+  pic: string;
+  status: string;
+  issues: string;
+};
+
+async function searchData(search: string): Promise<{ rows: SearchDataType[] }> {
+  const tables = ["ap_local", "s2_local", "sa_local", "jb_local"];
+  const searchLike = `%${search}%`;
+
+  try {
+    const searchPromises = tables.map((table) => {
+      const whereClause = search ? `WHERE service_no LIKE ?` : "";
+      const query = `SELECT service_no, date, pic, status, issues FROM ${table} ${whereClause}`;
+
+      const queryParams = search ? [searchLike] : [];
+
+      return connection.query<SearchDataType[]>(query, queryParams);
+    });
+
+    // Execute all search queries concurrently
+    const results = await Promise.all(searchPromises);
+
+    // Aggregate results from all tables
+    const aggregatedRows = results.flatMap(([rows]) => rows);
+
+    return { rows: aggregatedRows };
+  } catch (error) {
+    throw new Error(`Database error: ${error}`);
+  }
+}
+
 async function getMaxSequence(
   tableName: string,
   serviceNo: string
@@ -424,6 +458,54 @@ async function countAllDB(
   }
 }
 
+type CountAllBranchDBType = {
+  total: number;
+  status: {
+    completed: number;
+    inProgress: number;
+    inQueue: number;
+  };
+};
+
+async function countAllBranchDB(): Promise<CountAllBranchDBType> {
+  const locals = ["ap", "s2", "sa", "jb"];
+  try {
+    // Create an array of promises for each count operation for every local entry
+    const promises = locals.flatMap((local) => [
+      countDB(`${local}_local`, "status", "Completed"),
+      countDB(`${local}_local`, "status", "In Progress"),
+      countDB(`${local}_local`, "status", "In Queue"),
+    ]);
+
+    // Wait for all promises to resolve
+    const results = await Promise.all(promises);
+
+    // console.log(results[0]);
+
+    // Process results
+    let completed = 0,
+      inProgress = 0,
+      inQueue = 0;
+
+    for (let i = 0; i < results.length; i += 3) {
+      completed += results[i].count;
+      inProgress += results[i + 1].count;
+      inQueue += results[i + 2].count;
+    }
+
+    return {
+      total: completed + inProgress + inQueue,
+      status: {
+        completed,
+        inProgress,
+        inQueue,
+      },
+    };
+  } catch (error) {
+    throw new Error(`Database error: ${error}`);
+  }
+}
+
 type CountLead = {
   name: string;
   count: number;
@@ -570,6 +652,7 @@ async function adminClerkUser(id: string): Promise<boolean> {
 
 export {
   fetchData,
+  searchData,
   updateData,
   addData,
   deleteData,
@@ -589,4 +672,5 @@ export {
   updateClerkUser,
   deleteClerkUser,
   adminClerkUser,
+  countAllBranchDB,
 };

@@ -256,6 +256,7 @@ export type DataValues = {
   solutions: string | null;
   status_desc: string | null;
   remarks: string | null;
+  cost: string | null;
   locker: string | null;
 };
 
@@ -351,9 +352,8 @@ const Branch = (props: Props) => {
     }
   }, [pathname]);
 
-  useEffect(() => {
+  const refetchData = () => {
     if (branch) {
-      // console.log("fetched");
       fetchData(
         branch.data_local,
         page.local.pageSize,
@@ -385,6 +385,16 @@ const Branch = (props: Props) => {
         }));
       });
     }
+  };
+
+  useEffect(() => {
+    refetchData();
+
+    const intervalId = setInterval(() => {
+      refetchData();
+    }, 30 * 60 * 1000); // 30 minutes interval in milliseconds
+
+    return () => clearInterval(intervalId);
   }, [newEntry, branch, searchValues]);
 
   useEffect(() => {
@@ -403,14 +413,7 @@ const Branch = (props: Props) => {
   const moveDB = async (toTable: number, id: string, value: string) => {
     try {
       if (branch === null) return;
-      // await moveData(branch.data_local, branch.data_other, id);
-      // await updateData(branch.data_local, id, "status", value);
-      // await moveData(
-      //   branch.data_local,
-      //   branchFormat.branch[toTable].data_local,
-      //   id
-      // );
-      // await deleteData(branch.data_local, id);
+
       await moveBranchData(toTable, id, value, branch, branchFormat);
       setNewEntry(!newEntry);
       toast.success("Moved data.");
@@ -467,7 +470,7 @@ const Branch = (props: Props) => {
         }
       }
     } catch (error) {
-      toast.error("Failed to move/update data.");
+      toast.error(`"Failed to move/update data. Error: ${error}`);
       throw new Error(`Database error: ${error}`);
     }
   };
@@ -820,4 +823,5 @@ const Branch = (props: Props) => {
   );
 };
 
+export const revalidate = 0;
 export default Branch;

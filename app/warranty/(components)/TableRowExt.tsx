@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef, useState } from "react";
-import TextBoxNormal from "./TextBoxNormal";
+import TextBoxNormal from "../../(components)/TextBoxNormal";
 import { BranchType, DataValues } from "../[branch]/page";
 import socket from "@/lib/socket";
 
@@ -466,6 +466,14 @@ const TableRowExt = ({
               id={"remarks"}
               title={"Remarks / Accessories"}
               input={data.remarks}
+              onInputChange={onInputChange}
+            />
+            <TextBoxNormal
+              area={false}
+              areaSize="0"
+              id={"cost"}
+              title={"Total Cost (RM) -Insert number only-"}
+              input={data.cost}
               onInputChange={onInputChange}
             />
           </div>

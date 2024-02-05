@@ -49,6 +49,7 @@ const TableRow = ({
       solutions: data.solutions,
       status_desc: data.status_desc,
       remarks: data.remarks,
+      cost: data.cost,
       locker: data.locker,
     },
   };
@@ -82,6 +83,7 @@ const TableRow = ({
           solutions: data.solutions,
           status_desc: data.status_desc,
           remarks: data.remarks,
+          cost: data.cost,
           locker: data.locker,
         },
       });
@@ -115,6 +117,7 @@ const TableRow = ({
     solutions: null,
     status_desc: null,
     remarks: null,
+    cost: null,
     locker: "0",
   });
 
