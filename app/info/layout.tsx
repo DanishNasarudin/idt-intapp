@@ -3,6 +3,15 @@ import dynamic from "next/dynamic";
 
 const Navbar = dynamic(() => import("./(components)/Navbar"), { ssr: false });
 
+export const metadata: Metadata = {
+  title: "Ideal Tech PC Internal App",
+  description: "App Public Information",
+  icons: {
+    icon: "/icon?<generated>",
+  },
+  appleWebApp: true,
+};
+
 export default function InfoLayout({
   children,
 }: {
@@ -15,7 +24,7 @@ export default function InfoLayout({
         <div className="w-[280px] hidden xs:block"></div>
         {children}
       </div>
-      <div className="h-[50vh]" />
+      {/* <div className="h-[50vh]" /> */}
     </div>
   );
 }

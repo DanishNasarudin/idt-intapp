@@ -4,7 +4,8 @@ import TextBoxEditor from "./TextBoxEditor";
 import { BranchType, DataValues } from "../[branch]/page";
 import TableRowExt from "./TableRowExt";
 import Dropdown from "./Dropdown";
-import socket from "@/lib/socket";
+// import socket from "@/lib/socket";
+import { useSocket } from "@/lib/providers/socket-provider";
 
 type Props = {
   branch: BranchType | null;
@@ -29,6 +30,8 @@ const TableRow = ({
   setNewEntry,
   lockTable,
 }: Props) => {
+  const { socket } = useSocket();
+  if (socket === null) return;
   const initialInputState: InputState = {
     values: {
       service_no: data.service_no,

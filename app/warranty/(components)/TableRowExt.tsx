@@ -2,13 +2,18 @@
 import React, { useRef, useState } from "react";
 import TextBoxNormal from "../../(components)/TextBoxNormal";
 import { BranchType, DataValues } from "../[branch]/page";
-import socket from "@/lib/socket";
+// import socket from "@/lib/socket";
+
+// import { useSocket } from "@/lib/providers/socket-provider";
+
+// const { socket } = useSocket();
 
 import html2pdf from "html2pdf.js";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 import { Toaster, toast } from "sonner";
+import { useSocket } from "@/lib/providers/socket-provider";
 
 type Props = {
   branch: BranchType | null;
@@ -33,6 +38,8 @@ const TableRowExt = ({
   isExtEmpty,
   updateAllDB,
 }: Props) => {
+  const { socket } = useSocket();
+
   const [deleteCon, setDeleteCon] = useState(false);
 
   // Copy all data ----
@@ -614,6 +621,7 @@ const TableRowExt = ({
                 setTimeout(() => {
                   setDeleteCon(false);
                   openCloseTab(false);
+                  if (socket === null) return;
                   socket.emit("re-render", { string: "render" });
                 }, 50);
               }}

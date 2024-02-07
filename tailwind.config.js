@@ -43,8 +43,8 @@ module.exports = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       colors: {
-        bgDark: "hsl(0 0 6)",
-        bgLight: "hsl(0 0 97)",
+        bgDark: "#0F0F0F",
+        bgLight: "#F7F7F7",
         primary: "#0F0F0F",
         secondary: "#D9D9D9",
         accent: "#009BFF",

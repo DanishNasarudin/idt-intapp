@@ -1,10 +1,14 @@
 import { io } from "socket.io-client";
 
-const hostname =
-  process.env.NODE_ENV !== "production"
-    ? "http://localhost:5051"
-    : "https://intapi.idealtech.com.my";
+import { useSocket } from "./providers/socket-provider";
 
-const socket = io(`${hostname}`);
+// const hostname =
+//   process.env.NODE_ENV !== "production"
+//     ? "http://localhost:5051"
+//     : "https://intapi.idealtech.com.my";
 
-export default socket;
+// const socket = io(`${hostname}`);
+
+// const { socket } = useSocket();
+
+// export default socket;

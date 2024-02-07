@@ -17,11 +17,12 @@ import {
 } from "@/(scn-components)/ui/avatar";
 import Tables from "../(sections)/Tables";
 import { useDebounce } from "use-debounce";
-import socket from "@/lib/socket";
+// import socket from "@/lib/socket";
 import DropdownIdv from "../(components)/DropdownIdv";
 import { Options } from "../settings/page";
 import { Toaster, toast } from "sonner";
 import Link from "next/link";
+import { useSocket } from "@/lib/providers/socket-provider";
 
 type Props = {};
 
@@ -285,6 +286,9 @@ const searchOptions: Options[] = [
 ];
 
 const Branch = (props: Props) => {
+  const { socket } = useSocket();
+  // console.log(checkSock.socket);
+
   // Input handler -------------------
   const [inputValues, setInputValues] = useState<InputState>(initialInputState);
 
@@ -566,6 +570,7 @@ const Branch = (props: Props) => {
   // console.log(newEntry);
 
   useEffect(() => {
+    if (socket === null) return;
     const handleUnlockRow = ({ lock }: { lock: string }) => {
       if (lock === "" || lock === null) return;
       // console.log("unlock");
@@ -592,6 +597,7 @@ const Branch = (props: Props) => {
   const [disconnected, setDisconnected] = useState(false);
 
   useEffect(() => {
+    if (socket === null) return;
     const handleDisconnect = () => {
       // console.log("Disconnected from server");
       setDisconnected(true);
@@ -872,5 +878,5 @@ const Branch = (props: Props) => {
   );
 };
 
-// export const revalidate = 0;
+export const revalidate = 0;
 export default Branch;

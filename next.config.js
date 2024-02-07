@@ -4,6 +4,9 @@ const nextConfig = {
     appDir: true,
     serverComponentsExternalPackages: ["puppeteer"],
   },
+  images: {
+    domains: ["idealtech.com.my"],
+  },
   compiler: {
     // Enables the styled-components SWC transform
     styledComponents: true,

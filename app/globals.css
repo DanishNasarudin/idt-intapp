@@ -11,17 +11,9 @@ tr {
 }
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 245, 245, 245;
-  --background-end-rgb: 245, 245, 245;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 15, 15, 15;
-    --background-end-rgb: 15, 15, 15;
-  }
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 15, 15, 15;
+  --background-end-rgb: 15, 15, 15;
 }
 
 html {
@@ -32,6 +24,7 @@ html {
 body {
   /* color: rgb(var(--foreground-rgb)); */
   background-color: hsl(0, 0, 6);
+  background: hsl(0, 0, 6);
   font-family: "Inter", "sans-serif";
 }
 

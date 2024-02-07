@@ -7,6 +7,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { Toaster } from "sonner";
+import { SocketProvider } from "@/lib/providers/socket-provider";
 
 const Navbar = dynamic(() => import("./(components)/Navbar"), { ssr: false });
 
@@ -36,14 +37,16 @@ export default async function RootLayout({
           },
         }}
       >
-        <body
-          className={`${inter.className} relative text-zinc-900 dark:text-white bg-bgLight dark:bg-bgDark`}
-        >
-          <div className="mx-auto">{children}</div>
-          {/* <div className="h-[50vh]"></div> */}
-          <Footer />
-          <Toaster richColors theme="dark" closeButton />
-        </body>
+        <SocketProvider>
+          <body
+            className={`${inter.className} relative text-zinc-900 dark:text-white bg-bgLight dark:bg-bgDark`}
+          >
+            <div className="mx-auto">{children}</div>
+            {/* <div className="h-[50vh]"></div> */}
+            <Footer />
+            <Toaster richColors theme="dark" closeButton />
+          </body>
+        </SocketProvider>
       </ClerkProvider>
     </html>
   );

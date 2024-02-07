@@ -3,6 +3,7 @@ import TextBoxNormal from "@/app/(components)/TextBoxNormal";
 import { searchData } from "@/app/(serverActions)/FetchDB";
 import React, { useEffect, useRef, useState } from "react";
 import WarrantyBar from "../(components)/WarrantyBar";
+import Offers from "../(sections)/Offers";
 
 type Props = {};
 
@@ -73,16 +74,19 @@ const Warranty = (props: Props) => {
 
   return (
     <>
-      <div className="flex flex-col gap-8 xs:gap-16 max-w-[900px] w-full px-4 xs:px-16 py-4 mx-auto">
+      <div className="mt-12 xs:mt-auto flex flex-col gap-8 xs:gap-16 max-w-[900px] w-full px-4 xs:px-16 py-4 mx-auto">
         <div className="top nav w-full flex justify-end"></div>
         <h2>Warranty Services</h2>
         <div className="flex flex-col gap-8 w-full">
-          <div className="flex gap-8 flex-col md:flex-row">
+          {/* <div className="flex gap-8 flex-col md:flex-row">
             <div className="flex flex-col gap-2 md:w-min p-4 rounded-md bg-zinc-900 border-[1px] border-zinc-800">
               <p className="whitespace-nowrap">PCs in Queue (All Store)</p>
               <h2>{inputQRender} Units</h2>
             </div>
             <WarrantyBar inQ={inpQ} />
+          </div> */}
+          <div className="flex flex-col">
+            <Offers />
           </div>
           <div className="max-w-[300px] flex gap-4 items-end">
             <TextBoxNormal
