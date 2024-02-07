@@ -6,6 +6,7 @@ import "./globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
+import { Toaster } from "sonner";
 
 const Navbar = dynamic(() => import("./(components)/Navbar"), { ssr: false });
 
@@ -41,6 +42,7 @@ export default async function RootLayout({
           <div className="mx-auto">{children}</div>
           {/* <div className="h-[50vh]"></div> */}
           <Footer />
+          <Toaster richColors theme="dark" closeButton />
         </body>
       </ClerkProvider>
     </html>

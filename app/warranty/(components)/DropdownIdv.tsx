@@ -57,7 +57,11 @@ const DropdownIdv = ({ minSize, values, options, setValues }: Props) => {
                       ? "border-accent/60 text-accent/60 mobilehover:hover:border-accent mobilehover:hover:text-accent"
                       : "border-zinc-600 text-zinc-600 mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400"
                   }
-                              px-4 py-2 rounded-md transition-all border-[1px] min-w-[147px]
+                              px-4 py-2 rounded-md transition-all border-[1px] ${
+                                minSize
+                                  ? `min-w-[${minSize}px]`
+                                  : `min-w-[147px]`
+                              }  
                               bg-transparent
                               `}
         onClick={() => {

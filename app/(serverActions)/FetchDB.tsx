@@ -83,7 +83,26 @@ async function fetchData(
 
     return { rows: rows, count };
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (fetchData): ${error}`);
+  }
+}
+
+async function fetchHistoryData(
+  tableName: string,
+  search: string
+): Promise<{ rows: RowDataPacket[] }> {
+  try {
+    const searchLike = `%${search}%`;
+    const whereClause = search ? `WHERE service_no LIKE ?` : "";
+
+    const query = `SELECT * FROM ?? ${whereClause} ORDER BY history_id DESC LIMIT 500`;
+    const queryParams = search ? [tableName, searchLike] : [tableName];
+    const [data] = await connection.query<RowDataPacket[]>(query, queryParams);
+    // console.log(data);
+
+    return { rows: data };
+  } catch (error) {
+    throw new Error(`Database error (fetchHistoryData): ${error}`);
   }
 }
 
@@ -117,7 +136,7 @@ async function searchData(search: string): Promise<{ rows: SearchDataType[] }> {
 
     return { rows: aggregatedRows };
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (searchData): ${error}`);
   }
 }
 
@@ -176,7 +195,7 @@ async function addData(tableName: string): Promise<void> {
     const query2 = `INSERT INTO ${tableName} (service_no, date, status) VALUES (?, ?, ?)`;
     await connection.query(query2, [serviceNo, formattedDate, status]);
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (addData): ${error}`);
   }
 }
 
@@ -192,7 +211,7 @@ async function updateData(
       await connection.query(query, [column, value, id]);
     }
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (updateData): ${error}`);
   }
 }
 
@@ -203,7 +222,7 @@ async function deleteData(tableName: string, id: string): Promise<void> {
       await connection.query(query, [id]);
     }
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (deleteData): ${error}`);
   }
 }
 
@@ -226,7 +245,7 @@ async function updateAllData(
       }
     }
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (updateAllData): ${error}`);
   }
 }
 
@@ -246,7 +265,7 @@ async function moveData(
       await connection.query(queryMove, [toTable, fromTable, id]);
     }
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (moveData): ${error}`);
   }
 }
 
@@ -275,7 +294,7 @@ async function moveBranchData(
     await poolConnect.commit();
   } catch (error) {
     await poolConnect.rollback();
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (moveBranchData): ${error}`);
   } finally {
     poolConnect.release();
   }
@@ -288,7 +307,7 @@ async function fetchUsers(): Promise<UserData[]> {
 
     return rows;
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (fetchUsers): ${error}`);
   }
 }
 
@@ -303,7 +322,7 @@ async function searchUser(
 
     return rows.length > 0 ? rows[0] : null;
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (searchUser): ${error}`);
   }
 }
 
@@ -321,7 +340,7 @@ async function updateDBGeneral(
       await connection.query(query, [column, value, columnId, id]);
     }
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (updateDBGeneral): ${error}`);
   }
 }
 
@@ -336,7 +355,7 @@ async function addDBGeneral(
       await connection.query(query, [columnId, id]);
     }
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (addDBGeneral): ${error}`);
   }
 }
 
@@ -351,7 +370,7 @@ async function deleteDBGeneral(
       await connection.query(query, [columnId, id]);
     }
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (deleteDBGeneral): ${error}`);
   }
 }
 
@@ -382,7 +401,7 @@ async function countDB(
       return { count };
     }
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (countDB): ${error}`);
   }
 }
 
@@ -454,7 +473,7 @@ async function countAllDB(
       },
     };
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (countAllDB): ${error}`);
   }
 }
 
@@ -502,7 +521,7 @@ async function countAllBranchDB(): Promise<CountAllBranchDBType> {
       },
     };
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (countAllBranchDB): ${error}`);
   }
 }
 
@@ -534,7 +553,7 @@ async function countLeadDB(
 
     return counts;
   } catch (error) {
-    throw new Error(`Database error: ${error}`);
+    throw new Error(`Database error (countLeadDB): ${error}`);
   }
 }
 
@@ -558,7 +577,7 @@ async function fetchClerkUser(): Promise<
     // console.log(listUsers);
     return listUsers;
   } catch (error) {
-    throw new Error(`Database error 1: ${error}`);
+    throw new Error(`Database error (fetchClerkUser): ${error}`);
   }
 }
 
@@ -570,7 +589,7 @@ async function createClerkUser(email: string): Promise<void> {
       privateMetadata: { role: "Normal" },
     });
   } catch (error) {
-    throw new Error(`Database error 2: ${error}`);
+    throw new Error(`Database error (createClerkUser): ${error}`);
   }
 }
 
@@ -596,7 +615,7 @@ async function updateClerkUser(prevEmail: string, role: string): Promise<void> {
       privateMetadata: { role: role },
     });
   } catch (error) {
-    throw new Error(`Database error 3: ${error}`);
+    throw new Error(`Database error (updateClerkUser): ${error}`);
   }
 }
 
@@ -620,7 +639,7 @@ async function deleteClerkUser(prevEmail: string): Promise<void> {
 
     await clerkClient.users.deleteUser(userId);
   } catch (error) {
-    throw new Error(`Database error 4: ${error}`);
+    throw new Error(`Database error (deleteClerkUser): ${error}`);
   }
 }
 
@@ -646,12 +665,13 @@ async function adminClerkUser(id: string): Promise<boolean> {
     if (userId.roles === "Admin") return true;
     else return false;
   } catch (error) {
-    throw new Error(`Database error 5: ${error}`);
+    throw new Error(`Database error (adminClerkUser): ${error}`);
   }
 }
 
 export {
   fetchData,
+  fetchHistoryData,
   searchData,
   updateData,
   addData,

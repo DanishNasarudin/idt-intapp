@@ -226,7 +226,7 @@ const Warranty = (props: Props) => {
       <div className="md:hidden flex justify-center items-center h-[100vh] text-center w-full">
         <h2>Use Desktop PC</h2>
       </div>
-      <Toaster richColors theme="dark" />
+      {/* <Toaster richColors theme="dark" /> */}
     </>
   );
 };

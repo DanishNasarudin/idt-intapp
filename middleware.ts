@@ -16,6 +16,7 @@ type UserData = RowDataPacket & {
 export default authMiddleware({
   afterAuth: async (auth, req, evt) => {
     let hostURL;
+    // let hostURL = req.url;
     if (process.env.NODE_ENV === "production") {
       hostURL = `${
         req.nextUrl.protocol +
@@ -53,7 +54,7 @@ export default authMiddleware({
       }
     }
   },
-  publicRoutes: ["/home", "/info"], // unprotected pages
+  publicRoutes: ["/home", "/info(.*)"], // unprotected pages
 });
 
 export const config = {

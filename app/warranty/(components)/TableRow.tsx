@@ -190,7 +190,8 @@ const TableRow = ({
   const handleUpdateAllDB = async () => {
     if (data.service_no) {
       await updateAllDB(data.service_no, lastChangedExtRef.current);
-      socket.emit("re-render", { string: "render" });
+
+      // socket.emit("re-render", { string: "render" });
       clearExtRef();
     }
   };
@@ -399,14 +400,26 @@ const TableRow = ({
         onClick={() => {
           setAccordion(!accordion);
           if (accordion) {
-            if (data.service_no) updateDB(data.service_no, "locker", "0");
+            if (data.service_no) {
+              setInputValues((prev) => ({
+                ...prev,
+                values: { ...prev.values, locker: "0" },
+              }));
+              updateDB(data.service_no, "locker", "0");
+            }
             setTimeout(() => {
               handleUpdateAllDB();
               socket.emit("unlock-row", { lock: data.service_no });
               // console.log("pass unlock");
             }, 50);
           } else {
-            if (data.service_no) updateDB(data.service_no, "locker", "1");
+            if (data.service_no) {
+              setInputValues((prev) => ({
+                ...prev,
+                values: { ...prev.values, locker: "1" },
+              }));
+              updateDB(data.service_no, "locker", "1");
+            }
             socket.emit("lock-row", { lock: data.service_no });
           }
         }}

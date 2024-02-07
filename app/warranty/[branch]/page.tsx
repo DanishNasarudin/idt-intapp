@@ -21,6 +21,7 @@ import socket from "@/lib/socket";
 import DropdownIdv from "../(components)/DropdownIdv";
 import { Options } from "../settings/page";
 import { Toaster, toast } from "sonner";
+import Link from "next/link";
 
 type Props = {};
 
@@ -392,7 +393,8 @@ const Branch = (props: Props) => {
 
     const intervalId = setInterval(() => {
       refetchData();
-    }, 30 * 60 * 1000); // 30 minutes interval in milliseconds
+      toast.success("Data refreshed.");
+    }, 5 * 60 * 1000); // 5 minutes interval in milliseconds
 
     return () => clearInterval(intervalId);
   }, [newEntry, branch, searchValues]);
@@ -418,7 +420,7 @@ const Branch = (props: Props) => {
       setNewEntry(!newEntry);
       toast.success("Moved data.");
     } catch (error) {
-      throw new Error(`Database error: ${error}`);
+      throw new Error(`Database error (moveDB): ${error}`);
     }
   };
 
@@ -453,27 +455,53 @@ const Branch = (props: Props) => {
         await updateData(branch.data_local, id, "status", value);
       }
     } catch (error) {
-      throw new Error(`Database error: ${error}`);
+      throw new Error(`Database error (handleMoveDB): ${error}`);
     }
   };
 
-  const updateDB = async (id: string, column: string, value: string) => {
+  function debounce<T extends (...args: any[]) => void>(
+    func: T,
+    wait: number
+  ): (...args: Parameters<T>) => void {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+
+    return (...args: Parameters<T>): void => {
+      const later = () => {
+        timeout = null;
+        func(...args);
+      };
+
+      if (timeout !== null) {
+        clearTimeout(timeout);
+      }
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  const debUpdateDB = async (id: string, column: string, value: string) => {
     // console.log("updated DB");
     try {
       if (branch) {
         if (column === "status") {
           handleMoveDB(value, id);
         } else {
+          if (column === "locker" && value === "0") return;
           await updateData(branch.data_local, id, column, value);
-          setNewEntry(!newEntry);
-          // toast.success("Updated data.");
+          if (column !== "locker") {
+            setNewEntry(!newEntry);
+            toast.success("Updated data.");
+          }
         }
       }
     } catch (error) {
-      toast.error(`"Failed to move/update data. Error: ${error}`);
-      throw new Error(`Database error: ${error}`);
+      toast.error(
+        `"Failed to move/update data OR Update too frequent. Chill..`
+      );
+      throw new Error(`Database error (updateDB): ${error}`);
     }
   };
+
+  const updateDB = debounce(debUpdateDB, 500);
 
   const deleteDB = async (id: string) => {
     // console.log("deleted DB");
@@ -485,7 +513,7 @@ const Branch = (props: Props) => {
       }
     } catch (error) {
       toast.error("Failed to delete data.");
-      throw new Error(`Database error: ${error}`);
+      throw new Error(`Database error (deleteDB): ${error}`);
     }
   };
 
@@ -506,13 +534,17 @@ const Branch = (props: Props) => {
         if (Object.keys(changes).length > 0) {
           await updateAllData(branch.data_local, id, changes);
           // Reset logic here if needed
-          // toast.success("Updated all data.");
+
+          toast.success("Updated all data.");
+          // console.log("updated");
+          // toasty("Updated all data.");
+          // setNewEntry(!newEntry);
+          // socket.emit("re-render", { string: "render" });
         }
-        // setNewEntry(!newEntry);
       }
     } catch (error) {
       toast.error("Failed to update data.");
-      throw new Error(`Database error: ${error}`);
+      throw new Error(`Database error (updateDBWithChanges): ${error}`);
     }
   };
 
@@ -526,7 +558,7 @@ const Branch = (props: Props) => {
       }
     } catch (error) {
       toast.error("Failed to add data.");
-      throw new Error(`Database error: ${error}`);
+      throw new Error(`Database error (addDB): ${error}`);
     }
   };
 
@@ -536,12 +568,13 @@ const Branch = (props: Props) => {
   useEffect(() => {
     const handleUnlockRow = ({ lock }: { lock: string }) => {
       if (lock === "" || lock === null) return;
+      // console.log("unlock");
       setNewEntry((prevNewEntry) => !prevNewEntry);
     };
 
     const handleRender = ({ string }: { string: string }) => {
       if (string === "" || string === null) return;
-      // console.log("check");
+      // console.log("render");
       setNewEntry((prevNewEntry) => !prevNewEntry);
     };
 
@@ -630,7 +663,7 @@ const Branch = (props: Props) => {
                   />
                 </p>
                 <DropdownIdv
-                  minSize="140px"
+                  minSize="147"
                   values={searchFilter.current}
                   options={searchOptions}
                   setValues={searchFilter}
@@ -640,7 +673,7 @@ const Branch = (props: Props) => {
                 />
               </div>
               <div className="flex gap-4">
-                <button
+                {/* <button
                   className={`
                             px-4 py-2 rounded-md transition-all border-[1px]
                             bg-transparent border-zinc-600 text-zinc-600
@@ -654,7 +687,24 @@ const Branch = (props: Props) => {
                   }}
                 >
                   <p>Refresh Data</p>
-                </button>
+                </button> */}
+                <Link href={`/warranty/history/${branch?.id}`} target="_blank">
+                  <button
+                    className={`
+                              px-4 py-2 rounded-md transition-all border-[1px]
+                              bg-transparent border-zinc-600 text-zinc-600
+                              mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400`}
+                    onClick={() => {
+                      // setTimeout(() => {
+                      //   setNewEntry(!newEntry);
+                      //   // console.log("pass");
+                      //   socket.emit("re-render", { string: "render" });
+                      // }, 50);
+                    }}
+                  >
+                    <p>History</p>
+                  </button>
+                </Link>
                 <button
                   className={`
                             px-4 py-2 rounded-md transition-all border-[1px]
@@ -818,10 +868,9 @@ const Branch = (props: Props) => {
       <div className="md:hidden flex justify-center items-center h-[100vh] text-center w-full">
         <h2>Use Desktop PC</h2>
       </div>
-      <Toaster richColors theme="dark" closeButton />
     </>
   );
 };
 
-export const revalidate = 0;
+// export const revalidate = 0;
 export default Branch;
