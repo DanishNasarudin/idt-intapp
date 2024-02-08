@@ -24,7 +24,7 @@ type Props = {
       | React.ChangeEvent<HTMLTextAreaElement>
   ) => void;
   deleteDB: (id: string) => void;
-  openCloseTab: (open: boolean) => void;
+  openCloseTab: React.MutableRefObject<boolean>;
   isExtEmpty: boolean;
   updateAllDB: () => void;
 };
@@ -620,9 +620,10 @@ const TableRowExt = ({
                 if (data.service_no) deleteDB(data.service_no);
                 setTimeout(() => {
                   setDeleteCon(false);
-                  openCloseTab(false);
+                  // openCloseTab(false);
+                  openCloseTab.current = false;
                   if (socket === null) return;
-                  socket.emit("re-render", { string: "render" });
+                  socket.emit("del-entry", { id: data.service_no });
                 }, 50);
               }}
             >

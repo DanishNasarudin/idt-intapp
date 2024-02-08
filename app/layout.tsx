@@ -37,16 +37,16 @@ export default async function RootLayout({
           },
         }}
       >
-        <SocketProvider>
-          <body
-            className={`${inter.className} relative text-zinc-900 dark:text-white bg-bgLight dark:bg-bgDark`}
-          >
+        <body
+          className={`${inter.className} relative text-zinc-900 dark:text-white bg-bgLight dark:bg-bgDark`}
+        >
+          <SocketProvider>
             <div className="mx-auto">{children}</div>
             {/* <div className="h-[50vh]"></div> */}
             <Footer />
             <Toaster richColors theme="dark" closeButton />
-          </body>
-        </SocketProvider>
+          </SocketProvider>
+        </body>
       </ClerkProvider>
     </html>
   );

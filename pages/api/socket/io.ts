@@ -9,6 +9,14 @@ export const config = {
   },
 };
 
+type RowLocks = {
+  [rowId: string]: number;
+};
+
+type UserLocks = {
+  [socketId: string]: Set<string>;
+};
+
 const ioHandler = (req: NextApiRequest, res: NextAPIResponseServerIo) => {
   if (!res.socket.server.io) {
     const path = "/api/socket/io";
@@ -18,29 +26,81 @@ const ioHandler = (req: NextApiRequest, res: NextAPIResponseServerIo) => {
       addTrailingSlash: false,
     });
 
+    const rowLocks: RowLocks = {};
+    const userLocks: UserLocks = {};
+
     io.on("connection", (socket) => {
-      console.log("a user connected");
+      function handleUserDisconnect(socketId: string) {
+        const lockedRows = userLocks[socketId];
+        if (lockedRows) {
+          lockedRows.forEach((rowId) => {
+            rowLocks[rowId] = (rowLocks[rowId] || 1) - 1; // Ensure at least 1 before decrementing
+            if (rowLocks[rowId] <= 0) {
+              delete rowLocks[rowId];
+              // Broadcast to all users that the row is now unlocked
+              io.emit("lock-row-state", { rowId, isLocked: false });
+              io.to(socket.id).emit("lock-row", { rowId, isLocked: false });
+            }
+          });
+          delete userLocks[socketId]; // Clean up user locks
+        }
+      }
+
+      // console.log(`user connected ${socket.id}`);
+      console.log(`user connected`);
+      userLocks[socket.id] = new Set();
+
       socket.on("lock-row", (lock) => {
-        socket.broadcast.emit("lock-row", lock);
+        const { rowId, count } = lock;
+        if (!rowLocks[rowId]) {
+          rowLocks[rowId] = 0;
+          io.to(socket.id).emit("lock-row", { rowId, isLocked: true });
+        }
+        rowLocks[rowId] += count;
+        const isLocked = rowLocks[rowId] > 0;
+        userLocks[socket.id].add(rowId);
+
+        // console.log(rowLocks, rowId, isLocked, "lock");
+
+        io.emit("lock-row-state", { rowId, isLocked });
         // console.log(lock, "lock");
       });
       socket.on("unlock-row", (lock) => {
-        socket.broadcast.emit("unlock-row", lock);
+        const { rowId, count } = lock;
+        rowLocks[rowId] += count;
+        const isLocked = rowLocks[rowId] > 0;
+        userLocks[socket.id].delete(rowId);
+
+        // console.log(rowLocks, rowId, isLocked, "unlock");
+
+        io.emit("lock-row-state", { rowId, isLocked });
+        if (!isLocked) {
+          delete rowLocks[rowId];
+          io.to(socket.id).emit("lock-row", { rowId, isLocked: false });
+        }
+        // console.log(rowLocks, rowId, isLocked, "unlock after");
         // console.log(lock, "unlock");
       });
-      socket.on("unlock-row", (lock) => {
-        socket.broadcast.emit("unlock-row", lock);
-        // console.log(lock, "unlock");
+
+      socket.on("pre-disconnect", () => {
+        // console.log(`user disconnected ${socket.id}`);
+        handleUserDisconnect(socket.id);
       });
-      socket.on("unlock-row-all", (lock) => {
-        socket.broadcast.emit("unlock-row-all", lock);
-        // console.log(lock, "unlock");
+
+      socket.on("input-change", (change) => {
+        socket.broadcast.emit("input-change", change);
+        // console.log(change);
       });
-      socket.on("re-render", (string) => {
-        socket.broadcast.emit("re-render", string);
-        // console.log(string, "re-render");
+      socket.on("new-entry", (newE) => {
+        socket.broadcast.emit("new-entry", newE);
+        // console.log(newE);
+      });
+      socket.on("del-entry", (delE) => {
+        socket.broadcast.emit("del-entry", delE);
+        // console.log(newE);
       });
     });
+
     res.socket.server.io = io;
   }
   res.end();

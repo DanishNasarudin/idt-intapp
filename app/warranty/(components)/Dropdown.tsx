@@ -11,7 +11,7 @@ type Props = {
   values: string | null;
   setOpenClose: (id: string, newValue: boolean) => void;
   openClose: boolean;
-  setInputValues: (value: React.SetStateAction<InputState>) => void;
+  setInputValues: (id: string, value: string) => void;
   updateDB: (id: string, column: string, value: string) => void;
   clearExtRef: () => void;
 };
@@ -63,15 +63,10 @@ const Dropdown = ({
                     role="button"
                     className="row-cont px-2 py-1 mobilehover:hover:bg-zinc-700"
                     onClick={() => {
-                      setInputValues((prev) => {
-                        return {
-                          ...prev,
-                          values: { ...prev.values, [buttonId]: status.type },
-                        };
-                      });
+                      // console.log(buttonId, status.type, "checkdrop");
+                      setInputValues(buttonId, status.type);
                       updateDB(id ? id : "", buttonId, status.type);
                       setTimeout(() => {
-                        clearExtRef();
                         setOpenClose(buttonId, false);
                       }, 50);
                     }}

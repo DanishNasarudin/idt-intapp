@@ -286,7 +286,7 @@ const searchOptions: Options[] = [
 ];
 
 const Branch = (props: Props) => {
-  const { socket } = useSocket();
+  const { socket, isConnected } = useSocket();
   // console.log(checkSock.socket);
 
   // Input handler -------------------
@@ -457,6 +457,7 @@ const Branch = (props: Props) => {
         }
       } else {
         await updateData(branch.data_local, id, "status", value);
+        toast.success("Updated data.");
       }
     } catch (error) {
       throw new Error(`Database error (handleMoveDB): ${error}`);
@@ -489,8 +490,11 @@ const Branch = (props: Props) => {
         if (column === "status") {
           handleMoveDB(value, id);
         } else {
-          if (column === "locker" && value === "0") return;
+          // console.log(column, value, "front");
+          // if (column === "locker" && value === "0") return;
+          // console.log(column, value, "front after");
           await updateData(branch.data_local, id, column, value);
+          // console.log(column, "data up");
           if (column !== "locker") {
             setNewEntry(!newEntry);
             toast.success("Updated data.");
@@ -512,6 +516,9 @@ const Branch = (props: Props) => {
     try {
       if (branch) {
         await deleteData(branch.data_local, id);
+        setData((prevData) =>
+          prevData.filter((item) => item.service_no !== id)
+        );
         setNewEntry(!newEntry);
         toast.warning("Deleted data.");
       }
@@ -528,6 +535,9 @@ const Branch = (props: Props) => {
         const changes = (
           Object.keys(lastChange) as Array<keyof DataValues>
         ).reduce((acc, key) => {
+          if (key === "locker") {
+            return acc;
+          }
           const value = lastChange[key];
           if (value !== null) {
             acc[key] = value;
@@ -556,9 +566,36 @@ const Branch = (props: Props) => {
     // console.log("added DB");
     try {
       if (branch) {
-        await addData(branch.data_local);
+        const { date, serviceNo } = await addData(branch.data_local);
+        // console.log(date, serviceNo);
+        const newRow: DataValues = {
+          service_no: serviceNo,
+          date: date,
+          idt_pc: null,
+          received_by: null,
+          pic: null,
+          name: null,
+          contact: null,
+          status: "In Queue",
+          email: null,
+          address: null,
+          purchase_date: null,
+          invoice: null,
+          received_items: null,
+          pin: null,
+          issues: null,
+          solutions: null,
+          status_desc: null,
+          remarks: null,
+          cost: "0",
+          locker: "0",
+        };
+
+        setData((prevData) => [newRow, ...prevData]);
         setNewEntry(!newEntry);
         toast.success("Added new data.");
+        // socket.emit("re-render", { string: "render" });
+        socket.emit("new-entry", { date: date, serviceNo: serviceNo });
       }
     } catch (error) {
       toast.error("Failed to add data.");
@@ -566,61 +603,96 @@ const Branch = (props: Props) => {
     }
   };
 
+  // New version of the app is available ---
+
+  const [disconnected, setDisconnected] = useState(false);
+  const [onlyIfConnect, setOnlyIfConnect] = useState(false);
+
+  useEffect(() => {
+    if (isConnected) setOnlyIfConnect(true);
+    if (onlyIfConnect)
+      if (!isConnected) {
+        setDisconnected(true);
+      }
+
+    const disconnectUser = () => {
+      socket.emit("pre-disconnect");
+    };
+
+    window.addEventListener("beforeunload", disconnectUser);
+    return () => {
+      window.removeEventListener("beforeunload", disconnectUser);
+    };
+  }, [isConnected]);
+
   // socket receiver ----
   // console.log(newEntry);
 
   useEffect(() => {
     if (socket === null) return;
-    const handleUnlockRow = ({ lock }: { lock: string }) => {
-      if (lock === "" || lock === null) return;
-      // console.log("unlock");
-      setNewEntry((prevNewEntry) => !prevNewEntry);
+    // const handleUnlockRow = ({ lock }: { lock: string }) => {
+    //   if (lock === "" || lock === null) return;
+    //   // console.log("unlock");
+    //   setNewEntry((prevNewEntry) => !prevNewEntry);
+    // };
+
+    // const handleRender = ({ string }: { string: string }) => {
+    //   if (string === "" || string === null) return;
+    //   // console.log("render");
+    //   setNewEntry((prevNewEntry) => !prevNewEntry);
+    // };
+
+    const handleNewData = ({
+      date,
+      serviceNo,
+    }: {
+      date: string;
+      serviceNo: string;
+    }) => {
+      if (serviceNo === "" || date === "") return;
+
+      const newRow: DataValues = {
+        service_no: serviceNo,
+        date: date,
+        idt_pc: null,
+        received_by: null,
+        pic: null,
+        name: null,
+        contact: null,
+        status: "In Queue",
+        email: null,
+        address: null,
+        purchase_date: null,
+        invoice: null,
+        received_items: null,
+        pin: null,
+        issues: null,
+        solutions: null,
+        status_desc: null,
+        remarks: null,
+        cost: "0",
+        locker: "0",
+      };
+
+      setData((prevData) => [newRow, ...prevData]);
     };
 
-    const handleRender = ({ string }: { string: string }) => {
-      if (string === "" || string === null) return;
-      // console.log("render");
-      setNewEntry((prevNewEntry) => !prevNewEntry);
+    const handleDelData = ({ id }: { id: string }) => {
+      setData((prevData) => prevData.filter((item) => item.service_no !== id));
     };
 
-    socket.on("unlock-row", handleUnlockRow);
-    socket.on("re-render", handleRender);
+    // socket.on("unlock-row", handleUnlockRow);
+    // socket.on("re-render", handleRender);
+    socket.on("new-entry", handleNewData);
+    socket.on("del-entry", handleDelData);
 
     return () => {
-      socket.off("unlock-row", handleUnlockRow);
-      socket.off("re-render", handleRender);
+      // socket.off("unlock-row", handleUnlockRow);
+      // socket.off("re-render", handleRender);
+      socket.off("new-entry", handleNewData);
+      socket.off("del-entry", handleDelData);
     };
-  }, []);
-
-  // New version of the app is available ---
-
-  const [disconnected, setDisconnected] = useState(false);
-
-  useEffect(() => {
-    if (socket === null) return;
-    const handleDisconnect = () => {
-      // console.log("Disconnected from server");
-      setDisconnected(true);
-    };
-
-    const handleReconnect = () => {
-      // console.log("Reconnected to server");
-      // if (disconnected) {
-      //   // Prompt user to refresh the page
-      //   alert(
-      //     "A new version of the app is available. Please refresh the page."
-      //   );
-      // }
-    };
-
-    socket.on("disconnect", handleDisconnect);
-    socket.on("connect", handleReconnect);
-
-    return () => {
-      socket.off("disconnect", handleDisconnect);
-      socket.off("connect", handleReconnect);
-    };
-  }, [disconnected]);
+  }, [socket]);
 
   return (
     <>
@@ -679,7 +751,7 @@ const Branch = (props: Props) => {
                 />
               </div>
               <div className="flex gap-4">
-                {/* <button
+                <button
                   className={`
                             px-4 py-2 rounded-md transition-all border-[1px]
                             bg-transparent border-zinc-600 text-zinc-600
@@ -688,12 +760,12 @@ const Branch = (props: Props) => {
                     setTimeout(() => {
                       setNewEntry(!newEntry);
                       // console.log("pass");
-                      socket.emit("re-render", { string: "render" });
+                      // socket.emit("re-render", { string: "render" });
                     }, 50);
                   }}
                 >
                   <p>Refresh Data</p>
-                </button> */}
+                </button>
                 <Link href={`/warranty/history/${branch?.id}`} target="_blank">
                   <button
                     className={`
@@ -718,6 +790,7 @@ const Branch = (props: Props) => {
                             mobilehover:hover:bg-accent/80`}
                   onClick={() => {
                     addDB();
+                    if (socket === null) return;
                     socket.emit("re-render", { string: "render" });
                   }}
                 >
@@ -878,5 +951,5 @@ const Branch = (props: Props) => {
   );
 };
 
-export const revalidate = 0;
+// export const revalidate = 0;
 export default Branch;

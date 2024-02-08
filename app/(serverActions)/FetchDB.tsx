@@ -152,7 +152,9 @@ async function getMaxSequence(
   return 0;
 }
 
-async function addData(tableName: string): Promise<void> {
+async function addData(
+  tableName: string
+): Promise<{ date: string; serviceNo: string }> {
   try {
     let prefix = "";
     if (tableName === "ap_local") {
@@ -194,6 +196,7 @@ async function addData(tableName: string): Promise<void> {
 
     const query2 = `INSERT INTO ${tableName} (service_no, date, status) VALUES (?, ?, ?)`;
     await connection.query(query2, [serviceNo, formattedDate, status]);
+    return { date: formattedDate, serviceNo };
   } catch (error) {
     throw new Error(`Database error (addData): ${error}`);
   }

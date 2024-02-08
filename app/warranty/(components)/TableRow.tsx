@@ -30,8 +30,8 @@ const TableRow = ({
   setNewEntry,
   lockTable,
 }: Props) => {
-  const { socket } = useSocket();
-  if (socket === null) return;
+  const { socket, isConnected } = useSocket();
+
   const initialInputState: InputState = {
     values: {
       service_no: data.service_no,
@@ -154,6 +154,12 @@ const TableRow = ({
   }:
     | React.ChangeEvent<HTMLInputElement>
     | React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (socket === null) return;
+    socket.emit("input-change", {
+      id: data.service_no,
+      valueId: target.id,
+      value: target.value,
+    });
     // console.log(target.value, "check");
     setInputValues((prev) => ({
       ...prev,
@@ -171,6 +177,30 @@ const TableRow = ({
     const updatedLastChanged = {
       column: String(target.id),
       value: String(target.value),
+    };
+    // setLastChanged(updatedLastChanged);
+    lastChangedRef.current = updatedLastChanged;
+  };
+
+  const inputChangeDropdown = (id: string, value: string) => {
+    if (socket === null) return;
+    socket.emit("input-change", {
+      id: data.service_no,
+      valueId: id,
+      value: value,
+    });
+    // console.log(target.value, "check");
+    setInputValues((prev) => ({
+      ...prev,
+      values: {
+        ...prev.values,
+        [id]: value,
+      },
+    }));
+
+    const updatedLastChanged = {
+      column: String(id),
+      value: String(value),
     };
     // setLastChanged(updatedLastChanged);
     lastChangedRef.current = updatedLastChanged;
@@ -213,9 +243,10 @@ const TableRow = ({
   };
 
   // OpenClose for bottom box ----
-  const [accordion, setAccordion] = useState(false);
+  // const [accordion, setAccordion] = useState(false);
+  const accordion = useRef(false);
   const [openTab, setOpenTab] = useState(false);
-  // console.log(accordion, "accordion");
+  // console.log(accordion.current, "accordion");
 
   // OpenClose for Row ----
   const [openClose, setOpenClose] = useState({
@@ -231,27 +262,37 @@ const TableRow = ({
 
   const handleOpenClose = (id: string, open: boolean) => {
     // console.log(id, open, "check");
+    if (socket === null) return;
     setOpenClose({ ...openClose, [id]: open });
+    // if (open) {
+    //   socket.emit("lock-row", { lock: data.service_no });
+    //   console.log("lock handleOpenClose");
+    // } else {
+    //   console.log(accordion, "un lock handleOpenClose");
+    // }
+
+    // console.log("openclose");
+    // console.log(accordion.current, "accordion4");
     if (open) {
       socket.emit("lock-row", { lock: data.service_no });
-      // console.log("lock handleOpenClose");
+      // console.log("pass check1", lastChangedExtRef.current);
+      return;
     } else {
-      // console.log(accordion, "un lock handleOpenClose");
-      if (accordion === false) {
+      // console.log(accordion.current, "accordion1");
+      if (accordion.current === true) {
         socket.emit("unlock-row", { lock: data.service_no });
+        const lastChange = lastChangedRef.current;
+        // console.log("pass check2");
+        if (lastChange.column != null && lastChange.value != null) {
+          // console.log("pass handleOpenClose");
+          if (values.service_no != null && values.service_no != "")
+            updateDB(values.service_no, lastChange.column, lastChange.value);
+          lastChangedRef.current = { column: null, value: null };
+        }
       } else {
-        socket.emit("re-render", { string: "render" });
+        // console.log("pass check3");
+        return;
       }
-    }
-
-    if (open) return;
-    if (accordion === true) return;
-    const lastChange = lastChangedRef.current;
-    if (lastChange.column != null && lastChange.value != null) {
-      console.log("pass handleOpenClose");
-      if (values.service_no != null && values.service_no != "")
-        updateDB(values.service_no, lastChange.column, lastChange.value);
-      lastChangedRef.current = { column: null, value: null };
     }
   };
 
@@ -261,31 +302,33 @@ const TableRow = ({
   const openRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (socket === null) return;
     const handleOutsideClick = (e: MouseEvent) => {
+      // console.log(accordion.current, "accordion3");
       if (openRef.current && openRef.current.contains(e.target as Node)) {
         setOpenClose({ ...openClose });
-        setTimeout(() => {
-          if (accordion === false) {
-            socket.emit("unlock-row", { lock: data.service_no });
-          } else {
-            socket.emit("re-render", { string: "render" });
-          }
+        // setTimeout(() => {
 
-          // console.log(accordion, "unlock outsideclick");
-        }, 50);
-
-        if (accordion === true) return;
-        // Update DB with the changes, take values and pass to parent to DB.
-        const lastChange = lastChangedRef.current;
-        if (lastChange.column != null && lastChange.value != null) {
-          // console.log("pass handleOutsideClick");
-          if (values.service_no != null && values.service_no != "") {
-            updateDB(values.service_no, lastChange.column, lastChange.value);
-            lastChangedRef.current = { column: null, value: null };
+        //   // console.log(accordion, "unlock outsideclick");
+        // }, 50);
+        // console.log(accordion.current, "accordion2");
+        if (accordion.current === true) {
+          socket.emit("unlock-row", { lock: data.service_no });
+          // Update DB with the changes, take values and pass to parent to DB.
+          const lastChange = lastChangedRef.current;
+          if (lastChange.column != null && lastChange.value != null) {
+            // console.log("pass handleOutsideClick");
+            if (values.service_no != null && values.service_no != "") {
+              updateDB(values.service_no, lastChange.column, lastChange.value);
+              lastChangedRef.current = { column: null, value: null };
+            }
           }
+        } else {
+          // socket.emit("re-render", { string: "render" });
+          return;
         }
 
-        clearExtRef();
+        // if (accordion === true) return;
       }
     };
     window.addEventListener("mousedown", handleOutsideClick);
@@ -307,41 +350,86 @@ const TableRow = ({
   // const [lockRowOther, setLockRowOther] = useState(false);
 
   useEffect(() => {
-    const handleLockRow = ({ lock }: { lock: string }) => {
-      if (lock === "" || lock === null) return;
-      if (lock === data.service_no) {
-        setLockRow(true);
-        // if (data.service_no) updateDB(data.service_no, "locker", "1");
-      }
+    if (socket === null) return;
 
-      // console.log("lock pass");
+    const handleIfRowLock = ({
+      rowId,
+      isLocked,
+    }: {
+      rowId: string;
+      isLocked: boolean;
+    }) => {
+      // console.log(rowId, isLocked);
+      if (rowId === data.service_no) {
+        if (isLocked) {
+          // console.log("lock state");
+          setLockRow(true);
+          setInputValues((prev) => ({
+            ...prev,
+            values: { ...prev.values, locker: "1" },
+          }));
+        } else {
+          // console.log("unlock state");
+          setLockRow(false);
+          setInputValues((prev) => ({
+            ...prev,
+            values: { ...prev.values, locker: "0" },
+          }));
+        }
+      }
     };
 
-    const handleUnlockRow = ({ lock }: { lock: string }) => {
-      if (lock === "" || lock === null) return;
-      if (lock === data.service_no) {
-        setLockRow(false);
-        // if (data.service_no) updateDB(data.service_no, "locker", "0");
+    const handleLockRowDB = ({
+      rowId,
+      isLocked,
+    }: {
+      rowId: string;
+      isLocked: boolean;
+    }) => {
+      if (rowId === data.service_no) {
+        if (isLocked) {
+          // console.log("lock db");
+          updateDB(data.service_no, "locker", "1");
+        } else {
+          // console.log("unlock db");
+          updateDB(data.service_no, "locker", "0");
+        }
       }
-      // console.log("unlock pass");
     };
 
-    // const handleUnlockAllRow = (lock: string) => {
-    //   if (lock === "" || lock === null) return;
-    //   if (lock === "unlock") setLockRow(false);
-    //   if (data.service_no) updateDB(data.service_no, "locker", "0");
-    // };
+    const handleInputChange = ({
+      id,
+      valueId,
+      value,
+    }: {
+      id: string;
+      valueId: string;
+      value: string;
+    }) => {
+      if (valueId === "" || value === "") return;
+      if (id === data.service_no) {
+        setInputValues((prev) => ({
+          ...prev,
+          values: {
+            ...prev.values,
+            [valueId]: value,
+          },
+        }));
+      }
+    };
 
-    socket.on("lock-row", handleLockRow);
-    socket.on("unlock-row", handleUnlockRow);
+    socket.on("lock-row", handleLockRowDB);
+    socket.on("input-change", handleInputChange);
+    socket.on("lock-row-state", handleIfRowLock);
     // socket.on("unlock-row-all", handleUnlockAllRow);
 
     return () => {
-      socket.off("lock-row", handleLockRow);
-      socket.off("unlock-row", handleUnlockRow);
+      socket.off("lock-row", handleLockRowDB);
+      socket.off("input-change", handleInputChange);
+      socket.off("lock-row-state", handleIfRowLock);
       // socket.off("unlock-row-all", handleUnlockAllRow);
     };
-  }, []);
+  }, [socket]);
 
   // console.log(data.service_no, data.locker, "locker");
   // console.log(accordion ? false : lockRow || values.locker === "1");
@@ -384,7 +472,7 @@ const TableRow = ({
     <div
       className="tab-row border-t-[1px] border-zinc-800 relative
                 data-[open=true]:bg-zinc-900 data-[open=false]:bg-transparent"
-      data-open={accordion}
+      data-open={accordion.current}
     >
       <button
         // disabled={lockRow}
@@ -401,33 +489,26 @@ const TableRow = ({
         onMouseEnter={() => setOpenTab(true)}
         onMouseLeave={() => setOpenTab(false)}
         onClick={() => {
-          setAccordion(!accordion);
-          if (accordion) {
+          // setAccordion(!accordion);
+          // console.log(accordion.current, "before");
+          accordion.current = !accordion.current;
+          // console.log(accordion.current, "after");
+          if (!accordion.current) {
             if (data.service_no) {
-              setInputValues((prev) => ({
-                ...prev,
-                values: { ...prev.values, locker: "0" },
-              }));
-              updateDB(data.service_no, "locker", "0");
-            }
-            setTimeout(() => {
               handleUpdateAllDB();
-              socket.emit("unlock-row", { lock: data.service_no });
-              // console.log("pass unlock");
-            }, 50);
+              socket.emit("unlock-row", {
+                rowId: data.service_no,
+                count: -1,
+              });
+            }
           } else {
             if (data.service_no) {
-              setInputValues((prev) => ({
-                ...prev,
-                values: { ...prev.values, locker: "1" },
-              }));
-              updateDB(data.service_no, "locker", "1");
+              socket.emit("lock-row", { rowId: data.service_no, count: 1 });
             }
-            socket.emit("lock-row", { lock: data.service_no });
           }
         }}
       >
-        <p>{accordion ? "Close" : "Open"}</p>
+        <p>{accordion.current ? "Close" : "Open"}</p>
       </button>
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -480,7 +561,7 @@ const TableRow = ({
             values={values.idt_pc}
             setOpenClose={handleOpenClose}
             openClose={openClose.idt_pc}
-            setInputValues={setInputValues}
+            setInputValues={inputChangeDropdown}
             updateDB={updateDB}
             clearExtRef={clearExtRef}
           />
@@ -495,7 +576,7 @@ const TableRow = ({
             values={values.received_by}
             setOpenClose={handleOpenClose}
             openClose={openClose.received_by}
-            setInputValues={setInputValues}
+            setInputValues={inputChangeDropdown}
             updateDB={updateDB}
             clearExtRef={clearExtRef}
           />
@@ -510,7 +591,7 @@ const TableRow = ({
             values={values.pic}
             setOpenClose={handleOpenClose}
             openClose={openClose.pic}
-            setInputValues={setInputValues}
+            setInputValues={inputChangeDropdown}
             updateDB={updateDB}
             clearExtRef={clearExtRef}
           />
@@ -541,7 +622,7 @@ const TableRow = ({
             values={values.status}
             setOpenClose={handleOpenClose}
             openClose={openClose.status}
-            setInputValues={setInputValues}
+            setInputValues={inputChangeDropdown}
             updateDB={updateDB}
             clearExtRef={clearExtRef}
           />
@@ -555,7 +636,7 @@ const TableRow = ({
                   data-[open=true]:grid-rows-[1fr] data-[open=false]:grid-rows-[0fr] transition-all
                   border-t-[1px] data-[open=true]:border-zinc-800 data-[open=false]:border-transparent overflow-hidden
                   "
-        data-open={accordion}
+        data-open={accordion.current}
       >
         <TableRowExt
           branch={branch}
@@ -563,12 +644,14 @@ const TableRow = ({
           data={values}
           deleteDB={deleteDB}
           updateAllDB={handleUpdateAllDB}
-          openCloseTab={setAccordion}
+          openCloseTab={accordion}
           isExtEmpty={!isExtEmpty(lastChangedExtRef.current)}
         />
       </div>
       <div
-        data-open={accordion ? false : lockRow || String(values.locker) === "1"}
+        data-open={
+          accordion.current ? false : lockRow || String(values.locker) === "1"
+        }
         className="data-[open=true]:block data-[open=false]:hidden z-[3] absolute bg-red-800/20 w-full h-full left-0 top-0"
       />
       <div
