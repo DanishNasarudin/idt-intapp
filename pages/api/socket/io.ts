@@ -2,6 +2,7 @@ import { NextAPIResponseServerIo } from "@/lib/types";
 import { Server as NetServer } from "http";
 import { Server as ServerIO } from "socket.io";
 import { NextApiRequest } from "next";
+import { updateData } from "@/app/(serverActions)/FetchDB";
 
 export const config = {
   api: {
@@ -30,19 +31,48 @@ const ioHandler = (req: NextApiRequest, res: NextAPIResponseServerIo) => {
     const userLocks: UserLocks = {};
 
     io.on("connection", (socket) => {
-      function handleUserDisconnect(socketId: string) {
+      function handleUserDisconnect(socketId: string, dataTable: string) {
         const lockedRows = userLocks[socketId];
         if (lockedRows) {
           lockedRows.forEach((rowId) => {
             rowLocks[rowId] = (rowLocks[rowId] || 1) - 1; // Ensure at least 1 before decrementing
             if (rowLocks[rowId] <= 0) {
               delete rowLocks[rowId];
+              userLocks[socket.id].delete(rowId);
               // Broadcast to all users that the row is now unlocked
               io.emit("lock-row-state", { rowId, isLocked: false });
-              io.to(socket.id).emit("lock-row", { rowId, isLocked: false });
+              updateData(dataTable, rowId, "locker", "0");
+              // io.to(socket.id).emit("lock-row", {
+              //   rowId,
+              //   isLocked: false,
+              //   multiLock: true,
+              // });
             }
           });
           delete userLocks[socketId]; // Clean up user locks
+        }
+      }
+
+      function handleUserPageChange(socketId: string, dataTable: string) {
+        const lockedRows = userLocks[socketId];
+        if (lockedRows) {
+          lockedRows.forEach((rowId) => {
+            rowLocks[rowId] = (rowLocks[rowId] || 1) - 1; // Ensure at least 1 before decrementing
+            if (rowLocks[rowId] <= 0) {
+              // console.log(rowId);
+              delete rowLocks[rowId];
+              userLocks[socket.id].delete(rowId);
+              // Broadcast to all users that the row is now unlocked
+              io.emit("lock-row-state", { rowId, isLocked: false });
+              updateData(dataTable, rowId, "locker", "0");
+              // io.to(socket.id).emit("lock-row", {
+              //   rowId,
+              //   isLocked: false,
+              //   multiLock: true,
+              // });
+            }
+          });
+          // delete userLocks[socketId]; // Clean up user locks
         }
       }
 
@@ -54,7 +84,11 @@ const ioHandler = (req: NextApiRequest, res: NextAPIResponseServerIo) => {
         const { rowId, count } = lock;
         if (!rowLocks[rowId]) {
           rowLocks[rowId] = 0;
-          io.to(socket.id).emit("lock-row", { rowId, isLocked: true });
+          io.to(socket.id).emit("lock-row", {
+            rowId,
+            isLocked: true,
+            multiLock: false,
+          });
         }
         rowLocks[rowId] += count;
         const isLocked = rowLocks[rowId] > 0;
@@ -76,17 +110,28 @@ const ioHandler = (req: NextApiRequest, res: NextAPIResponseServerIo) => {
         io.emit("lock-row-state", { rowId, isLocked });
         if (!isLocked) {
           delete rowLocks[rowId];
-          io.to(socket.id).emit("lock-row", { rowId, isLocked: false });
+          io.to(socket.id).emit("lock-row", {
+            rowId,
+            isLocked: false,
+            multiLock: false,
+          });
         }
         // console.log(rowLocks, rowId, isLocked, "unlock after");
         // console.log(lock, "unlock");
       });
 
-      socket.on("pre-disconnect", () => {
+      socket.on("pre-disconnect", (data) => {
+        const { dataTable } = data;
         // console.log(`user disconnected ${socket.id}`);
-        handleUserDisconnect(socket.id);
+        handleUserDisconnect(socket.id, dataTable);
       });
 
+      socket.on("unlock-row-all", (data) => {
+        const { dataTable } = data;
+        // socket.broadcast.emit("unlock-row-all", lock);
+        handleUserPageChange(socket.id, dataTable);
+        // console.log(lock);
+      });
       socket.on("input-change", (change) => {
         socket.broadcast.emit("input-change", change);
         // console.log(change);

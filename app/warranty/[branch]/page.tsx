@@ -357,7 +357,21 @@ const Branch = (props: Props) => {
     }
   }, [pathname]);
 
-  const refetchData = () => {
+  const currentPageChange = useRef<Paginate>();
+
+  const refetchData = async () => {
+    // console.log(
+    //   JSON.stringify(page) !== JSON.stringify(currentPageChange.current)
+    // );
+    if (
+      data.length > 0 &&
+      JSON.stringify(page) !== JSON.stringify(currentPageChange.current)
+    ) {
+      // console.log("pass");
+      socket.emit("unlock-row-all", { dataTable: branch?.data_local });
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    currentPageChange.current = page;
     if (branch) {
       fetchData(
         branch.data_local,
@@ -490,11 +504,8 @@ const Branch = (props: Props) => {
         if (column === "status") {
           handleMoveDB(value, id);
         } else {
-          // console.log(column, value, "front");
-          // if (column === "locker" && value === "0") return;
-          // console.log(column, value, "front after");
+          // console.log(id, column, value, "front");
           await updateData(branch.data_local, id, column, value);
-          // console.log(column, "data up");
           if (column !== "locker") {
             setNewEntry(!newEntry);
             toast.success("Updated data.");
@@ -615,8 +626,9 @@ const Branch = (props: Props) => {
         setDisconnected(true);
       }
 
-    const disconnectUser = () => {
-      socket.emit("pre-disconnect");
+    const disconnectUser = async () => {
+      socket.emit("pre-disconnect", { dataTable: branch?.data_local });
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     };
 
     window.addEventListener("beforeunload", disconnectUser);
@@ -629,19 +641,6 @@ const Branch = (props: Props) => {
   // console.log(newEntry);
 
   useEffect(() => {
-    if (socket === null) return;
-    // const handleUnlockRow = ({ lock }: { lock: string }) => {
-    //   if (lock === "" || lock === null) return;
-    //   // console.log("unlock");
-    //   setNewEntry((prevNewEntry) => !prevNewEntry);
-    // };
-
-    // const handleRender = ({ string }: { string: string }) => {
-    //   if (string === "" || string === null) return;
-    //   // console.log("render");
-    //   setNewEntry((prevNewEntry) => !prevNewEntry);
-    // };
-
     const handleNewData = ({
       date,
       serviceNo,
@@ -681,14 +680,12 @@ const Branch = (props: Props) => {
       setData((prevData) => prevData.filter((item) => item.service_no !== id));
     };
 
-    // socket.on("unlock-row", handleUnlockRow);
-    // socket.on("re-render", handleRender);
+    if (socket === null) return;
+
     socket.on("new-entry", handleNewData);
     socket.on("del-entry", handleDelData);
 
     return () => {
-      // socket.off("unlock-row", handleUnlockRow);
-      // socket.off("re-render", handleRender);
       socket.off("new-entry", handleNewData);
       socket.off("del-entry", handleDelData);
     };
@@ -759,8 +756,6 @@ const Branch = (props: Props) => {
                   onClick={() => {
                     setTimeout(() => {
                       setNewEntry(!newEntry);
-                      // console.log("pass");
-                      // socket.emit("re-render", { string: "render" });
                     }, 50);
                   }}
                 >
@@ -772,13 +767,6 @@ const Branch = (props: Props) => {
                               px-4 py-2 rounded-md transition-all border-[1px]
                               bg-transparent border-zinc-600 text-zinc-600
                               mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400`}
-                    onClick={() => {
-                      // setTimeout(() => {
-                      //   setNewEntry(!newEntry);
-                      //   // console.log("pass");
-                      //   socket.emit("re-render", { string: "render" });
-                      // }, 50);
-                    }}
                   >
                     <p>History</p>
                   </button>

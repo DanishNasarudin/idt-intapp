@@ -6,6 +6,7 @@ import TableRowExt from "./TableRowExt";
 import Dropdown from "./Dropdown";
 // import socket from "@/lib/socket";
 import { useSocket } from "@/lib/providers/socket-provider";
+import { debounceFunc } from "@/lib/utils";
 
 type Props = {
   branch: BranchType | null;
@@ -30,7 +31,7 @@ const TableRow = ({
   setNewEntry,
   lockTable,
 }: Props) => {
-  const { socket, isConnected } = useSocket();
+  const { socket } = useSocket();
 
   const initialInputState: InputState = {
     values: {
@@ -264,15 +265,7 @@ const TableRow = ({
     // console.log(id, open, "check");
     if (socket === null) return;
     setOpenClose({ ...openClose, [id]: open });
-    // if (open) {
-    //   socket.emit("lock-row", { lock: data.service_no });
-    //   console.log("lock handleOpenClose");
-    // } else {
-    //   console.log(accordion, "un lock handleOpenClose");
-    // }
 
-    // console.log("openclose");
-    // console.log(accordion.current, "accordion4");
     if (open) {
       socket.emit("lock-row", { lock: data.service_no });
       // console.log("pass check1", lastChangedExtRef.current);
@@ -340,11 +333,33 @@ const TableRow = ({
 
   // ----
 
-  // const populateTemplateWithData = (template: string, data: DataValues) => {
-  //   template = template.replace("{{name}}", data.name);
-  // };
+  // batch update calls -----------
 
-  // Socket io
+  type UpdateBatch = {
+    [rowId: string]: { column: string; value: string };
+  };
+
+  let updateQueue: UpdateBatch = {};
+
+  const processBatchUpdates = async () => {
+    for (const rowId in updateQueue) {
+      const { column, value } = updateQueue[rowId];
+      // console.log(`Updating ${rowId} - ${column}: ${value}`);
+      try {
+        // Your existing logic to update the database
+        updateDB(rowId, column, value);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      } catch (error) {
+        // console.error(`Failed to update row ${rowId}:`, error);
+      }
+    }
+    updateQueue = {}; // Clear the queue after processing
+  };
+
+  // Debounce the processBatchUpdates function instead of debUpdateDB
+  const debounceProcessBatch = debounceFunc(processBatchUpdates, 1000);
+
+  // Socket io -----------------
 
   const [lockRow, setLockRow] = useState(false);
   // const [lockRowOther, setLockRowOther] = useState(false);
@@ -382,17 +397,26 @@ const TableRow = ({
     const handleLockRowDB = ({
       rowId,
       isLocked,
+      multiLock,
     }: {
       rowId: string;
       isLocked: boolean;
+      multiLock: boolean;
     }) => {
-      if (rowId === data.service_no) {
+      if (!multiLock && rowId === data.service_no) {
         if (isLocked) {
           // console.log("lock db");
           updateDB(data.service_no, "locker", "1");
         } else {
           // console.log("unlock db");
           updateDB(data.service_no, "locker", "0");
+        }
+      } else if (multiLock) {
+        // console.log(rowId);
+        if (!isLocked) {
+          if (!updateQueue[rowId])
+            updateQueue[rowId] = { column: "locker", value: "0" };
+          debounceProcessBatch();
         }
       }
     };
@@ -431,19 +455,7 @@ const TableRow = ({
     };
   }, [socket]);
 
-  // console.log(data.service_no, data.locker, "locker");
-  // console.log(accordion ? false : lockRow || values.locker === "1");
-  // if (data && data.service_no === "WSS2401002") {
-  //   console.log(accordion, lockRow, String(values.locker) === "1", "Locker");
-  //   console.log(
-  //     data !== prevValuesRef.current,
-  //     !accordion,
-  //     isExtEmpty(lastChangedExtRef.current),
-  //     lastChangedExtRef.current
-  //   );
-  // }
-
-  // alert if date is past 3 days ----
+  // alert if date is past 5 days ----
 
   const [isDateOld, setIsDateOld] = useState(false);
 
@@ -453,7 +465,7 @@ const TableRow = ({
     if (data.date === null) return;
 
     // Assuming data.date is in 'DD/MM/YYYY' format
-    const [day, month, year] = data.date.split("/").map(Number);
+    const [year, month, day] = data.date.split("-").map(Number);
     const currentDate = new Date(year, month - 1, day);
 
     // Calculate the difference in days
@@ -466,7 +478,7 @@ const TableRow = ({
     } else {
       setIsDateOld(false);
     }
-  }, [data.date]);
+  }, [data.date, data.status]);
 
   return (
     <div
