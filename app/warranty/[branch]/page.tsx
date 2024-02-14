@@ -23,6 +23,8 @@ import { Options } from "../settings/page";
 import { Toaster, toast } from "sonner";
 import Link from "next/link";
 import { useSocket } from "@/lib/providers/socket-provider";
+import DropdownSort from "../(components)/DropdownSort";
+import DropdownSortAdd from "../(components)/DropdownSortAdd";
 
 type Props = {};
 
@@ -379,8 +381,7 @@ const Branch = (props: Props) => {
         page.local.pageNum,
         searchValues,
         searchFilter.current,
-        sortStatus,
-        sortDate
+        sortingList
       ).then((data: any) => {
         setData(data.rows);
         setPage((currentPage) => ({
@@ -394,8 +395,7 @@ const Branch = (props: Props) => {
         page.other.pageNum,
         searchValues,
         searchFilter.current,
-        sortStatus,
-        sortDate
+        sortingList
       ).then((data: any) => {
         setDataOther(data.rows);
         setPage((currentPage) => ({
@@ -691,6 +691,72 @@ const Branch = (props: Props) => {
     };
   }, [socket]);
 
+  // sort system ----
+
+  // type SortType = {
+  //   [type: string]: string;
+  // };
+
+  const sortInitial = {
+    date: "DESC",
+    service_no: "ASC",
+  };
+
+  type SortType = {
+    type: string;
+    direction: string;
+  };
+
+  // Convert the initial object into an array to maintain order
+  const initialSortArray: SortType[] = Object.entries(sortInitial).map(
+    ([type, direction]) => ({ type, direction })
+  );
+
+  // Use this array for state
+  const [sortingList, setSortingList] = useState<SortType[]>(initialSortArray);
+
+  useEffect(() => {
+    setNewEntry(!newEntry);
+  }, [sortingList]);
+
+  // const [sortingList, setSortingList] = useState<SortType>(sortInitial);
+  // console.log(sortingList);
+
+  // console.log(sortingList);
+
+  const handleOnDrag = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.setData("sortType", id);
+  };
+  const handleOnDrop = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    const draggedSortType = e.dataTransfer.getData("sortType");
+    // console.log(id);
+
+    // Find the indices
+    const draggedIndex = sortingList.findIndex(
+      (item) => item.type === draggedSortType
+    );
+    const dropIndex = sortingList.findIndex((item) => item.type === id);
+
+    // Rearrange the array
+    const newList = [...sortingList];
+    const [removed] = newList.splice(draggedIndex, 1);
+    newList.splice(dropIndex, 0, removed);
+
+    setSortingList(newList);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const sortOptions: Options[] = [
+    { option: "status", color: "" },
+    { option: "name", color: "" },
+  ];
+
+  const [sortOpt, setSortOpt] = useState<Options[]>(sortOptions);
+
   return (
     <>
       <div className="hidden md:flex flex-col gap-16 w-full px-16 py-4">
@@ -789,7 +855,7 @@ const Branch = (props: Props) => {
               </div>
             </div>
             <div className="flex gap-4">
-              <button
+              {/* <button
                 className={`
                 ${
                   sortStatus
@@ -797,7 +863,7 @@ const Branch = (props: Props) => {
                     : "border-zinc-600 text-zinc-600 mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400"
                 }
                             px-4 py-2 rounded-md transition-all border-[1px]
-                            bg-transparent 
+                             
                             `}
                 onClick={() => {
                   setTimeout(async () => {
@@ -830,8 +896,61 @@ const Branch = (props: Props) => {
                 }}
               >
                 <p>{sortDate ? "Date Ascending" : "Date Descending"}</p>
-              </button>
-              <span className="text-zinc-400"></span>
+              </button> */}
+              <div className="border-zinc-800 text-zinc-800 p-1 rounded-md transition-all border-[1px] bg-transparent flex gap-1">
+                {/* {sortingList &&
+                  Object.entries(sortingList).map(([key, value]) => (
+                    <div
+                      key={key}
+                      draggable
+                      onDragStart={(e) => handleOnDrag(e, key)}
+                    >
+                      <DropdownSort
+                        key={key}
+                        values={key}
+                        setValues={setSortingList}
+                      />
+                    </div>
+                  ))} */}
+                {sortingList &&
+                  sortingList.map((sort, key) => {
+                    return (
+                      <div
+                        key={key}
+                        draggable
+                        onDragStart={(e) => handleOnDrag(e, sort.type)}
+                        onDrop={(e) => handleOnDrop(e, sort.type)}
+                        onDragOver={handleDragOver}
+                        className="h-full"
+                      >
+                        <DropdownSort
+                          key={key}
+                          values={sort}
+                          setOptions={setSortOpt}
+                          setValues={setSortingList}
+                        />
+                      </div>
+                    );
+                  })}
+                {/* <button
+                  className="border-zinc-600 text-zinc-600 mobilehover:hover:border-zinc-400 mobilehover:hover:text-zinc-400
+                px-2 py-0 rounded-md transition-all border-[1px] bg-transparent"
+                  onClick={() => {
+                    // if (!sortInitial["history"]) {
+                    //   sortInitial["history"] = "ASC";
+                    // }
+                  }}
+                >
+                  <span>+ Add Sort</span>
+                </button> */}
+                <DropdownSortAdd
+                  values="+ Add Sort"
+                  setValues={setSortingList}
+                  setOptions={setSortOpt}
+                  options={sortOpt}
+                />
+              </div>
+              {/* <span className="text-zinc-400"></span> */}
             </div>
           </div>
           <Tables

@@ -30,14 +30,18 @@ type UserData = RowDataPacket & {
   roles: string;
 };
 
+type SortType = {
+  type: string;
+  direction: string;
+};
+
 async function fetchData(
   tableName: string,
   pageSize: number,
   pageNum: number,
   search: string,
   searchBy: string,
-  sortStatus: boolean,
-  sortDate: boolean
+  sortList: SortType[]
 ): Promise<{ rows: MyDataType[]; count: number }> {
   try {
     let searchFilter;
@@ -53,9 +57,9 @@ async function fetchData(
     const searchLike = `%${search}%`;
     const whereClause = search ? `WHERE ${searchFilter} LIKE ?` : "";
 
-    const dateOrder = sortDate ? "date ASC" : "date DESC";
-    const statusOrder = sortStatus
-      ? `CASE status
+    let orderClause: any = [];
+    if (sortList) {
+      const statusOrder = `CASE status
                         WHEN 'From Ampang' THEN 1
                         WHEN 'From SS2' THEN 2
                         WHEN 'From Setia Alam' THEN 3
@@ -64,10 +68,43 @@ async function fetchData(
                          WHEN 'In Progress' THEN 6 
                          WHEN 'Waiting For' THEN 7 
                          WHEN 'Completed' THEN 8 
-                         ELSE 9 END, ${dateOrder},`
-      : `${dateOrder},`;
+                         ELSE 9 END`;
+      const statusOrderRev = `CASE status
+      WHEN 'Completed' THEN 1 
+      WHEN 'Waiting For' THEN 2 
+      WHEN 'In Progress' THEN 3 
+      WHEN 'In Queue' THEN 4 
+      WHEN 'From JB' THEN 5
+      WHEN 'From Setia Alam' THEN 6
+      WHEN 'From SS2' THEN 7
+      WHEN 'From Ampang' THEN 8
+                         ELSE 9 END`;
+      // sortList.forEach((sort) => {
+      //   if (sort.type === "status" && sort.direction === "ASC")
+      //     orderClause.push(statusOrder);
+      //   if (sort.type === "status" && sort.direction === "DESC")
+      //     orderClause.push(statusOrderRev);
+      // });
+      sortList.forEach((sort) => {
+        if (sort.type === "status" && sort.direction === "ASC")
+          orderClause.push(statusOrder);
+        if (sort.type === "status" && sort.direction === "DESC")
+          orderClause.push(statusOrderRev);
+        if (sort.type === "status") return sort;
+        orderClause.push(`${sort.type} ${sort.direction}`);
+      });
+    }
 
-    const query = `SELECT * FROM ?? ${whereClause} ORDER BY ${statusOrder} service_no DESC LIMIT ? OFFSET ?`;
+    // const dateOrder = sortDate ? "date ASC" : "date DESC";
+
+    // console.log(orderClause);
+
+    const orderClauseString = orderClause.length
+      ? `ORDER BY ${orderClause.join(", ")}`
+      : "";
+
+    // console.log(orderClauseString);
+    const query = `SELECT * FROM ?? ${whereClause} ${orderClauseString} LIMIT ? OFFSET ?`;
     const queryParams = search
       ? [tableName, searchLike, pageSize, pageSize * (pageNum - 1)]
       : [tableName, pageSize, pageSize * (pageNum - 1)];
