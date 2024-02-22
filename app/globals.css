@@ -81,3 +81,58 @@ h5 {
 h6 {
   font-size: clamp(4px, 3vw, 14px);
 }
+
+.home-h1 {
+  font-size: clamp(40px, 8vw, 64px);
+}
+
+.home-h5 {
+  font-size: clamp(14px, 2vw, 16px);
+}
+
+.home-mask {
+  -webkit-mask-image: url("../public/spotlight-highlight.svg");
+  mask-image: url("../public/spotlight-highlight.svg");
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+.home-right-mask {
+  -webkit-mask-image: url("../public/home-right-line.svg");
+  mask-image: url("../public/home-right-line.svg");
+  mask-repeat: no-repeat;
+}
+
+.home-left-mask {
+  -webkit-mask-image: url("../public/home-left-line.svg");
+  mask-image: url("../public/home-left-line.svg");
+  mask-repeat: no-repeat;
+}
+
+@keyframes home-right {
+  99%,
+  100% {
+    transform: translateY(1000%);
+  }
+}
+@keyframes home-left {
+  30%,
+  40% {
+    transform: translate(90%, 280%) rotate(45deg);
+  }
+  40%,
+  85% {
+    transform: translate(-100%, 280%) rotate(90deg);
+  }
+  85%,
+  100% {
+    transform: translate(-300%, 280%) rotate(90deg);
+  }
+}
+
+.home-right-animate {
+  animation: home-right 5s linear infinite;
+}
+.home-left-animate {
+  animation: home-left 5s linear infinite;
+}

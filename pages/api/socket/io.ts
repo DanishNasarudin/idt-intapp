@@ -32,6 +32,7 @@ const ioHandler = (req: NextApiRequest, res: NextAPIResponseServerIo) => {
 
     io.on("connection", (socket) => {
       function handleUserDisconnect(socketId: string, dataTable: string) {
+        // console.log(userLocks);
         const lockedRows = userLocks[socketId];
         if (lockedRows) {
           lockedRows.forEach((rowId) => {

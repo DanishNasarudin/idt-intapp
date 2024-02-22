@@ -40,6 +40,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     setSocket(socketInstance);
 
+    document.documentElement.classList.add("dark");
+
     return () => {
       socketInstance.disconnect();
     };

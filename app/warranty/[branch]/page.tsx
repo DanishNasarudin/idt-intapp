@@ -82,6 +82,7 @@ const branchFormat: BranchFormat = {
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
         { type: "Dixon", color: "bg-orange-600 text-orange-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
+        { type: "Raja", color: "bg-amber-600 text-amber-100" },
       ],
       all_pic: [
         { type: "Hanif", color: "bg-purple-600 text-purple-100" },
@@ -90,6 +91,7 @@ const branchFormat: BranchFormat = {
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
         { type: "Dixon", color: "bg-orange-600 text-orange-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
+        { type: "Raja", color: "bg-amber-600 text-amber-100" },
         { type: "John", color: "bg-purple-600 text-purple-100" },
         { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
         { type: "Akmal", color: "bg-red-600 text-red-100" },
@@ -131,6 +133,7 @@ const branchFormat: BranchFormat = {
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
         { type: "Dixon", color: "bg-orange-600 text-orange-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
+        { type: "Raja", color: "bg-amber-600 text-amber-100" },
         { type: "John", color: "bg-purple-600 text-purple-100" },
         { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
         { type: "Akmal", color: "bg-red-600 text-red-100" },
@@ -173,6 +176,7 @@ const branchFormat: BranchFormat = {
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
         { type: "Dixon", color: "bg-orange-600 text-orange-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
+        { type: "Raja", color: "bg-amber-600 text-amber-100" },
         { type: "John", color: "bg-purple-600 text-purple-100" },
         { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
         { type: "Akmal", color: "bg-red-600 text-red-100" },
@@ -699,7 +703,7 @@ const Branch = (props: Props) => {
 
   const sortInitial = {
     date: "DESC",
-    service_no: "ASC",
+    service_no: "DESC",
   };
 
   type SortType = {
@@ -808,9 +812,6 @@ const Branch = (props: Props) => {
                   values={searchFilter.current}
                   options={searchOptions}
                   setValues={searchFilter}
-                  updateDB={() => {
-                    return;
-                  }}
                 />
               </div>
               <div className="flex gap-4">

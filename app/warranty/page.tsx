@@ -231,4 +231,5 @@ const Warranty = (props: Props) => {
   );
 };
 
+export const revalidate = 0;
 export default Warranty;

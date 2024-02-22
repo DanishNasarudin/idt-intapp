@@ -7,7 +7,8 @@ type Props = {
   values: string;
   options: Options[];
   setValues: React.MutableRefObject<string>;
-  updateDB: () => void;
+  updateDB?: () => void;
+  className?: string;
 };
 
 const initialOptions: Options[] = [

@@ -40,7 +40,8 @@ export default authMiddleware({
       return redirectToSignIn({ returnBackUrl: hostURL });
     }
     // If the user is logged in and trying to access a protected route, allow them to access route
-    if (auth.userId && !auth.isPublicRoute) {
+    // if (auth.userId && !auth.isPublicRoute) {
+    if (auth.userId) {
       const user = await clerkClient.users.getUser(auth.userId);
       const userData = user.privateMetadata;
       //   console.log(userData);
