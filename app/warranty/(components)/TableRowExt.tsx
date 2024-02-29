@@ -12,7 +12,7 @@ import html2pdf from "html2pdf.js";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import { useSocket } from "@/lib/providers/socket-provider";
 
 type Props = {

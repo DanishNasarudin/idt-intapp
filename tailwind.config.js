@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+import { nextui } from "@nextui-org/theme";
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -6,6 +7,7 @@ module.exports = {
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
+    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   prefix: "",
   theme: {
@@ -54,6 +56,9 @@ module.exports = {
         "btnOut-green": "rgb(22 163 74 / 1)",
         "btnOutHov-green": "rgb(74 222 128 / 1)",
         "btnOut-disable": "rgb(39 39 42 / 1)",
+        grayDarkBg: "#121212", //0 0 7
+        grayLine: "#292929", //0 0 16
+        grayDarkHover: "#1A1A1A", //0 0 10
       },
       screens: {
         offer: "620px",
@@ -67,5 +72,5 @@ module.exports = {
       md: "900px",
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), nextui()],
 };

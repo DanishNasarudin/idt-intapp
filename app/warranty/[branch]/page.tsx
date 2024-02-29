@@ -20,7 +20,7 @@ import { useDebounce } from "use-debounce";
 // import socket from "@/lib/socket";
 import DropdownIdv from "../(components)/DropdownIdv";
 import { Options } from "../settings/page";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import Link from "next/link";
 import { useSocket } from "@/lib/providers/socket-provider";
 import DropdownSort from "../(components)/DropdownSort";
@@ -80,7 +80,6 @@ const branchFormat: BranchFormat = {
         { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
         { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Dixon", color: "bg-orange-600 text-orange-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
         { type: "Raja", color: "bg-amber-600 text-amber-100" },
       ],
@@ -89,7 +88,6 @@ const branchFormat: BranchFormat = {
         { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
         { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Dixon", color: "bg-orange-600 text-orange-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
         { type: "Raja", color: "bg-amber-600 text-amber-100" },
         { type: "John", color: "bg-purple-600 text-purple-100" },
@@ -100,6 +98,12 @@ const branchFormat: BranchFormat = {
         { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
         { type: "Jack", color: "bg-red-600 text-red-100" },
         { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Dixon", color: "bg-purple-600 text-purple-100" },
+        { type: "Jeck", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Akmal JB", color: "bg-red-600 text-red-100" },
+        { type: "Luqman", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Yong Hong", color: "bg-orange-600 text-orange-100" },
+        { type: "Shawn", color: "bg-blue-600 text-blue-100" },
       ],
     },
     {
@@ -131,7 +135,6 @@ const branchFormat: BranchFormat = {
         { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
         { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Dixon", color: "bg-orange-600 text-orange-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
         { type: "Raja", color: "bg-amber-600 text-amber-100" },
         { type: "John", color: "bg-purple-600 text-purple-100" },
@@ -142,6 +145,12 @@ const branchFormat: BranchFormat = {
         { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
         { type: "Jack", color: "bg-red-600 text-red-100" },
         { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Dixon", color: "bg-purple-600 text-purple-100" },
+        { type: "Jeck", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Akmal JB", color: "bg-red-600 text-red-100" },
+        { type: "Luqman", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Yong Hong", color: "bg-orange-600 text-orange-100" },
+        { type: "Shawn", color: "bg-blue-600 text-blue-100" },
       ],
     },
     {
@@ -174,7 +183,6 @@ const branchFormat: BranchFormat = {
         { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
         { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Dixon", color: "bg-orange-600 text-orange-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
         { type: "Raja", color: "bg-amber-600 text-amber-100" },
         { type: "John", color: "bg-purple-600 text-purple-100" },
@@ -185,6 +193,12 @@ const branchFormat: BranchFormat = {
         { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
         { type: "Jack", color: "bg-red-600 text-red-100" },
         { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Dixon", color: "bg-purple-600 text-purple-100" },
+        { type: "Jeck", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Akmal JB", color: "bg-red-600 text-red-100" },
+        { type: "Luqman", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Yong Hong", color: "bg-orange-600 text-orange-100" },
+        { type: "Shawn", color: "bg-blue-600 text-blue-100" },
       ],
     },
     {
@@ -205,14 +219,17 @@ const branchFormat: BranchFormat = {
       ],
       pic: [
         { type: "Dixon", color: "bg-purple-600 text-purple-100" },
-        { type: "Ghost1", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Jeck", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Akmal JB", color: "bg-red-600 text-red-100" },
+        { type: "Luqman", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Yong Hong", color: "bg-orange-600 text-orange-100" },
+        { type: "Shawn", color: "bg-blue-600 text-blue-100" },
       ],
       all_pic: [
         { type: "Hanif", color: "bg-purple-600 text-purple-100" },
         { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
         { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Dixon", color: "bg-orange-600 text-orange-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
         { type: "John", color: "bg-purple-600 text-purple-100" },
         { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
@@ -222,6 +239,12 @@ const branchFormat: BranchFormat = {
         { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
         { type: "Jack", color: "bg-red-600 text-red-100" },
         { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Dixon", color: "bg-purple-600 text-purple-100" },
+        { type: "Jeck", color: "bg-emerald-600 text-emerald-100" },
+        { type: "Akmal JB", color: "bg-red-600 text-red-100" },
+        { type: "Luqman", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Yong Hong", color: "bg-orange-600 text-orange-100" },
+        { type: "Shawn", color: "bg-blue-600 text-blue-100" },
       ],
     },
   ],
@@ -417,6 +440,7 @@ const Branch = (props: Props) => {
       refetchData();
       toast.success("Data refreshed.");
     }, 5 * 60 * 1000); // 5 minutes interval in milliseconds
+    console.log("check render");
 
     return () => clearInterval(intervalId);
   }, [newEntry, branch, searchValues]);

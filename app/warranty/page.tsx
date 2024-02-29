@@ -7,7 +7,7 @@ import {
 } from "@/(scn-components)/ui/avatar";
 import MainAnalytics from "./(components)/MainAnalytics";
 import { countAllDB, countDB, countLeadDB } from "../(serverActions)/FetchDB";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 
 type Props = {};
 
@@ -180,6 +180,7 @@ const Warranty = (props: Props) => {
       },
       error: "Data failed to load.",
     });
+    // console.log("check pass");
   }, []);
   // console.log(sumData);
   //   console.log(sumData.ap);

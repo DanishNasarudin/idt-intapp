@@ -4,10 +4,10 @@ import { Inter } from "next/font/google";
 import Footer from "./(components)/Footer";
 import "./globals.css";
 
+import { Toaster } from "sonner";
+import { Providers } from "@/lib/providers";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
-import { Toaster } from "sonner";
-import { SocketProvider } from "@/lib/providers/socket-provider";
 
 const Navbar = dynamic(() => import("./(components)/Navbar"), { ssr: false });
 
@@ -29,25 +29,25 @@ export default async function RootLayout({
 }) {
   return (
     <html lang="en">
-      <ClerkProvider
+      {/* <ClerkProvider
         appearance={{
           baseTheme: dark,
           elements: {
             footer: "hidden",
           },
         }}
+      > */}
+      <body
+        className={`${inter.className} relative text-zinc-900 dark:text-white bg-bgLight dark:bg-bgDark`}
       >
-        <body
-          className={`${inter.className} relative text-zinc-900 dark:text-white bg-bgLight dark:bg-bgDark`}
-        >
-          <SocketProvider>
-            <div className="mx-auto">{children}</div>
-            {/* <div className="h-[50vh]"></div> */}
-            <Footer />
-            <Toaster richColors theme="dark" closeButton />
-          </SocketProvider>
-        </body>
-      </ClerkProvider>
+        <Providers>
+          <div className="mx-auto">{children}</div>
+          {/* <div className="h-[50vh]"></div> */}
+          <Footer />
+          <Toaster richColors theme="dark" closeButton />
+        </Providers>
+      </body>
+      {/* </ClerkProvider> */}
     </html>
   );
 }
