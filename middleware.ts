@@ -1,17 +1,5 @@
 import { authMiddleware, clerkClient, redirectToSignIn } from "@clerk/nextjs";
-import { RowDataPacket } from "mysql2";
 import { NextResponse } from "next/server";
-// import { useClerk } from "@clerk/clerk-react";
-// import { useRouter } from "next/navigation";
-
-type UserData = RowDataPacket & {
-  id: number;
-  email: string;
-  roles: string;
-};
-
-// const { signOut } = useClerk();
-// const router = useRouter();
 
 export default authMiddleware({
   afterAuth: async (auth, req, evt) => {
@@ -27,16 +15,22 @@ export default authMiddleware({
     } else {
       hostURL = req.url;
     }
+
+    // console.log(`Request received: ${req.method} ${hostURL}`);
+
     if (process.env.NODE_ENV !== "production") {
+      // console.log("Environment is not production, proceeding to next.");
       return NextResponse.next();
     }
     if (req.nextUrl.pathname === "/") {
       // Handle redirect
       const newURL = new URL("/home", hostURL);
+      // console.log("Redirecting to /home");
       return NextResponse.redirect(newURL);
     }
     if (!auth.userId && !auth.isPublicRoute) {
       // Handle users who aren't authenticated
+      // console.log("User is not authenticated, redirecting to sign in.");
       return redirectToSignIn({ returnBackUrl: hostURL });
     }
     // If the user is logged in and trying to access a protected route, allow them to access route
@@ -48,14 +42,21 @@ export default authMiddleware({
 
       if (userData.role === "Admin" || userData.role === "Staff") {
         // console.log("pass");
+        // console.log(
+        //   `User ${auth.userId} is authorized with role ${userData.role}`
+        // );
         return NextResponse.next();
       } else {
         const newURL = new URL("/unauthorized", hostURL);
+        // console.log(
+        //   `User ${auth.userId} is unauthorized, rewriting to /unauthorized`
+        // );
         return NextResponse.rewrite(newURL);
       }
     }
   },
   publicRoutes: ["/home", "/info(.*)"], // unprotected pages
+  // debug: true,
 });
 
 export const config = {

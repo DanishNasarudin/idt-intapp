@@ -1,6 +1,5 @@
-import { Inter } from "next/font/google";
-import Hero from "../(sections)/Hero";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { Inter } from "next/font/google";
 import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -240,7 +239,7 @@ export default async function Home() {
                     </svg>
                   </button>
                 </Link>
-                <Link href={"/orders"}>
+                <a href={"https://build.idealtech.com.my/admin"}>
                   <button
                     className="
             flex justify-between items-center w-full gap-1
@@ -258,11 +257,8 @@ export default async function Home() {
                       >
                         <path d="M20 3H4c-1.103 0-2 .897-2 2v11c0 1.103.897 2 2 2h7v2H8v2h8v-2h-3v-2h7c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM4 14V5h16l.002 9H4z"></path>
                       </svg>
-                      <h5 className="whitespace-nowrap mobilehover:group-hover:hidden text-zinc-400 mobilehover:group-hover:text-white transition-all">
-                        Purchase Order
-                      </h5>
-                      <h5 className="whitespace-nowrap hidden mobilehover:group-hover:block text-zinc-400 mobilehover:group-hover:text-white transition-all">
-                        Coming Soon
+                      <h5 className="whitespace-nowrap text-zinc-400 mobilehover:group-hover:text-white">
+                        Price List
                       </h5>
                     </div>
                     <div className="relative w-full">
@@ -279,7 +275,7 @@ export default async function Home() {
                       <path d="m6.293 13.293 1.414 1.414L12 10.414l4.293 4.293 1.414-1.414L12 7.586z"></path>
                     </svg>
                   </button>
-                </Link>
+                </a>
                 <Link href={"/home"}>
                   <button
                     className="

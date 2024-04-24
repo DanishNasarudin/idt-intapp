@@ -1,9 +1,9 @@
 "use server";
-import { RowDataPacket, FieldPacket } from "mysql2";
 import connection from "@/lib/mysql";
-import { format } from "date-fns";
-import { BranchFormat, BranchType } from "../warranty/[branch]/page";
 import { clerkClient } from "@clerk/nextjs";
+import { format } from "date-fns";
+import { FieldPacket, RowDataPacket } from "mysql2";
+import { BranchFormat, BranchType } from "../warranty/[branch]/page";
 
 type MyDataType = RowDataPacket & {
   service_no: string;
@@ -53,6 +53,8 @@ async function fetchData(
       searchFilter = "email";
     } else if (searchBy === "By: PIC") {
       searchFilter = "pic";
+    } else if (searchBy === "By: Contact") {
+      searchFilter = "contact";
     }
     const searchLike = `%${search}%`;
     const whereClause = search ? `WHERE ${searchFilter} LIKE ?` : "";
@@ -710,27 +712,27 @@ async function adminClerkUser(id: string): Promise<boolean> {
 }
 
 export {
-  fetchData,
-  fetchHistoryData,
-  searchData,
-  updateData,
   addData,
-  deleteData,
-  updateAllData,
-  moveData,
-  fetchUsers,
-  searchUser,
-  updateDBGeneral,
   addDBGeneral,
-  deleteDBGeneral,
-  moveBranchData,
-  countDB,
-  countAllDB,
-  countLeadDB,
-  fetchClerkUser,
-  createClerkUser,
-  updateClerkUser,
-  deleteClerkUser,
   adminClerkUser,
   countAllBranchDB,
+  countAllDB,
+  countDB,
+  countLeadDB,
+  createClerkUser,
+  deleteClerkUser,
+  deleteData,
+  deleteDBGeneral,
+  fetchClerkUser,
+  fetchData,
+  fetchHistoryData,
+  fetchUsers,
+  moveBranchData,
+  moveData,
+  searchData,
+  searchUser,
+  updateAllData,
+  updateClerkUser,
+  updateData,
+  updateDBGeneral,
 };

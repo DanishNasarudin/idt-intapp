@@ -1,15 +1,12 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
-import DropdownStd from "../(components)/DropdownStd";
+import { useEffect, useRef, useState } from "react";
 import TableRowUser from "../(components)/TableRowUser";
-import TextBoxEditorStd from "../(components)/TextBoxEditorStd";
-import { Options, UserType, OpenClose } from "../settings/page";
+import { Options, UserType } from "../settings/page";
 // import { useSession } from "next-auth/react";
 import {
   adminClerkUser,
   createClerkUser,
   fetchClerkUser,
-  searchUser,
 } from "@/app/(serverActions)/FetchDB";
 import { useUser } from "@clerk/nextjs";
 

@@ -4,16 +4,19 @@ import { Inter } from "next/font/google";
 import Footer from "./(components)/Footer";
 import "./globals.css";
 
-import { Toaster } from "sonner";
 import { Providers } from "@/lib/providers";
-import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
+import { Toaster } from "sonner";
 
 const Navbar = dynamic(() => import("./(components)/Navbar"), { ssr: false });
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NODE_ENV === "production"
+      ? `https://${process.env.HOSTNAME}`
+      : "http://localhost:3000"
+  ),
   title: "Ideal Tech PC Internal App",
   description: "Internal",
   icons: {

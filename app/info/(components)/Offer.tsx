@@ -1,13 +1,9 @@
-import Image from "next/image";
-
 type Props = {
   src: string;
   text: string;
 };
 
 function Offer({ src, text }: Props) {
-  const iconSize = window.innerWidth;
-
   return (
     <div className="w-full h-full flex justify-start items-center text-left xs:max-w-[240px] bg-zinc-900 p-4 rounded-2xl">
       <img

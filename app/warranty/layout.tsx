@@ -1,3 +1,4 @@
+import { SocketProvider } from "@/lib/providers/socket-provider";
 import dynamic from "next/dynamic";
 import SideNavbarContent from "../(components)/SideNavbarContent";
 
@@ -13,7 +14,9 @@ export default function WarrantyLayout({
   return (
     <div className={`relative`}>
       <Navbar />
-      <SideNavbarContent>{children}</SideNavbarContent>
+      <SideNavbarContent className="w-full">
+        <SocketProvider>{children}</SocketProvider>
+      </SideNavbarContent>
       {/* <div className="h-[50vh]" /> */}
     </div>
   );

@@ -1,15 +1,19 @@
 "use client";
 
 import { ClerkProvider } from "@clerk/nextjs";
-import { NextUIProvider } from "@nextui-org/react";
-import { SocketProvider } from "./providers/socket-provider";
 import { dark } from "@clerk/themes";
+import { NextUIProvider } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
-import { Suspense, useState } from "react";
+import React, { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    document.documentElement.classList.add("dark");
+  }, []);
+
   return (
     <ClerkProvider
       appearance={{
@@ -20,7 +24,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       }}
     >
       <NextUIProvider navigate={router.push}>
-        <SocketProvider>{children}</SocketProvider>
+        {/* <SocketProvider>{children}</SocketProvider> */}
+        {children}
       </NextUIProvider>
     </ClerkProvider>
   );

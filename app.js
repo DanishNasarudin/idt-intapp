@@ -15,6 +15,8 @@ app.prepare().then(() => {
     try {
       // Be sure to pass `true` as the second argument to `url.parse`.
       // This tells it to parse the query portion of the URL.
+      console.log(req);
+      console.log(res);
       const parsedUrl = parse(req.url, true);
       const { pathname, query } = parsedUrl;
 
@@ -37,5 +39,11 @@ app.prepare().then(() => {
     })
     .listen(port, () => {
       console.log(`> Ready on http://${hostname}:${port}`);
+    })
+    .on("clientError", (err) => {
+      console.log("clientError", err.message);
+    })
+    .on("error", function (err) {
+      console.log("Error: ", err.message);
     });
 });

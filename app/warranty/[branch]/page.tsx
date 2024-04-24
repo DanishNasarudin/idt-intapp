@@ -1,30 +1,24 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import {
   addData,
   deleteData,
   fetchData,
   moveBranchData,
-  moveData,
   updateAllData,
   updateData,
 } from "@/app/(serverActions)/FetchDB";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/(scn-components)/ui/avatar";
-import Tables from "../(sections)/Tables";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
+import Tables from "../(sections)/Tables";
 // import socket from "@/lib/socket";
-import DropdownIdv from "../(components)/DropdownIdv";
-import { Options } from "../settings/page";
-import { toast } from "sonner";
-import Link from "next/link";
 import { useSocket } from "@/lib/providers/socket-provider";
+import Link from "next/link";
+import { toast } from "sonner";
+import DropdownIdv from "../(components)/DropdownIdv";
 import DropdownSort from "../(components)/DropdownSort";
 import DropdownSortAdd from "../(components)/DropdownSortAdd";
+import { Options } from "../settings/page";
 
 type Props = {};
 
@@ -80,7 +74,7 @@ const branchFormat: BranchFormat = {
         { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
         { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Amir", color: "bg-blue-600 text-blue-100" },
+        { type: "Jad", color: "bg-blue-600 text-blue-100" },
         { type: "Raja", color: "bg-amber-600 text-amber-100" },
       ],
       all_pic: [
@@ -88,6 +82,7 @@ const branchFormat: BranchFormat = {
         { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
         { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Jad", color: "bg-blue-600 text-blue-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
         { type: "Raja", color: "bg-amber-600 text-amber-100" },
         { type: "John", color: "bg-purple-600 text-purple-100" },
@@ -135,6 +130,7 @@ const branchFormat: BranchFormat = {
         { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
         { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Jad", color: "bg-blue-600 text-blue-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
         { type: "Raja", color: "bg-amber-600 text-amber-100" },
         { type: "John", color: "bg-purple-600 text-purple-100" },
@@ -183,6 +179,7 @@ const branchFormat: BranchFormat = {
         { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
         { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Jad", color: "bg-blue-600 text-blue-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
         { type: "Raja", color: "bg-amber-600 text-amber-100" },
         { type: "John", color: "bg-purple-600 text-purple-100" },
@@ -230,6 +227,7 @@ const branchFormat: BranchFormat = {
         { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
         { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
         { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
+        { type: "Jad", color: "bg-blue-600 text-blue-100" },
         { type: "Amir", color: "bg-blue-600 text-blue-100" },
         { type: "John", color: "bg-purple-600 text-purple-100" },
         { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
@@ -312,6 +310,7 @@ const searchOptions: Options[] = [
   { option: "By: Email", color: "bg-emerald-600 text-emerald-100" },
   { option: "By: PIC", color: "bg-red-600 text-red-100" },
   { option: "By: Received Items", color: "bg-cyan-600 text-cyan-100" },
+  { option: "By: Contact", color: "bg-blue-600 text-blue-100" },
 ];
 
 const Branch = (props: Props) => {
@@ -440,7 +439,7 @@ const Branch = (props: Props) => {
       refetchData();
       toast.success("Data refreshed.");
     }, 5 * 60 * 1000); // 5 minutes interval in milliseconds
-    console.log("check render");
+    // console.log("check render");
 
     return () => clearInterval(intervalId);
   }, [newEntry, branch, searchValues]);

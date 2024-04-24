@@ -1,8 +1,8 @@
+import { updateData } from "@/app/(serverActions)/FetchDB";
 import { NextAPIResponseServerIo } from "@/lib/types";
 import { Server as NetServer } from "http";
-import { Server as ServerIO } from "socket.io";
 import { NextApiRequest } from "next";
-import { updateData } from "@/app/(serverActions)/FetchDB";
+import { Server as ServerIO } from "socket.io";
 
 export const config = {
   api: {
@@ -43,6 +43,7 @@ const ioHandler = (req: NextApiRequest, res: NextAPIResponseServerIo) => {
               // Broadcast to all users that the row is now unlocked
               io.emit("lock-row-state", { rowId, isLocked: false });
               updateData(dataTable, rowId, "locker", "0");
+              console.log("handle user disconnect");
               // io.to(socket.id).emit("lock-row", {
               //   rowId,
               //   isLocked: false,
@@ -66,6 +67,7 @@ const ioHandler = (req: NextApiRequest, res: NextAPIResponseServerIo) => {
               // Broadcast to all users that the row is now unlocked
               io.emit("lock-row-state", { rowId, isLocked: false });
               updateData(dataTable, rowId, "locker", "0");
+              console.log("page change");
               // io.to(socket.id).emit("lock-row", {
               //   rowId,
               //   isLocked: false,

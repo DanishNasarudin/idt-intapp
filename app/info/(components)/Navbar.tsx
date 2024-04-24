@@ -2,13 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/(scn-components)/ui/avatar";
-
-import { UserButton, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { useEffect } from "react";
 
 type Props = {};
@@ -52,13 +46,6 @@ const Navbar = (props: Props) => {
   };
 
   useEffect(() => {
-    // if (
-    //   localStorage.getItem("dark-mode") === "true" ||
-    //   (!("dark-mode" in localStorage) &&
-    //     window.matchMedia("(prefers-color-scheme: dark)").matches)
-    // ) {
-    //   document.documentElement.classList.add("dark");
-    // }
     document.documentElement.classList.add("dark");
   }, []);
 
