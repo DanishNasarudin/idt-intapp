@@ -3,25 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import TableRowUser from "../(components)/TableRowUser";
 import { Options, UserType } from "../settings/page";
 // import { useSession } from "next-auth/react";
-import {
-  adminClerkUser,
-  createClerkUser,
-  fetchClerkUser,
-} from "@/app/(serverActions)/FetchDB";
+import { adminClerkUser, createClerkUser } from "@/app/(serverActions)/FetchDB";
 import { useUser } from "@clerk/nextjs";
 
 type Props = {
   // dataValues: UserType[];
+  data: UserType[];
   dataOptions: Options[];
-  updateDB: (
-    table: string,
-    columnId: string,
-    id: string,
-    column: string,
-    value: string
-  ) => void;
-  addDB: (table: string, columnId: string, id: string) => void;
-  deleteDB: (table: string, columnId: string, id: string) => void;
 };
 
 type UserData = {
@@ -32,22 +20,20 @@ type UserData = {
 
 const UserSettings = ({
   // dataValues,
+  data,
   dataOptions,
-  updateDB,
-  addDB,
-  deleteDB,
 }: Props) => {
   // const { data: session } = useSession();
   const [isAdmin, setAdmin] = useState(true);
-  const [dataValues, setData] = useState<UserType[]>([]);
+  // const [dataValues, setData] = useState<UserType[]>([]);
   const [render, setRender] = useState(false);
   // console.log(dataValues);
   const { user, isLoaded } = useUser();
 
-  useEffect(() => {
-    //  fetchUsers().then((users: UserType[]) => setData(users));
-    fetchClerkUser().then((users: any) => setData(users));
-  }, [render, isLoaded]);
+  // useEffect(() => {
+  //   //  fetchUsers().then((users: UserType[]) => setData(users));
+  //   fetchClerkUser().then((users: any) => setData(users));
+  // }, [render, isLoaded]);
 
   const [searchFocus, setSearchFocus] = useState(false);
   const [search, setSearch] = useState("");
@@ -129,16 +115,13 @@ const UserSettings = ({
           </div>
         </div>
         <div className="tab-body">
-          {dataValues &&
-            dataValues.map((data, key) => {
+          {data &&
+            data.map((data, key) => {
               return (
                 <TableRowUser
                   key={data.id}
-                  keyId={data.id}
                   dataOptions={dataOptions}
                   dataValues={data}
-                  updateDB={updateDB}
-                  deleteDB={deleteDB}
                   setRender={setRender}
                 />
               );

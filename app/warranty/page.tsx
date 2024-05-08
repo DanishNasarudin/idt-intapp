@@ -1,17 +1,25 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/(scn-components)/ui/avatar";
-import MainAnalytics from "./(components)/MainAnalytics";
-import { countAllDB, countDB, countLeadDB } from "../(serverActions)/FetchDB";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { countAllDB } from "../(serverActions)/FetchDB";
+import MainAnalytics from "./(components)/MainAnalytics";
+import { getBranchFormat } from "./(utils)/warrantyUtils";
+import { BranchType } from "./[branch]/page";
 
 type Props = {};
 
 const Warranty = (props: Props) => {
+  const [branch, setBranch] = useState<BranchType[]>([]);
+
+  useEffect(() => {
+    const getFormat = async () => {
+      const format = await getBranchFormat();
+
+      setBranch(format.branch);
+    };
+    getFormat();
+  }, []);
+
   // count DB
 
   const [sumData, setSumData] = useState({
@@ -118,27 +126,50 @@ const Warranty = (props: Props) => {
     };
 
     const fetchData = async () => {
-      const apData = await fetchDataForLocal("ap", "WAP", [
-        "Hanif",
-        "Joon",
-        "Anthony",
-        "Hafiz WTY",
-        "Amir",
-        "Dixon",
-      ]);
-      const s2Data = await fetchDataForLocal("s2", "WSS", [
-        "John",
-        "Richard",
-        "Akmal",
-        "John Shen",
-      ]);
-      const saData = await fetchDataForLocal("sa", "WSA", [
-        "Zaki",
-        "Irfan",
-        "Jack",
-        "Azran",
-      ]);
-      const jbData = await fetchDataForLocal("jb", "WJB", ["Dixon", "Ghost1"]);
+      const apData = await fetchDataForLocal(
+        "ap",
+        "WAP",
+        branch.find((br) => br.id === "ampang-hq") === undefined
+          ? []
+          : branch
+              .find((br) => br.id === "ampang-hq")
+              ?.pic.map((item) => {
+                return item["type"];
+              }) || []
+      );
+      const s2Data = await fetchDataForLocal(
+        "s2",
+        "WSS",
+        branch.find((br) => br.id === "ss2-pj") === undefined
+          ? []
+          : branch
+              .find((br) => br.id === "ss2-pj")
+              ?.pic.map((item) => {
+                return item["type"];
+              }) || []
+      );
+      const saData = await fetchDataForLocal(
+        "sa",
+        "WSA",
+        branch.find((br) => br.id === "setia-alam") === undefined
+          ? []
+          : branch
+              .find((br) => br.id === "setia-alam")
+              ?.pic.map((item) => {
+                return item["type"];
+              }) || []
+      );
+      const jbData = await fetchDataForLocal(
+        "jb",
+        "WJB",
+        branch.find((br) => br.id === "jb") === undefined
+          ? []
+          : branch
+              .find((br) => br.id === "jb")
+              ?.pic.map((item) => {
+                return item["type"];
+              }) || []
+      );
       // console.log(s2Data);
 
       setSumData((prev) => {
@@ -173,15 +204,18 @@ const Warranty = (props: Props) => {
     };
 
     // const promise = () => fetchData();
-    toast.promise(fetchData, {
-      loading: "Loading data...",
-      success: (data) => {
-        return `Data loaded!`;
-      },
-      error: "Data failed to load.",
-    });
+    if (branch.length > 0) {
+      toast.promise(fetchData, {
+        loading: "Loading data...",
+        success: (data) => {
+          return `Data loaded!`;
+        },
+        error: "Data failed to load.",
+      });
+    }
+
     // console.log("check pass");
-  }, []);
+  }, [branch]);
   // console.log(sumData);
   //   console.log(sumData.ap);
 

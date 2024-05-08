@@ -14,10 +14,12 @@ import Tables from "../(sections)/Tables";
 // import socket from "@/lib/socket";
 import { useSocket } from "@/lib/providers/socket-provider";
 import Link from "next/link";
+import React from "react";
 import { toast } from "sonner";
 import DropdownIdv from "../(components)/DropdownIdv";
 import DropdownSort from "../(components)/DropdownSort";
 import DropdownSortAdd from "../(components)/DropdownSortAdd";
+import { getBranchFormat } from "../(utils)/warrantyUtils";
 import { Options } from "../settings/page";
 
 type Props = {};
@@ -43,209 +45,7 @@ export type BranchType = {
 };
 
 export type BranchFormat = {
-  branch: BranchType[];
-};
-
-const branchFormat: BranchFormat = {
-  branch: [
-    {
-      id: "ampang-hq",
-      data_local: "ap_local",
-      data_other: "ap_other",
-      name: "Ampang HQ",
-      address:
-        "No. 17, Jalan Pandan Prima 1, Dataran Pandan Prima, 55100 Kuala Lumpur, Malaysia.",
-      office: "+603 9202 3137",
-      whatsapp: "+6012 427 8782",
-      status: [
-        { type: "In Queue", color: "bg-fuchsia-600 text-fuchsia-100" },
-        { type: "In Progress", color: "bg-purple-600 text-purple-100" },
-        { type: "Waiting For", color: "bg-pink-600 text-pink-100" },
-        { type: "Completed", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Pass SS2", color: "bg-red-600 text-red-100" },
-        { type: "From SS2", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Pass Setia Alam", color: "bg-orange-600 text-orange-100" },
-        { type: "From Setia Alam", color: "bg-blue-600 text-blue-100" },
-        { type: "Pass JB", color: "bg-amber-600 text-amber-100" },
-        { type: "From JB", color: "bg-indigo-600 text-indigo-100" },
-      ],
-      pic: [
-        { type: "Hanif", color: "bg-purple-600 text-purple-100" },
-        { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
-        { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Jad", color: "bg-blue-600 text-blue-100" },
-        { type: "Raja", color: "bg-amber-600 text-amber-100" },
-      ],
-      all_pic: [
-        { type: "Hanif", color: "bg-purple-600 text-purple-100" },
-        { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
-        { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Jad", color: "bg-blue-600 text-blue-100" },
-        { type: "Amir", color: "bg-blue-600 text-blue-100" },
-        { type: "Raja", color: "bg-amber-600 text-amber-100" },
-        { type: "John", color: "bg-purple-600 text-purple-100" },
-        { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Akmal", color: "bg-red-600 text-red-100" },
-        { type: "John Shen", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Zaki", color: "bg-purple-600 text-purple-100" },
-        { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Jack", color: "bg-red-600 text-red-100" },
-        { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Dixon", color: "bg-purple-600 text-purple-100" },
-        { type: "Jeck", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Akmal JB", color: "bg-red-600 text-red-100" },
-        { type: "Luqman", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Yong Hong", color: "bg-orange-600 text-orange-100" },
-        { type: "Shawn", color: "bg-blue-600 text-blue-100" },
-      ],
-    },
-    {
-      id: "ss2-pj",
-      data_local: "s2_local",
-      data_other: "s2_other",
-      name: "SS2, PJ",
-      address: "42, Jalan SS 2/55, SS 2, 47300 Petaling Jaya, Selangor.",
-      office: "+603 7876 0076",
-      whatsapp: "+6017 865 0076",
-      status: [
-        { type: "In Queue", color: "bg-fuchsia-600 text-fuchsia-100" },
-        { type: "In Progress", color: "bg-purple-600 text-purple-100" },
-        { type: "Waiting For", color: "bg-pink-600 text-pink-100" },
-        { type: "Completed", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Pass Ampang", color: "bg-red-600 text-red-100" },
-        { type: "From Ampang", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Pass Setia Alam", color: "bg-orange-600 text-orange-100" },
-        { type: "From Setia Alam", color: "bg-blue-600 text-blue-100" },
-      ],
-      pic: [
-        { type: "John", color: "bg-purple-600 text-purple-100" },
-        { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Akmal", color: "bg-red-600 text-red-100" },
-        { type: "John Shen", color: "bg-cyan-600 text-cyan-100" },
-      ],
-      all_pic: [
-        { type: "Hanif", color: "bg-purple-600 text-purple-100" },
-        { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
-        { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Jad", color: "bg-blue-600 text-blue-100" },
-        { type: "Amir", color: "bg-blue-600 text-blue-100" },
-        { type: "Raja", color: "bg-amber-600 text-amber-100" },
-        { type: "John", color: "bg-purple-600 text-purple-100" },
-        { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Akmal", color: "bg-red-600 text-red-100" },
-        { type: "John Shen", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Zaki", color: "bg-purple-600 text-purple-100" },
-        { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Jack", color: "bg-red-600 text-red-100" },
-        { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Dixon", color: "bg-purple-600 text-purple-100" },
-        { type: "Jeck", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Akmal JB", color: "bg-red-600 text-red-100" },
-        { type: "Luqman", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Yong Hong", color: "bg-orange-600 text-orange-100" },
-        { type: "Shawn", color: "bg-blue-600 text-blue-100" },
-      ],
-    },
-    {
-      id: "setia-alam",
-      data_local: "sa_local",
-      data_other: "sa_other",
-      name: "Setia Alam",
-      address:
-        "No 36-G, Jalan Setia Utama AU U13/AU Setia Alam, 40170 Shah Alam, Selangor.",
-      office: "+603 3358 3713",
-      whatsapp: "+6012 610 1871",
-      status: [
-        { type: "In Queue", color: "bg-fuchsia-600 text-fuchsia-100" },
-        { type: "In Progress", color: "bg-purple-600 text-purple-100" },
-        { type: "Waiting For", color: "bg-pink-600 text-pink-100" },
-        { type: "Completed", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Pass Ampang", color: "bg-red-600 text-red-100" },
-        { type: "From Ampang", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Pass SS2", color: "bg-orange-600 text-orange-100" },
-        { type: "From SS2", color: "bg-blue-600 text-blue-100" },
-      ],
-      pic: [
-        { type: "Zaki", color: "bg-purple-600 text-purple-100" },
-        { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Jack", color: "bg-red-600 text-red-100" },
-        { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
-      ],
-      all_pic: [
-        { type: "Hanif", color: "bg-purple-600 text-purple-100" },
-        { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
-        { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Jad", color: "bg-blue-600 text-blue-100" },
-        { type: "Amir", color: "bg-blue-600 text-blue-100" },
-        { type: "Raja", color: "bg-amber-600 text-amber-100" },
-        { type: "John", color: "bg-purple-600 text-purple-100" },
-        { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Akmal", color: "bg-red-600 text-red-100" },
-        { type: "John Shen", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Zaki", color: "bg-purple-600 text-purple-100" },
-        { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Jack", color: "bg-red-600 text-red-100" },
-        { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Dixon", color: "bg-purple-600 text-purple-100" },
-        { type: "Jeck", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Akmal JB", color: "bg-red-600 text-red-100" },
-        { type: "Luqman", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Yong Hong", color: "bg-orange-600 text-orange-100" },
-        { type: "Shawn", color: "bg-blue-600 text-blue-100" },
-      ],
-    },
-    {
-      id: "jb",
-      data_local: "jb_local",
-      data_other: "jb_other",
-      name: "Johor Bahru",
-      address:
-        "53, Jln Austin Height 8/8, Taman Mount Austin, 81100 Johor Bahru, Johor.",
-      office: "Pending",
-      whatsapp: "+6016 854 1253",
-      status: [
-        { type: "Pending", color: "bg-purple-600 text-purple-100" },
-        { type: "Waiting For", color: "bg-pink-600 text-pink-100" },
-        { type: "Completed", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Pass Ampang", color: "bg-red-600 text-red-100" },
-        { type: "From Ampang", color: "bg-cyan-600 text-cyan-100" },
-      ],
-      pic: [
-        { type: "Dixon", color: "bg-purple-600 text-purple-100" },
-        { type: "Jeck", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Akmal JB", color: "bg-red-600 text-red-100" },
-        { type: "Luqman", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Yong Hong", color: "bg-orange-600 text-orange-100" },
-        { type: "Shawn", color: "bg-blue-600 text-blue-100" },
-      ],
-      all_pic: [
-        { type: "Hanif", color: "bg-purple-600 text-purple-100" },
-        { type: "Anthony", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Hafiz WTY", color: "bg-red-600 text-red-100" },
-        { type: "Joon", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Jad", color: "bg-blue-600 text-blue-100" },
-        { type: "Amir", color: "bg-blue-600 text-blue-100" },
-        { type: "John", color: "bg-purple-600 text-purple-100" },
-        { type: "Richard", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Akmal", color: "bg-red-600 text-red-100" },
-        { type: "John Shen", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Zaki", color: "bg-purple-600 text-purple-100" },
-        { type: "Irfan", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Jack", color: "bg-red-600 text-red-100" },
-        { type: "Azran", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Dixon", color: "bg-purple-600 text-purple-100" },
-        { type: "Jeck", color: "bg-emerald-600 text-emerald-100" },
-        { type: "Akmal JB", color: "bg-red-600 text-red-100" },
-        { type: "Luqman", color: "bg-cyan-600 text-cyan-100" },
-        { type: "Yong Hong", color: "bg-orange-600 text-orange-100" },
-        { type: "Shawn", color: "bg-blue-600 text-blue-100" },
-      ],
-    },
-  ],
+  branch: BranchType[] | [];
 };
 
 // Input states
@@ -315,6 +115,16 @@ const searchOptions: Options[] = [
 
 const Branch = (props: Props) => {
   const { socket, isConnected } = useSocket();
+
+  // let branchFormat: BranchFormat = {};
+
+  // React.useEffect(() => {
+  //   const getFormat = async () => {
+  //     branchFormat = await getBranchFormat();
+  //   };
+  //   getFormat();
+  // }, []);
+
   // console.log(checkSock.socket);
 
   // Input handler -------------------
@@ -445,12 +255,17 @@ const Branch = (props: Props) => {
   }, [newEntry, branch, searchValues]);
 
   useEffect(() => {
-    if (branchId) {
-      const branch = branchFormat.branch.find((b) => b.id === branchId);
-      setBranch(branch || null); // Handle undefined
-    } else {
-      setBranch(null); // Reset when branchId is not available
-    }
+    const getFormat = async () => {
+      const format = await getBranchFormat();
+
+      if (branchId && format.branch.length > 0) {
+        const branch = format.branch.find((b) => b.id === branchId);
+        setBranch(branch || null); // Handle undefined
+      } else {
+        setBranch(null); // Reset when branchId is not available
+      }
+    };
+    getFormat();
   }, [branchId]);
 
   // --------------------------
@@ -460,8 +275,9 @@ const Branch = (props: Props) => {
   const moveDB = async (toTable: number, id: string, value: string) => {
     try {
       if (branch === null) return;
+      const format = await getBranchFormat();
 
-      await moveBranchData(toTable, id, value, branch, branchFormat);
+      await moveBranchData(toTable, id, value, branch, format);
       setNewEntry(!newEntry);
       toast.success("Moved data.");
     } catch (error) {

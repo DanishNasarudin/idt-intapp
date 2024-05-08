@@ -3,6 +3,7 @@ const nextConfig = {
   experimental: {
     appDir: true,
     serverComponentsExternalPackages: ["puppeteer"],
+    serverActions: true,
   },
   images: {
     domains: ["idealtech.com.my"],

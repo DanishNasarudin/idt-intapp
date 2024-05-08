@@ -1,6 +1,6 @@
 import React from "react";
-import { BranchStatus, DataValues } from "../[branch]/page";
-import { Options, UserType } from "../settings/page";
+import { DataValues } from "../[branch]/page";
+import { Options } from "../settings/page";
 
 type Props = {
   boxSize: number;
@@ -27,16 +27,18 @@ const Dropdown = ({
   setInput,
   updateDB,
 }: Props) => {
+  const displayOption = options.filter((op) => op.option === values);
+  // console.log(displayOption);
   return (
     <div
       role="button"
       className={`max-w-[${boxSize}px] whitespace-nowrap relative px-2 py-1`}
       onClick={() => setOpenClose(buttonId, true)}
     >
-      {options &&
-        options.map((options, key) => {
+      {displayOption.length > 0 ? (
+        displayOption.map((options, key) => {
           // console.log(options.option, values);
-          if (options.option === values)
+          if (options.option === values) {
             return (
               <div
                 key={key}
@@ -46,7 +48,13 @@ const Dropdown = ({
                 <p className="min-h-[24px]">{values}</p>
               </div>
             );
-        })}
+          }
+        })
+      ) : (
+        <div role="button" className={`rounded-md w-max px-2 h-full`}>
+          <p className="min-h-[24px]"></p>
+        </div>
+      )}
       {openClose && (
         <div className="z-[2] absolute w-full left-0 top-0 py-2 flex flex-col rounded-md bg-zinc-800">
           {options &&
@@ -58,7 +66,7 @@ const Dropdown = ({
                   className="row-cont px-2 py-1 mobilehover:hover:bg-zinc-700"
                   onClick={() => {
                     setInput.current = options.option;
-                    updateDB();
+                    // updateDB();
                     setTimeout(() => {
                       setOpenClose(buttonId, false);
                     }, 50);

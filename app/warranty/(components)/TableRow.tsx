@@ -1,9 +1,9 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import TextBoxEditor from "./TextBoxEditor";
 import { BranchType, DataValues } from "../[branch]/page";
-import TableRowExt from "./TableRowExt";
 import Dropdown from "./Dropdown";
+import TableRowExt from "./TableRowExt";
+import TextBoxEditor from "./TextBoxEditor";
 // import socket from "@/lib/socket";
 import { useSocket } from "@/lib/providers/socket-provider";
 import { debounceFunc } from "@/lib/utils";
@@ -32,6 +32,7 @@ const TableRow = ({
   lockTable,
 }: Props) => {
   const { socket } = useSocket();
+  // console.log(branch);
 
   const initialInputState: InputState = {
     values: {

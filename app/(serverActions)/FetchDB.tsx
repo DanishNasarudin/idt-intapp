@@ -3,6 +3,7 @@ import connection from "@/lib/mysql";
 import { clerkClient } from "@clerk/nextjs";
 import { format } from "date-fns";
 import { FieldPacket, RowDataPacket } from "mysql2";
+import { revalidatePath } from "next/cache";
 import { BranchFormat, BranchType } from "../warranty/[branch]/page";
 
 type MyDataType = RowDataPacket & {
@@ -35,7 +36,7 @@ type SortType = {
   direction: string;
 };
 
-async function fetchData(
+export async function fetchData(
   tableName: string,
   pageSize: number,
   pageNum: number,
@@ -126,7 +127,7 @@ async function fetchData(
   }
 }
 
-async function fetchHistoryData(
+export async function fetchHistoryData(
   tableName: string,
   search: string
 ): Promise<{ rows: RowDataPacket[] }> {
@@ -153,7 +154,9 @@ type SearchDataType = RowDataPacket & {
   issues: string;
 };
 
-async function searchData(search: string): Promise<{ rows: SearchDataType[] }> {
+export async function searchData(
+  search: string
+): Promise<{ rows: SearchDataType[] }> {
   const tables = ["ap_local", "s2_local", "sa_local", "jb_local"];
   const searchLike = `%${search}%`;
 
@@ -179,7 +182,7 @@ async function searchData(search: string): Promise<{ rows: SearchDataType[] }> {
   }
 }
 
-async function getMaxSequence(
+export async function getMaxSequence(
   tableName: string,
   serviceNo: string
 ): Promise<number> {
@@ -191,7 +194,7 @@ async function getMaxSequence(
   return 0;
 }
 
-async function addData(
+export async function addData(
   tableName: string
 ): Promise<{ date: string; serviceNo: string }> {
   try {
@@ -241,7 +244,7 @@ async function addData(
   }
 }
 
-async function updateData(
+export async function updateData(
   tableName: string,
   id: string,
   column: string,
@@ -257,7 +260,7 @@ async function updateData(
   }
 }
 
-async function deleteData(tableName: string, id: string): Promise<void> {
+export async function deleteData(tableName: string, id: string): Promise<void> {
   try {
     if (id != "") {
       const query = `DELETE FROM ${tableName} WHERE service_no = ?`;
@@ -268,7 +271,7 @@ async function deleteData(tableName: string, id: string): Promise<void> {
   }
 }
 
-async function updateAllData(
+export async function updateAllData(
   tableName: string,
   id: string,
   changes: Record<string, string | null>
@@ -291,7 +294,7 @@ async function updateAllData(
   }
 }
 
-async function moveData(
+export async function moveData(
   fromTable: string,
   toTable: string,
   id: string
@@ -311,7 +314,7 @@ async function moveData(
   }
 }
 
-async function moveBranchData(
+export async function moveBranchData(
   toTable: number,
   id: string,
   value: string,
@@ -342,7 +345,7 @@ async function moveBranchData(
   }
 }
 
-async function fetchUsers(): Promise<UserData[]> {
+export async function fetchUsers(): Promise<UserData[]> {
   try {
     const query = `SELECT * FROM auth_users`;
     const [rows] = await connection.query<UserData[]>(query);
@@ -353,7 +356,7 @@ async function fetchUsers(): Promise<UserData[]> {
   }
 }
 
-async function searchUser(
+export async function searchUser(
   email: string | null | undefined
 ): Promise<UserData | null> {
   try {
@@ -368,7 +371,7 @@ async function searchUser(
   }
 }
 
-async function updateDBGeneral(
+export async function updateDBGeneral(
   table: string,
   columnId: string,
   id: string,
@@ -386,7 +389,7 @@ async function updateDBGeneral(
   }
 }
 
-async function addDBGeneral(
+export async function addDBGeneral(
   table: string,
   columnId: string,
   id: string
@@ -401,7 +404,7 @@ async function addDBGeneral(
   }
 }
 
-async function deleteDBGeneral(
+export async function deleteDBGeneral(
   table: string,
   columnId: string,
   id: string
@@ -416,7 +419,7 @@ async function deleteDBGeneral(
   }
 }
 
-async function countDB(
+export async function countDB(
   tableName: string,
   searchBy: string,
   search: string
@@ -465,7 +468,7 @@ type CountAllDBType = {
   };
 };
 
-async function countAllDB(
+export async function countAllDB(
   local: string,
   prefix: string,
   leadList: string[]
@@ -528,7 +531,7 @@ type CountAllBranchDBType = {
   };
 };
 
-async function countAllBranchDB(): Promise<CountAllBranchDBType> {
+export async function countAllBranchDB(): Promise<CountAllBranchDBType> {
   const locals = ["ap", "s2", "sa", "jb"];
   try {
     // Create an array of promises for each count operation for every local entry
@@ -572,7 +575,7 @@ type CountLead = {
   count: number;
 };
 
-async function countLeadDB(
+export async function countLeadDB(
   tableName: string,
   columnName: string,
   array: string[]
@@ -599,7 +602,7 @@ async function countLeadDB(
   }
 }
 
-async function fetchClerkUser(): Promise<
+export async function fetchClerkUser(): Promise<
   { id: number; email: string | null; roles: string }[]
 > {
   // console.log(userId);
@@ -623,19 +626,23 @@ async function fetchClerkUser(): Promise<
   }
 }
 
-async function createClerkUser(email: string): Promise<void> {
+export async function createClerkUser(email: string): Promise<void> {
   // console.log(userId);
   try {
     await clerkClient.users.createUser({
       emailAddress: [email],
       privateMetadata: { role: "Normal" },
     });
+    revalidatePath("/warranty/settings");
   } catch (error) {
     throw new Error(`Database error (createClerkUser): ${error}`);
   }
 }
 
-async function updateClerkUser(prevEmail: string, role: string): Promise<void> {
+export async function updateClerkUser(
+  prevEmail: string,
+  role: string
+): Promise<void> {
   // console.log(userId);
   try {
     const users = await clerkClient.users.getUserList({ limit: 20 });
@@ -656,12 +663,13 @@ async function updateClerkUser(prevEmail: string, role: string): Promise<void> {
     await clerkClient.users.updateUser(userId, {
       privateMetadata: { role: role },
     });
+    revalidatePath("/warranty/settings");
   } catch (error) {
     throw new Error(`Database error (updateClerkUser): ${error}`);
   }
 }
 
-async function deleteClerkUser(prevEmail: string): Promise<void> {
+export async function deleteClerkUser(prevEmail: string): Promise<void> {
   // console.log(userId);
   try {
     const users = await clerkClient.users.getUserList({ limit: 20 });
@@ -680,12 +688,13 @@ async function deleteClerkUser(prevEmail: string): Promise<void> {
     // console.log(users);
 
     await clerkClient.users.deleteUser(userId);
+    revalidatePath("/warranty/settings");
   } catch (error) {
     throw new Error(`Database error (deleteClerkUser): ${error}`);
   }
 }
 
-async function adminClerkUser(id: string): Promise<boolean> {
+export async function adminClerkUser(id: string): Promise<boolean> {
   // console.log(userId);
   try {
     const users = await clerkClient.users.getUserList({ limit: 20 });
@@ -710,29 +719,3 @@ async function adminClerkUser(id: string): Promise<boolean> {
     throw new Error(`Database error (adminClerkUser): ${error}`);
   }
 }
-
-export {
-  addData,
-  addDBGeneral,
-  adminClerkUser,
-  countAllBranchDB,
-  countAllDB,
-  countDB,
-  countLeadDB,
-  createClerkUser,
-  deleteClerkUser,
-  deleteData,
-  deleteDBGeneral,
-  fetchClerkUser,
-  fetchData,
-  fetchHistoryData,
-  fetchUsers,
-  moveBranchData,
-  moveData,
-  searchData,
-  searchUser,
-  updateAllData,
-  updateClerkUser,
-  updateData,
-  updateDBGeneral,
-};

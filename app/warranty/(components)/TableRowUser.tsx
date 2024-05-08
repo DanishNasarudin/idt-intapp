@@ -1,37 +1,21 @@
 "use client";
 import {
   deleteClerkUser,
-  deleteDBGeneral,
   updateClerkUser,
 } from "@/app/(serverActions)/FetchDB";
 import React, { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import DropdownStd from "../(components)/DropdownStd";
 import TextBoxEditorStd from "../(components)/TextBoxEditorStd";
-import { Options, UserType, OpenClose } from "../settings/page";
+import { Options, UserType } from "../settings/page";
 
 type Props = {
-  keyId: string;
   dataValues: UserType;
   dataOptions: Options[];
-  updateDB: (
-    table: string,
-    columnId: string,
-    id: string,
-    column: string,
-    value: string
-  ) => void;
-  deleteDB: (table: string, columnId: string, id: string) => void;
   setRender: (val: React.SetStateAction<boolean>) => void;
 };
 
-const TableRowUser = ({
-  keyId,
-  dataValues,
-  dataOptions,
-  updateDB,
-  deleteDB,
-  setRender,
-}: Props) => {
+const TableRowUser = ({ dataValues, dataOptions, setRender }: Props) => {
   const inputId = useRef(dataValues.id || "");
   const inputRole = useRef(dataValues.roles || "");
   const inputEmail = useRef(dataValues.email || "");
@@ -71,23 +55,19 @@ const TableRowUser = ({
   }, [openRef]);
 
   const updateUserDB = async () => {
-    // console.log(inputEmail.current, inputRole.current, "pass");
-    // updateDB(
-    //   "auth_users",
-    //   "id",
-    //   String(inputId.current),
-    //   "roles",
-    //   inputRole.current
-    // );
-    // updateDB(
-    //   "auth_users",
-    //   "id",
-    //   String(inputId.current),
-    //   "email",
-    //   inputEmail.current
-    // );
-    await updateClerkUser(prevValue.current.email, inputRole.current);
-    setRender((prev) => !prev);
+    if (inputRole.current !== prevValue.current.role) {
+      // console.log("pass3");
+      toast.promise(
+        updateClerkUser(`${prevValue.current.email}`, inputRole.current).then(
+          () => (prevValue.current.role = inputRole.current)
+        ),
+        {
+          loading: "Updating data..",
+          success: "Data updated!",
+          error: (error) => `Error updating: ${error}`,
+        }
+      );
+    }
   };
 
   return (
@@ -127,8 +107,13 @@ const TableRowUser = ({
                            transition-all`}
             onClick={async () => {
               // deleteDB("auth_users", "id", String(keyId));
-              await deleteClerkUser(prevValue.current.email);
-              setRender((prev) => !prev);
+              // await deleteClerkUser(`${prevValue.current.email}`);
+              toast.promise(deleteClerkUser(`${prevValue.current.email}`), {
+                loading: "Deleting data..",
+                success: "Data deleted!",
+                error: (error) => `Error deleting: ${error}`,
+              });
+              // setRender((prev) => !prev);
             }}
           >
             <p>Delete</p>

@@ -1,5 +1,4 @@
-import { stringify } from "querystring";
-import React from "react";
+import { cn } from "@/lib/utils";
 import { BranchStatus, DataValues } from "../[branch]/page";
 
 type Props = {
@@ -46,7 +45,7 @@ const Dropdown = ({
               <div
                 key={key}
                 role="button"
-                className={`rounded-md w-max px-2 ${status.color}`}
+                className={cn(`rounded-md w-max px-2`, status.color)}
               >
                 <span>{values}</span>
               </div>
@@ -72,7 +71,10 @@ const Dropdown = ({
                     }}
                   >
                     <div
-                      className={`${status.color} rounded-md w-max leading-none px-2 py-[2px]`}
+                      className={cn(
+                        status.color,
+                        `rounded-md w-max leading-none px-2 py-[2px]`
+                      )}
                     >
                       <span>{status.type}</span>
                     </div>
