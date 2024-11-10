@@ -28,7 +28,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const socketInstance = new (ClientIO as any)(hostname, {
-      path: "/api/socket/io",
+      path: "/api/proxy/socket/io",
       addTrailingSlash: false,
     });
     socketInstance.on("connect", () => {
