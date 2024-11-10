@@ -450,7 +450,7 @@ export async function countDB(
   }
 }
 
-type CountAllDBType = {
+export type CountAllDBType = {
   complete: number;
   total: number;
   other: number;

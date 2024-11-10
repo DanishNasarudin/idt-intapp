@@ -1,24 +1,24 @@
 "use client";
 import { useNavbarStore } from "@/lib/zus-store";
-import { useUser, UserButton } from "@clerk/nextjs";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { Button, Tooltip, Link as UILink } from "@nextui-org/react";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
-  LogoIcon,
   ArrowCircleIcon,
   ArrowDoubleIcon,
-  LightIcon,
   DarkIcon,
+  LightIcon,
+  LogoIcon,
 } from "./Icons";
 
-type LinkType = {
+export type LinkType = {
   link: string;
   name: string;
   icon: JSX.Element;
 };
 
-type LinkArray = {
+export type LinkArray = {
   title: string;
   topLink: LinkType[];
   bottomLink: LinkType[];

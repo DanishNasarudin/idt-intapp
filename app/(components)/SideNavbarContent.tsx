@@ -16,24 +16,17 @@ const SideNavbarContent = ({
   closeSize,
 }: SideBarType) => {
   const { isOpen } = useNavbarStore();
+  // const defaultSize = !isOpen ? 260 : 90;
+  // console.log(defaultSize);
   return (
-    <>
+    <div className="flex">
       {!isOpen ? (
-        <div className="flex">
-          <div
-            className={`${openSize ? `w-[${openSize}px]` : `w-[260px]`}`}
-          ></div>
-          <div className={className}>{children}</div>
-        </div>
+        <div className={openSize ? `w-[${openSize}px]` : `!w-[260px]`} />
       ) : (
-        <div className="flex">
-          <div
-            className={`${closeSize ? `w-[${closeSize}px]` : `w-[90px]`}`}
-          ></div>
-          <div className={className}>{children}</div>
-        </div>
+        <div className={closeSize ? `w-[${closeSize}px]` : `!w-[90px]`} />
       )}
-    </>
+      <div className={className}>{children}</div>
+    </div>
   );
 };
 

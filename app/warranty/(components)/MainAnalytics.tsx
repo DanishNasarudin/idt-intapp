@@ -1,25 +1,11 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import { CountAllDBType } from "@/app/(serverActions)/FetchDB";
 import Chart from "chart.js/auto";
+import { useEffect, useRef } from "react";
 
 type Props = {
   branch: string;
-  data: {
-    total: number;
-    other: number;
-    pass: number;
-    leadboard: { name: string; count: number }[];
-    status: {
-      completed: number;
-      waiting: number;
-      inProgress: number;
-      inQueue: number;
-      fromAP: number;
-      fromS2: number;
-      fromSA: number;
-      fromJB: number;
-    };
-  };
+  data: CountAllDBType;
 };
 
 const MainAnalytics = ({ branch, data }: Props) => {

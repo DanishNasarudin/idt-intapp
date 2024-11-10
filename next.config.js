@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-    serverComponentsExternalPackages: ["puppeteer"],
-    serverActions: true,
-  },
+  // experimental: {
+  //   appDir: true,
+  //   serverComponentsExternalPackages: ["puppeteer"],
+  //   serverActions: true,
+  // },
   images: {
     domains: ["idealtech.com.my"],
   },

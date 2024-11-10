@@ -395,7 +395,7 @@ export default async function Home() {
                     </svg>
                   </button>
                 </Link>
-                <Link href={"/home"}>
+                <Link href={"/gallery"}>
                   <button
                     className="
             flex justify-between items-center w-full gap-1
@@ -414,7 +414,7 @@ export default async function Home() {
                         <path d="M20 3H4c-1.103 0-2 .897-2 2v11c0 1.103.897 2 2 2h7v2H8v2h8v-2h-3v-2h7c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM4 14V5h16l.002 9H4z"></path>
                       </svg>
                       <h5 className="whitespace-nowrap mobilehover:group-hover:hidden text-zinc-400 mobilehover:group-hover:text-white transition-all">
-                        PC Schedules
+                        PC Gallery
                       </h5>
                       <h5 className="whitespace-nowrap hidden mobilehover:group-hover:block text-zinc-400 mobilehover:group-hover:text-white transition-all">
                         Coming Soon
@@ -446,7 +446,7 @@ export default async function Home() {
         viewBox="0 0 529 694"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="absolute top-[-20%] xs:top-[-10%] left-[50%] translate-x-[-50%] z-[-1] w-full"
+        className="absolute top-[-20%] xs:top-[-10%] left-[50%] translate-x-[-50%] z-[0] w-full pointer-events-none"
       >
         <g filter="url(#filter0_f_1765_15835)">
           <path
@@ -479,12 +479,13 @@ export default async function Home() {
           </filter>
         </defs>
       </svg>
-      <div className="z-[-1] hidden [@media(min-width:480px)]:block home-right-mask w-[1px] h-full absolute top-0 right-[6%]">
+      <div className="z-[0] hidden [@media(min-width:480px)]:block home-right-mask w-[1px] h-full absolute top-0 right-[6%] pointer-events-none">
         <div className="w-[10px] h-[100px] bg-gradient-to-t from-white home-right-animate"></div>
       </div>
-      <div className="z-[-1] home-left-mask w-full h-full absolute top-0 left-[-30%] xxs:left-[-17%] xs:left-[-11%]">
+      <div className="z-[0] home-left-mask w-full h-full absolute top-0 left-[-30%] xxs:left-[-17%] xs:left-[-11%] pointer-events-none">
         <div className="w-[100px] h-[100px] translate-x-[99%] bg-gradient-to-t from-white home-left-animate"></div>
       </div>
+      {/* <div className="w-[100px] h-[100px] translate-x-[99%] bg-gradient-to-t from-white home-left-animate"></div> */}
       {/* <div className="w-[100px] h-[100px] translate-x-[99%] bg-gradient-to-t from-white/50 home-left-animate absolute top-[0%]"></div> */}
     </div>
   );

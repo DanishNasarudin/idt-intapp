@@ -263,7 +263,7 @@ const TableRow = ({
   });
 
   const handleOpenClose = (id: string, open: boolean) => {
-    // console.log(id, open, "check");
+    console.log(id, open, "check");
     if (socket === null) return;
     setOpenClose({ ...openClose, [id]: open });
 
@@ -285,6 +285,14 @@ const TableRow = ({
         }
       } else {
         // console.log("pass check3");
+        const lastChange = lastChangedRef.current;
+        // console.log("pass check2");
+        if (lastChange.column != null && lastChange.value != null) {
+          // console.log("pass handleOpenClose");
+          if (values.service_no != null && values.service_no != "")
+            updateDB(values.service_no, lastChange.column, lastChange.value);
+          lastChangedRef.current = { column: null, value: null };
+        }
         return;
       }
     }
@@ -319,6 +327,16 @@ const TableRow = ({
           }
         } else {
           // socket.emit("re-render", { string: "render" });
+          // console.log("test");
+          // Update DB with the changes, take values and pass to parent to DB.
+          const lastChange = lastChangedRef.current;
+          if (lastChange.column != null && lastChange.value != null) {
+            // console.log("pass handleOutsideClick");
+            if (values.service_no != null && values.service_no != "") {
+              updateDB(values.service_no, lastChange.column, lastChange.value);
+              lastChangedRef.current = { column: null, value: null };
+            }
+          }
           return;
         }
 
