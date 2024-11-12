@@ -1,11 +1,10 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 // import { RowDataPacket } from "mysql2";
-import { fetchHistoryData } from "@/app/(serverActions)/FetchDB";
-import DropdownIdv from "../../(components)/DropdownIdv";
-import { Options } from "../../settings/page";
-import { useDebounce } from "use-debounce";
+import { fetchHistoryData } from "@/services/common/FetchDB";
 import { toast } from "sonner";
+import { useDebounce } from "use-debounce";
+import { Options } from "../../settings/page";
 
 type Props = {};
 

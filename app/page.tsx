@@ -1,5 +1,5 @@
 import { Inter } from "next/font/google";
-import Hero from "./(sections)/Hero";
+import Hero from "../components/common/Hero";
 
 const inter = Inter({ subsets: ["latin"] });
 

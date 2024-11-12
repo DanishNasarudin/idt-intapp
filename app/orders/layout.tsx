@@ -1,8 +1,8 @@
 import dynamic from "next/dynamic";
-import SideNavbarContent from "../(components)/SideNavbarContent";
+import SideNavbarContent from "../../components/common/SideNavbarContent";
 
 const OrdersNavbar = dynamic(
-  () => import("./(orders-components)/OrdersNavbar"),
+  () => import("../../components/orders/OrdersNavbar"),
   { ssr: false }
 );
 

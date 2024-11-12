@@ -1,8 +1,8 @@
+import SideNavbarContent from "@/components/common/SideNavbarContent";
 import { SocketProvider } from "@/lib/providers/socket-provider";
 import dynamic from "next/dynamic";
-import SideNavbarContent from "../(components)/SideNavbarContent";
 
-const Navbar = dynamic(() => import("./(components)/WarrantyNavbar"), {
+const Navbar = dynamic(() => import("@/components/warranty/WarrantyNavbar"), {
   ssr: false,
 });
 

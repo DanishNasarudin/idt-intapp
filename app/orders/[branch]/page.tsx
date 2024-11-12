@@ -1,5 +1,4 @@
-import React from "react";
-import OrdersTopSection from "../(sections)/OrdersTopSection";
+import OrdersTopSection from "../../../components/orders/OrdersTopSection";
 
 type Props = {};
 

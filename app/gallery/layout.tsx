@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 import dynamic from "next/dynamic";
-import SideNavbarContent from "../(components)/SideNavbarContent";
+import SideNavbarContent from "../../components/common/SideNavbarContent";
 
 const GalleryNavbar = dynamic(
-  () => import("./(gallery-components)/GalleryNavbar"),
+  () => import("../../components/gallery/GalleryNavbar"),
   { ssr: false }
 );
 

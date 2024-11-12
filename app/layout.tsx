@@ -1,13 +1,15 @@
 import { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { Inter } from "next/font/google";
-import Footer from "./(components)/Footer";
+import Footer from "../components/common/Footer";
 import "./globals.css";
 
 import { Providers } from "@/lib/providers";
 import { Toaster } from "sonner";
 
-const Navbar = dynamic(() => import("./(components)/Navbar"), { ssr: false });
+const Navbar = dynamic(() => import("../components/common/Navbar"), {
+  ssr: false,
+});
 
 const inter = Inter({ subsets: ["latin"] });
 

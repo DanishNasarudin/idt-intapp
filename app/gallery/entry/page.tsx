@@ -1,4 +1,4 @@
-import InputHeader from "../(gallery-sections)/InputHeader";
+import InputHeader from "../../../components/gallery/InputHeader";
 
 type Props = {};
 

@@ -1,4 +1,4 @@
-import { updateData } from "@/app/(serverActions)/FetchDB";
+import { updateData } from "@/services/common/FetchDB";
 import { NextAPIResponseServerIo } from "@/lib/types";
 import { Server as NetServer } from "http";
 import { NextApiRequest } from "next";

@@ -1,8 +1,8 @@
 "use client";
-import TextBoxNormal from "@/app/(components)/TextBoxNormal";
-import { searchData } from "@/app/(serverActions)/FetchDB";
+import { searchData } from "@/services/common/FetchDB";
+import TextBoxNormal from "@/components/common/TextBoxNormal";
 import React, { useRef, useState } from "react";
-import Offers from "../(sections)/Offers";
+import Offers from "../../../components/info/Offers";
 
 type Props = {};
 

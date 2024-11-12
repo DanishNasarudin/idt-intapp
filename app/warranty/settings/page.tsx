@@ -1,7 +1,7 @@
-import { fetchClerkUser } from "@/app/(serverActions)/FetchDB";
-import UserSettings from "../(sections)/UserSettings";
-import StaffBranchAssign from "./(settings-components)/StaffBranchAssign";
-import { fetchStaffBranch } from "./(settings-server)/settingsActions";
+import StaffBranchAssign from "@/components/warranty/settings/StaffBranchAssign";
+import UserSettings from "@/components/warranty/settings/UserSettings";
+import { fetchClerkUser } from "@/services/common/clerkActions";
+import { fetchStaffBranch } from "../../../services/warranty/settingsActions";
 
 type Props = {};
 
