@@ -14,7 +14,8 @@ const EditableTextBox = ({
   value = "",
   onValueChange = () => {},
 }: Props) => {
-  const [input, setInput] = useState("test");
+  const [input, setInput] = useState(value || "test");
+
   const [open, setOpen] = useState(false);
 
   const isOpenOutside = useDropOutsideClick((state) => state.isOpen);
@@ -32,7 +33,7 @@ const EditableTextBox = ({
   }, [isOpenOutside]);
 
   return (
-    <td className={cn("relative overflow-hidden")}>
+    <td className={cn("relative overflow-hidden whitespace-nowrap")}>
       <div
         role="button"
         className="w-full px-2 py-1 cursor-default"

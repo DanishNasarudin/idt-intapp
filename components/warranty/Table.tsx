@@ -5,7 +5,7 @@ type Props = {
   data?: WarrantyDataType[];
 };
 
-const NewTable = ({ data = [] }: Props) => {
+const NewTable = ({ data }: Props) => {
   return (
     <table className="table-fixed text-zinc-400 text-left w-full">
       <thead>
@@ -37,8 +37,11 @@ const NewTable = ({ data = [] }: Props) => {
         </tr>
       </thead>
       <tbody className="overflow-hidden">
-        <TableRow />
-        <TableRow />
+        {data &&
+          data.length > 0 &&
+          data.map((item, index) => (
+            <TableRow key={String(index)} data={item} />
+          ))}
       </tbody>
     </table>
   );

@@ -41,7 +41,7 @@ const Branch = async ({ params }: Props) => {
         <div className="main-table flex flex-col gap-4">
           <h2>{branchFormat?.name} Warranty</h2>
           <SearchFilter branchData={branchFormat} />
-          <NewTable />
+          <NewTable data={data} />
         </div>
       </div>
       <NewDropdownOutsideClick />

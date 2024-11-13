@@ -8,6 +8,7 @@ export type WarrantyDataType = {
   service_no: string;
   date: string;
   pic: string;
+  received_by: string;
   name: string;
   contact: string;
   status: string;
