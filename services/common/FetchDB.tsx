@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { FieldPacket, RowDataPacket } from "mysql2";
 import { BranchFormat, BranchType } from "../../app/warranty/[branch]/page-old";
 
-type MyDataType = RowDataPacket & {
+export type WarrantyDataType = {
   service_no: string;
   date: string;
   pic: string;
@@ -22,6 +22,8 @@ type MyDataType = RowDataPacket & {
   status_desc: string;
   remarks: string;
 };
+
+type MyDataType = RowDataPacket & WarrantyDataType;
 
 type UserData = RowDataPacket & {
   id: number;

@@ -1,7 +1,7 @@
 "use client";
 import { Options, UserType } from "@/app/warranty/settings/page";
-import DropdownStd from "@/components/warranty/DropdownStd";
-import TextBoxEditorStd from "@/components/warranty/TextBoxEditorStd";
+import DropdownStd from "@/components/warranty/old/DropdownStd";
+import TextBoxEditorStd from "@/components/warranty/old/TextBoxEditorStd";
 import {
   deleteClerkUser,
   updateClerkUser,

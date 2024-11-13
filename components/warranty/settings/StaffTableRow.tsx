@@ -1,6 +1,6 @@
 "use client";
-import DropdownStd from "@/components/warranty/DropdownStd";
-import TextBoxEditorStd from "@/components/warranty/TextBoxEditorStd";
+import DropdownStd from "@/components/warranty/old/DropdownStd";
+import TextBoxEditorStd from "@/components/warranty/old/TextBoxEditorStd";
 import {
   deleteStaffBranch,
   StaffBranchType,

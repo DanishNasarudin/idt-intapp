@@ -1,7 +1,7 @@
 "use client";
 import { BranchType, DataValues } from "@/app/warranty/[branch]/page-old";
 import React, { useState } from "react";
-import TextBoxNormal from "../common/TextBoxNormal";
+import TextBoxNormal from "../../common/TextBoxNormal";
 // import socket from "@/lib/socket";
 
 // import { useSocket } from "@/lib/providers/socket-provider";

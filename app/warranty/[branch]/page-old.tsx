@@ -1,4 +1,5 @@
 "use client";
+import Tables from "@/components/warranty/old/Tables";
 import {
   addData,
   deleteData,
@@ -10,11 +11,10 @@ import {
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
-import Tables from "../../../components/warranty/Tables";
 // import socket from "@/lib/socket";
-import DropdownIdv from "@/components/warranty/DropdownIdv";
-import DropdownSort from "@/components/warranty/DropdownSort";
-import DropdownSortAdd from "@/components/warranty/DropdownSortAdd";
+import DropdownIdv from "@/components/warranty/old/DropdownIdv";
+import DropdownSort from "@/components/warranty/old/DropdownSort";
+import DropdownSortAdd from "@/components/warranty/old/DropdownSortAdd";
 import { useSocket } from "@/lib/providers/socket-provider";
 import Link from "next/link";
 import React from "react";

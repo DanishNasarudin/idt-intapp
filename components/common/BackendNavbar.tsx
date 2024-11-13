@@ -38,7 +38,7 @@ const BackendNavbar = ({ title, topLink, bottomLink }: LinkArray) => {
   return (
     <nav
       aria-checked={closeSidebar}
-      className={`z-[5]
+      className={`z-[10]
       group fixed peer/nav
     ${
       !closeSidebar ? "max-w-[200px]" : "max-w-min"

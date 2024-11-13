@@ -1,11 +1,7 @@
 "use client";
-import TableRow from "@/components/warranty/TableRow";
+import { BranchType, DataValues, Page } from "@/app/warranty/[branch]/page-old";
 import React from "react";
-import {
-  BranchType,
-  DataValues,
-  Page,
-} from "../../app/warranty/[branch]/page-old";
+import TableRow from "./TableRow";
 
 type Props = {
   id: string;
