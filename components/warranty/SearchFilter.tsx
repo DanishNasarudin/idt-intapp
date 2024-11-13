@@ -1,8 +1,10 @@
 "use client";
 import { Options } from "@/app/warranty/settings/page";
+import { createURL } from "@/lib/utils";
 import { useBranchFormat } from "@/lib/zus-store";
 import { BranchType } from "@/services/warranty/warrantyUtils";
-import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { Button } from "../ui/button";
 import {
@@ -33,9 +35,38 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
   const [search, setSearch] = useState("");
   const [searchValues] = useDebounce(search, 500);
 
-  const searchFilter = useRef(searchOptions[0].option || "");
+  const [searchFilter, setSearchFilter] = useState(
+    searchOptions[0].option || ""
+  );
+  const [searchFilterValues] = useDebounce(searchFilter, 500);
+  // const searchFilter = useRef(searchOptions[0].option || "");
 
-  const [position, setPosition] = useState(searchOptions[0].option);
+  const router = useRouter();
+  const pathname = usePathname();
+  const setSearchParams = new URLSearchParams();
+
+  useEffect(() => {
+    if (pathname === null) return;
+
+    if (searchValues) {
+      setSearchParams.set("search", searchValues);
+    } else {
+      setSearchParams.delete("search");
+    }
+
+    if (searchFilterValues) {
+      setSearchParams.set("filter", searchFilterValues);
+    } else {
+      setSearchParams.delete("filter");
+    }
+
+    const setURL = createURL(`${pathname}/`, setSearchParams);
+    router.push(setURL);
+  }, [searchValues, searchFilterValues]);
+
+  // Sort Handler ------
+
+  // const [position, setPosition] = useState(searchOptions[0].option);
 
   // Branch Format Zustand Initiate -------------
   const setBranchData = useBranchFormat((state) => state.setBranchData);
@@ -45,6 +76,8 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
       setBranchData(branchData);
     }
   }, [branchData]);
+
+  //
 
   return (
     <div className="flex flex-col gap-4">
@@ -65,13 +98,13 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="font-normal">
-                {position}
+                {searchFilter}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuRadioGroup
-                value={position}
-                onValueChange={setPosition}
+                value={searchFilter}
+                onValueChange={setSearchFilter}
               >
                 {searchOptions.map((opt) => (
                   <DropdownMenuRadioItem value={opt.option} key={opt.option}>

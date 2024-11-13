@@ -60,7 +60,6 @@ const TableRow = ({ key = "0", data }: Props) => {
     }));
   return (
     <tr
-      key={key}
       className={cn(
         "border-t-[1px] border-zinc-800 relative w-full",
         "data-[open=true]:bg-zinc-900 data-[open=false]:bg-transparent",

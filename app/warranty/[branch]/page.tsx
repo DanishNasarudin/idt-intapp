@@ -1,16 +1,18 @@
 import NewDropdownOutsideClick from "@/components/warranty/DropdownOutsideClick";
 import SearchFilter from "@/components/warranty/SearchFilter";
 import NewTable from "@/components/warranty/Table";
-import { fetchData, WarrantyDataType } from "@/services/common/FetchDB";
+import { WarrantyDataType } from "@/services/common/FetchDB";
+import { getDataByFilter } from "@/services/warranty/warrantyActions";
 import { getBranchFormat } from "@/services/warranty/warrantyUtils";
 
 type Props = {
   params: {
     branch: string;
   };
+  searchParams: { [key: string]: string | string[] | undefined };
 };
 
-const Branch = async ({ params }: Props) => {
+const Branch = async ({ params, searchParams }: Props) => {
   const branchId = params.branch;
 
   const format = (await getBranchFormat()).branch;
@@ -21,16 +23,33 @@ const Branch = async ({ params }: Props) => {
     throw new Error("Branch Page Invalid.");
   }
 
-  const preData = await fetchData(
-    branchFormat.data_local,
-    10,
-    1,
-    "",
-    "By: Service No",
-    []
-  );
+  // const preData = await fetchData(
+  //   branchFormat.data_local,
+  //   10,
+  //   1,
+  //   "",
+  //   "By: Service No",
+  //   []
+  // );
 
-  const data = preData.rows as WarrantyDataType[];
+  const searchTerm = Array.isArray(searchParams.search)
+    ? searchParams.search[0]
+    : searchParams.search;
+
+  const searchFilter = Array.isArray(searchParams.filter)
+    ? searchParams.filter[0]
+    : searchParams.filter;
+
+  const preData = await getDataByFilter({
+    tableName: branchFormat.data_local,
+    pageSize: 10,
+    pageNum: 1,
+    search: searchTerm || "",
+    searchBy: searchFilter || "By: Service No",
+    sortList: [],
+  });
+
+  const data = preData as WarrantyDataType[];
 
   // console.log(data, "CJECK");
 

@@ -1,0 +1,373 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model ap_local {
+  service_no     String  @id @db.VarChar(255)
+  date           String? @db.VarChar(255)
+  pic            String? @db.VarChar(20)
+  name           String? @db.VarChar(100)
+  contact        String? @db.VarChar(40)
+  status         String? @db.VarChar(255)
+  email          String? @db.VarChar(255)
+  address        String? @db.Text
+  purchase_date  String? @db.VarChar(255)
+  invoice        String? @db.VarChar(255)
+  received_items String? @db.VarChar(250)
+  pin            String? @db.Text
+  issues         String? @db.Text
+  solutions      String? @db.Text
+  status_desc    String? @db.Text
+  remarks        String? @db.Text
+  cost           Int?    @default(0)
+  locker         Int?
+  received_by    String? @db.VarChar(20)
+  idt_pc         String? @db.VarChar(10)
+
+  @@index([contact], map: "contact_idx")
+  @@index([email], map: "email_idx")
+  @@index([name], map: "name_idx")
+  @@index([received_items], map: "received_items_idx")
+}
+
+model ap_local_history {
+  history_id       Int                          @id @default(autoincrement())
+  service_no       String?                      @db.VarChar(255)
+  date             String?                      @db.VarChar(255)
+  pic              String?                      @db.VarChar(20)
+  name             String?                      @db.Text
+  contact          String?                      @db.Text
+  status           String?                      @db.VarChar(255)
+  email            String?                      @db.VarChar(255)
+  address          String?                      @db.Text
+  purchase_date    String?                      @db.VarChar(255)
+  invoice          String?                      @db.VarChar(255)
+  received_items   String?                      @db.VarChar(250)
+  pin              String?                      @db.Text
+  issues           String?                      @db.Text
+  solutions        String?                      @db.Text
+  status_desc      String?                      @db.Text
+  remarks          String?                      @db.Text
+  cost             Int?                         @default(0)
+  locker           Int?
+  received_by      String?                      @db.VarChar(20)
+  idt_pc           String?                      @db.VarChar(10)
+  change_type      ap_local_history_change_type
+  change_timestamp DateTime?                    @default(now()) @db.DateTime(0)
+}
+
+model ap_other {
+  service_no     String  @id @db.VarChar(255)
+  date           String? @db.VarChar(255)
+  pic            String? @db.VarChar(20)
+  name           String? @db.VarChar(100)
+  contact        String? @db.VarChar(40)
+  status         String? @db.VarChar(255)
+  email          String? @db.VarChar(255)
+  address        String? @db.Text
+  purchase_date  String? @db.VarChar(255)
+  invoice        String? @db.VarChar(255)
+  received_items String? @db.VarChar(250)
+  pin            String? @db.Text
+  issues         String? @db.Text
+  solutions      String? @db.Text
+  status_desc    String? @db.Text
+  remarks        String? @db.Text
+  cost           Int?    @default(0)
+  locker         Int?
+  received_by    String? @db.VarChar(20)
+  idt_pc         String? @db.VarChar(10)
+
+  @@index([contact], map: "contact_idx")
+  @@index([email], map: "email_idx")
+  @@index([name], map: "name_idx")
+  @@index([received_items], map: "received_items_idx")
+}
+
+model auth_users {
+  id    Int     @id @default(autoincrement())
+  email String? @unique(map: "email") @db.VarChar(255)
+  roles String? @default("Normal") @db.VarChar(10)
+}
+
+model jb_local {
+  service_no     String  @id @db.VarChar(255)
+  date           String? @db.VarChar(255)
+  pic            String? @db.VarChar(20)
+  name           String? @db.VarChar(100)
+  contact        String? @db.VarChar(40)
+  status         String? @db.VarChar(255)
+  email          String? @db.VarChar(255)
+  address        String? @db.Text
+  purchase_date  String? @db.VarChar(255)
+  invoice        String? @db.VarChar(255)
+  received_items String? @db.VarChar(250)
+  pin            String? @db.Text
+  issues         String? @db.Text
+  solutions      String? @db.Text
+  status_desc    String? @db.Text
+  remarks        String? @db.Text
+  cost           Int?    @default(0)
+  locker         Int?
+  received_by    String? @db.VarChar(20)
+  idt_pc         String? @db.VarChar(10)
+
+  @@index([contact], map: "contact_idx")
+  @@index([email], map: "email_idx")
+  @@index([name], map: "name_idx")
+  @@index([received_items], map: "received_items_idx")
+}
+
+model jb_local_history {
+  history_id       Int                          @id @default(autoincrement())
+  service_no       String?                      @db.VarChar(255)
+  date             String?                      @db.VarChar(255)
+  pic              String?                      @db.VarChar(20)
+  name             String?                      @db.Text
+  contact          String?                      @db.Text
+  status           String?                      @db.VarChar(255)
+  email            String?                      @db.VarChar(255)
+  address          String?                      @db.Text
+  purchase_date    String?                      @db.VarChar(255)
+  invoice          String?                      @db.VarChar(255)
+  received_items   String?                      @db.VarChar(250)
+  pin              String?                      @db.Text
+  issues           String?                      @db.Text
+  solutions        String?                      @db.Text
+  status_desc      String?                      @db.Text
+  remarks          String?                      @db.Text
+  cost             Int?                         @default(0)
+  locker           Int?
+  received_by      String?                      @db.VarChar(20)
+  idt_pc           String?                      @db.VarChar(10)
+  change_type      jb_local_history_change_type
+  change_timestamp DateTime?                    @default(now()) @db.DateTime(0)
+}
+
+model jb_other {
+  service_no     String  @id @db.VarChar(255)
+  date           String? @db.VarChar(255)
+  pic            String? @db.VarChar(20)
+  name           String? @db.VarChar(100)
+  contact        String? @db.VarChar(40)
+  status         String? @db.VarChar(255)
+  email          String? @db.VarChar(255)
+  address        String? @db.Text
+  purchase_date  String? @db.VarChar(255)
+  invoice        String? @db.VarChar(255)
+  received_items String? @db.VarChar(250)
+  pin            String? @db.Text
+  issues         String? @db.Text
+  solutions      String? @db.Text
+  status_desc    String? @db.Text
+  remarks        String? @db.Text
+  cost           Int?    @default(0)
+  locker         Int?
+  received_by    String? @db.VarChar(20)
+  idt_pc         String? @db.VarChar(10)
+
+  @@index([contact], map: "contact_idx")
+  @@index([email], map: "email_idx")
+  @@index([name], map: "name_idx")
+  @@index([received_items], map: "received_items_idx")
+}
+
+model s2_local {
+  service_no     String  @id @db.VarChar(255)
+  date           String? @db.VarChar(255)
+  pic            String? @db.VarChar(20)
+  name           String? @db.VarChar(100)
+  contact        String? @db.VarChar(40)
+  status         String? @db.VarChar(255)
+  email          String? @db.VarChar(255)
+  address        String? @db.Text
+  purchase_date  String? @db.VarChar(255)
+  invoice        String? @db.VarChar(255)
+  received_items String? @db.VarChar(250)
+  pin            String? @db.Text
+  issues         String? @db.Text
+  solutions      String? @db.Text
+  status_desc    String? @db.Text
+  remarks        String? @db.Text
+  cost           Int?    @default(0)
+  locker         Int?
+  received_by    String? @db.VarChar(20)
+  idt_pc         String? @db.VarChar(10)
+
+  @@index([contact], map: "contact_idx")
+  @@index([email], map: "email_idx")
+  @@index([name], map: "name_idx")
+  @@index([received_items], map: "received_items_idx")
+}
+
+model s2_local_history {
+  history_id       Int                          @id @default(autoincrement())
+  service_no       String?                      @db.VarChar(255)
+  date             String?                      @db.VarChar(255)
+  pic              String?                      @db.VarChar(20)
+  name             String?                      @db.Text
+  contact          String?                      @db.Text
+  status           String?                      @db.VarChar(255)
+  email            String?                      @db.VarChar(255)
+  address          String?                      @db.Text
+  purchase_date    String?                      @db.VarChar(255)
+  invoice          String?                      @db.VarChar(255)
+  received_items   String?                      @db.VarChar(250)
+  pin              String?                      @db.Text
+  issues           String?                      @db.Text
+  solutions        String?                      @db.Text
+  status_desc      String?                      @db.Text
+  remarks          String?                      @db.Text
+  cost             Int?                         @default(0)
+  locker           Int?
+  received_by      String?                      @db.VarChar(20)
+  idt_pc           String?                      @db.VarChar(10)
+  change_type      s2_local_history_change_type
+  change_timestamp DateTime?                    @default(now()) @db.DateTime(0)
+}
+
+model s2_other {
+  service_no     String  @id @db.VarChar(255)
+  date           String? @db.VarChar(255)
+  pic            String? @db.VarChar(20)
+  name           String? @db.VarChar(100)
+  contact        String? @db.VarChar(40)
+  status         String? @db.VarChar(255)
+  email          String? @db.VarChar(255)
+  address        String? @db.Text
+  purchase_date  String? @db.VarChar(255)
+  invoice        String? @db.VarChar(255)
+  received_items String? @db.VarChar(250)
+  pin            String? @db.Text
+  issues         String? @db.Text
+  solutions      String? @db.Text
+  status_desc    String? @db.Text
+  remarks        String? @db.Text
+  cost           Int?    @default(0)
+  locker         Int?
+  received_by    String? @db.VarChar(20)
+  idt_pc         String? @db.VarChar(10)
+
+  @@index([contact], map: "contact_idx")
+  @@index([email], map: "email_idx")
+  @@index([name], map: "name_idx")
+  @@index([received_items], map: "received_items_idx")
+}
+
+model sa_local {
+  service_no     String  @id @db.VarChar(255)
+  date           String? @db.VarChar(255)
+  pic            String? @db.VarChar(20)
+  name           String? @db.VarChar(100)
+  contact        String? @db.VarChar(40)
+  status         String? @db.VarChar(255)
+  email          String? @db.VarChar(255)
+  address        String? @db.Text
+  purchase_date  String? @db.VarChar(255)
+  invoice        String? @db.VarChar(255)
+  received_items String? @db.VarChar(250)
+  pin            String? @db.Text
+  issues         String? @db.Text
+  solutions      String? @db.Text
+  status_desc    String? @db.Text
+  remarks        String? @db.Text
+  cost           Int?    @default(0)
+  locker         Int?
+  received_by    String? @db.VarChar(20)
+  idt_pc         String? @db.VarChar(10)
+
+  @@index([contact], map: "contact_idx")
+  @@index([email], map: "email_idx")
+  @@index([name], map: "name_idx")
+  @@index([received_items], map: "received_items_idx")
+}
+
+model sa_local_history {
+  history_id       Int                          @id @default(autoincrement())
+  service_no       String?                      @db.VarChar(255)
+  date             String?                      @db.VarChar(255)
+  pic              String?                      @db.VarChar(20)
+  name             String?                      @db.Text
+  contact          String?                      @db.Text
+  status           String?                      @db.VarChar(255)
+  email            String?                      @db.VarChar(255)
+  address          String?                      @db.Text
+  purchase_date    String?                      @db.VarChar(255)
+  invoice          String?                      @db.VarChar(255)
+  received_items   String?                      @db.VarChar(250)
+  pin              String?                      @db.Text
+  issues           String?                      @db.Text
+  solutions        String?                      @db.Text
+  status_desc      String?                      @db.Text
+  remarks          String?                      @db.Text
+  cost             Int?                         @default(0)
+  locker           Int?
+  received_by      String?                      @db.VarChar(20)
+  idt_pc           String?                      @db.VarChar(10)
+  change_type      sa_local_history_change_type
+  change_timestamp DateTime?                    @default(now()) @db.DateTime(0)
+}
+
+model sa_other {
+  service_no     String  @id @db.VarChar(255)
+  date           String? @db.VarChar(255)
+  pic            String? @db.VarChar(20)
+  name           String? @db.VarChar(100)
+  contact        String? @db.VarChar(40)
+  status         String? @db.VarChar(255)
+  email          String? @db.VarChar(255)
+  address        String? @db.Text
+  purchase_date  String? @db.VarChar(255)
+  invoice        String? @db.VarChar(255)
+  received_items String? @db.VarChar(250)
+  pin            String? @db.Text
+  issues         String? @db.Text
+  solutions      String? @db.Text
+  status_desc    String? @db.Text
+  remarks        String? @db.Text
+  cost           Int?    @default(0)
+  locker         Int?
+  received_by    String? @db.VarChar(20)
+  idt_pc         String? @db.VarChar(10)
+
+  @@index([contact], map: "contact_idx")
+  @@index([email], map: "email_idx")
+  @@index([name], map: "name_idx")
+  @@index([received_items], map: "received_items_idx")
+}
+
+model warranty_staff_branch {
+  id     Int     @id @default(autoincrement())
+  name   String? @db.VarChar(255)
+  branch String? @db.VarChar(255)
+  color  String? @db.VarChar(255)
+}
+
+enum ap_local_history_change_type {
+  INSERT
+  UPDATE
+  DELETE
+}
+
+enum jb_local_history_change_type {
+  INSERT
+  UPDATE
+  DELETE
+}
+
+enum s2_local_history_change_type {
+  INSERT
+  UPDATE
+  DELETE
+}
+
+enum sa_local_history_change_type {
+  INSERT
+  UPDATE
+  DELETE
+}
