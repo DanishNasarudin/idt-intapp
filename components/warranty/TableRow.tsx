@@ -35,6 +35,8 @@ const defaultData: WarrantyDataType = {
   statusDesc: "",
   remarks: "",
   idtPc: "",
+  cost: 0,
+  locker: 0,
 };
 
 const TableRow = ({ data }: Props) => {

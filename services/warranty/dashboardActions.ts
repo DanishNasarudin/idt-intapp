@@ -1,37 +1,78 @@
 "use server";
-import connection from "@/lib/mysql";
-import { FieldPacket, RowDataPacket } from "mysql2";
+import db from "@/db/db";
+import {
+  apLocal,
+  apOther,
+  jbLocal,
+  jbOther,
+  s2Local,
+  s2Other,
+  saLocal,
+  saOther,
+} from "@/db/schema";
+import { AnyColumn, eq, like, sql } from "drizzle-orm";
+import { WarrantyDataType } from "./warrantyActions";
 
-export async function countDB(
+export const countDB = async (
   tableName: string,
-  searchBy: string,
+  searchBy: keyof WarrantyDataType | undefined,
   search: string
-): Promise<{ count: number }> {
+): Promise<{ count: number }> => {
   try {
+    const table = (() => {
+      switch (tableName) {
+        case "ap_local":
+          return apLocal;
+        case "s2_local":
+          return s2Local;
+        case "sa_local":
+          return saLocal;
+        case "jb_local":
+          return jbLocal;
+        case "ap_other":
+          return apOther;
+        case "s2_other":
+          return s2Other;
+        case "sa_other":
+          return saOther;
+        case "jb_other":
+          return jbOther;
+        default:
+          throw new Error(`Unknown table name: ${tableName}`);
+      }
+    })();
+
     if (search === "") {
-      const countQuery = `SELECT COUNT(*) AS count FROM ??`;
-      const [countRows] = (await connection.query(countQuery, [tableName])) as [
-        RowDataPacket[],
-        FieldPacket[]
-      ];
+      // Count all rows if no search term is provided
+      const [{ count }] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(table)
+        .execute();
 
-      const count = countRows[0].count as number;
-      return { count };
+      return { count: Number(count) };
     } else {
-      const countQuery = `SELECT COUNT(*) AS count FROM ?? WHERE ?? LIKE ?`;
-      const [countRows] = (await connection.query(countQuery, [
-        tableName,
-        searchBy,
-        search,
-      ])) as [RowDataPacket[], FieldPacket[]];
+      // Count rows where `searchBy` column matches `search` term
+      const [{ count }] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(table)
+        .where(
+          like(
+            table[searchBy as keyof typeof table] as AnyColumn,
+            `%${search}%`
+          )
+        )
+        .execute();
 
-      const count = countRows[0].count as number;
-      return { count };
+      return { count: Number(count) };
     }
   } catch (error) {
-    throw new Error(`Database error (countDB): ${error}`);
+    if (error instanceof Error) {
+      throw new Error(`Error (countDB): ${error.message}`);
+    } else {
+      throw new Error(`Error (countDB): ${error}`);
+    }
   }
-}
+};
 
 export type CountAllDBType = {
   complete: number;
@@ -51,25 +92,25 @@ export type CountAllDBType = {
   };
 };
 
-export async function countAllDB(
+export const countAllDB = async (
   local: string,
   prefix: string,
   leadList: string[]
-): Promise<CountAllDBType> {
+): Promise<CountAllDBType> => {
   try {
     const completeCount = await countDB(
       `${local}_local`,
       "status",
       "Completed"
     );
-    const totalCount = await countDB(`${local}_local`, "", "");
+    const totalCount = await countDB(`${local}_local`, undefined, "");
     const otherCount = await countDB(
       `${local}_local`,
-      "service_no",
+      "serviceNo",
       `%${prefix}%`
     );
     const other = totalCount.count - otherCount.count;
-    const passCount = await countDB(`${local}_other`, "", "");
+    const passCount = await countDB(`${local}_other`, undefined, "");
     const lead = await countLeadDB(`${local}_local`, "pic", leadList);
     const statusP = await countDB(`${local}_local`, "status", "In Progress");
     const statusQ = await countDB(`${local}_local`, "status", "In Queue");
@@ -101,9 +142,13 @@ export async function countAllDB(
       },
     };
   } catch (error) {
-    throw new Error(`Database error (countAllDB): ${error}`);
+    if (error instanceof Error) {
+      throw new Error(`Error (countAllDB): ${error.message}`);
+    } else {
+      throw new Error(`Error (countAllDB): ${error}`);
+    }
   }
-}
+};
 
 type CountAllBranchDBType = {
   total: number;
@@ -114,7 +159,7 @@ type CountAllBranchDBType = {
   };
 };
 
-export async function countAllBranchDB(): Promise<CountAllBranchDBType> {
+export const countAllBranchDB = async (): Promise<CountAllBranchDBType> => {
   const locals = ["ap", "s2", "sa", "jb"];
   try {
     // Create an array of promises for each count operation for every local entry
@@ -149,38 +194,63 @@ export async function countAllBranchDB(): Promise<CountAllBranchDBType> {
       },
     };
   } catch (error) {
-    throw new Error(`Database error (countAllBranchDB): ${error}`);
+    if (error instanceof Error) {
+      throw new Error(`Error (countAllBranchDB): ${error.message}`);
+    } else {
+      throw new Error(`Error (countAllBranchDB): ${error}`);
+    }
   }
-}
-
-type CountLead = {
-  name: string;
-  count: number;
 };
 
-export async function countLeadDB(
+export const countLeadDB = async (
   tableName: string,
   columnName: string,
   array: string[]
-): Promise<{ name: string; count: number }[]> {
+): Promise<{ name: string; count: number }[]> => {
   try {
+    const table = (() => {
+      switch (tableName) {
+        case "ap_local":
+          return apLocal;
+        case "s2_local":
+          return s2Local;
+        case "sa_local":
+          return saLocal;
+        case "jb_local":
+          return jbLocal;
+        case "ap_other":
+          return apOther;
+        case "s2_other":
+          return s2Other;
+        case "sa_other":
+          return saOther;
+        case "jb_other":
+          return jbOther;
+        default:
+          throw new Error(`Unknown table name: ${tableName}`);
+      }
+    })();
+
     const counts = await Promise.all(
       array.map(async (data) => {
-        const countQuery = `SELECT COUNT(*) AS count FROM ?? WHERE ?? = ?`;
-        const [countRows] = (await connection.query(countQuery, [
-          tableName,
-          columnName,
-          data,
-        ])) as [RowDataPacket[], FieldPacket[]];
+        const [{ count }] = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(table)
+          .where(eq(table[columnName as keyof typeof table] as AnyColumn, data))
+          .execute();
 
-        const count = countRows[0].count as number;
         return { name: data, count };
       })
     );
+
     counts.sort((a, b) => b.count - a.count);
 
     return counts;
   } catch (error) {
-    throw new Error(`Database error (countLeadDB): ${error}`);
+    if (error instanceof Error) {
+      throw new Error(`Error (countLeadDB): ${error.message}`);
+    } else {
+      throw new Error(`Error (countLeadDB): ${error}`);
+    }
   }
-}
+};

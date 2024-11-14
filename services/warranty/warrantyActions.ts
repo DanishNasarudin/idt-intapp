@@ -1,28 +1,25 @@
 "use server";
 import db from "@/db/db";
-import { apLocal, jbLocal, s2Local, saLocal } from "@/db/schema";
+import {
+  apLocal,
+  apOther,
+  jbLocal,
+  jbOther,
+  s2Local,
+  s2Other,
+  saLocal,
+  saOther,
+} from "@/db/schema";
 import { AnyColumn, asc, desc, eq, like, sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
-export type WarrantyDataType = {
-  serviceNo: string;
-  date: string;
-  pic: string;
-  receivedBy: string;
-  name: string;
-  contact: string;
-  status: string;
-  email: string;
-  address: string;
-  purchaseDate: string;
-  invoice: string;
-  receivedItems: string;
-  pin: string;
-  issues: string;
-  solutions: string;
-  statusDesc: string;
-  remarks: string;
-  idtPc: string;
+type NonNullableProperties<T> = {
+  [P in keyof T]: NonNullable<T[P]>;
 };
+
+export type WarrantyDataType = NonNullableProperties<
+  typeof apLocal.$inferSelect
+>;
 
 type SortType = {
   type: string;
@@ -86,7 +83,6 @@ export const getDataByFilter = async ({
       WHEN status = 'From Ampang' THEN 8
       ELSE 9 END`;
 
-    // Select the correct table
     const table = (() => {
       switch (tableName) {
         case "ap_local":
@@ -97,6 +93,14 @@ export const getDataByFilter = async ({
           return saLocal;
         case "jb_local":
           return jbLocal;
+        case "ap_other":
+          return apOther;
+        case "s2_other":
+          return s2Other;
+        case "sa_other":
+          return saOther;
+        case "jb_other":
+          return jbOther;
         default:
           throw new Error(`Unknown table name: ${tableName}`);
       }
@@ -120,7 +124,6 @@ export const getDataByFilter = async ({
       }
     });
 
-    // Execute the query with pagination and sorting
     const rows = await db
       .select()
       .from(table)
@@ -130,9 +133,15 @@ export const getDataByFilter = async ({
       .offset((pageNum - 1) * pageSize)
       .execute();
 
+    revalidatePath("/warranty/[branch]", "page");
+
     return rows.length > 0 ? (rows as WarrantyDataType[]) : [];
   } catch (e) {
-    throw new Error(`Database error (getDataByFilter): ${e}`);
+    if (e instanceof Error) {
+      throw new Error(`Error (getDataByFilter): ${e.message}`);
+    } else {
+      throw new Error(`Error (getDataByFilter): ${e}`);
+    }
   }
 };
 
@@ -152,7 +161,6 @@ export const updateData = async ({
   toChangeValue,
 }: UpdateWarrantyDataType) => {
   try {
-    // Select the correct table based on tableName
     const table = (() => {
       switch (tableName) {
         case "ap_local":
@@ -163,6 +171,14 @@ export const updateData = async ({
           return saLocal;
         case "jb_local":
           return jbLocal;
+        case "ap_other":
+          return apOther;
+        case "s2_other":
+          return s2Other;
+        case "sa_other":
+          return saOther;
+        case "jb_other":
+          return jbOther;
         default:
           throw new Error(`Unknown table name: ${tableName}`);
       }
@@ -172,7 +188,6 @@ export const updateData = async ({
     const whereClause = eq(table[whereId], whereValue);
     const updateValue = toChangeValue === "" ? null : toChangeValue;
 
-    // Perform the update
     await db
       .update(table)
       .set({
@@ -181,8 +196,12 @@ export const updateData = async ({
       .where(whereClause)
       .execute();
 
-    // console.log(updateData, "CHECK UPDATE");
+    revalidatePath("/warranty/[branch]", "page");
   } catch (e) {
-    throw new Error(`Database error (updateData): ${e}`);
+    if (e instanceof Error) {
+      throw new Error(`Error (updateData): ${e.message}`);
+    } else {
+      throw new Error(`Error (updateData): ${e}`);
+    }
   }
 };
