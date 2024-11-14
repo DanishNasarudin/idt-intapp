@@ -1,26 +1,27 @@
 "use server";
-import prisma from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import db from "@/db/db";
+import { apLocal, jbLocal, s2Local, saLocal } from "@/db/schema";
+import { AnyColumn, asc, desc, eq, like, sql } from "drizzle-orm";
 
 export type WarrantyDataType = {
-  service_no: string;
+  serviceNo: string;
   date: string;
   pic: string;
-  received_by: string;
+  receivedBy: string;
   name: string;
   contact: string;
   status: string;
   email: string;
   address: string;
-  purchase_date: string;
+  purchaseDate: string;
   invoice: string;
-  received_items: string;
+  receivedItems: string;
   pin: string;
   issues: string;
   solutions: string;
-  status_desc: string;
+  statusDesc: string;
   remarks: string;
-  idt_pc: string;
+  idtPc: string;
 };
 
 type SortType = {
@@ -46,28 +47,24 @@ export const getDataByFilter = async ({
   sortList,
 }: GetDataByFilterType): Promise<WarrantyDataType[]> => {
   try {
-    let searchFilter: keyof WarrantyDataType | undefined;
-    if (searchBy === "By: Service No") {
-      searchFilter = "service_no";
-    } else if (searchBy === "By: Name") {
-      searchFilter = "name";
-    } else if (searchBy === "By: Email") {
-      searchFilter = "email";
-    } else if (searchBy === "By: PIC") {
-      searchFilter = "pic";
-    } else if (searchBy === "By: Contact") {
-      searchFilter = "contact";
-    }
+    const searchFilter = (() => {
+      switch (searchBy) {
+        case "By: Service No":
+          return "serviceNo";
+        case "By: Name":
+          return "name";
+        case "By: Email":
+          return "email";
+        case "By: PIC":
+          return "pic";
+        case "By: Contact":
+          return "contact";
+        default:
+          return undefined;
+      }
+    })();
 
-    const where = searchFilter
-      ? {
-          [searchFilter]: {
-            contains: search,
-          },
-        }
-      : {};
-
-    const statusOrderAsc = Prisma.sql`CASE 
+    const statusOrderAsc = sql`CASE 
       WHEN status = 'From Ampang' THEN 1
       WHEN status = 'From SS2' THEN 2
       WHEN status = 'From Setia Alam' THEN 3
@@ -78,7 +75,7 @@ export const getDataByFilter = async ({
       WHEN status = 'Completed' THEN 8
       ELSE 9 END`;
 
-    const statusOrderDesc = Prisma.sql`CASE 
+    const statusOrderDesc = sql`CASE 
       WHEN status = 'Completed' THEN 1
       WHEN status = 'Waiting For' THEN 2
       WHEN status = 'In Progress' THEN 3
@@ -89,61 +86,58 @@ export const getDataByFilter = async ({
       WHEN status = 'From Ampang' THEN 8
       ELSE 9 END`;
 
-    const orderBy: any[] = sortList.map((sort) => {
-      if (sort.type === "status") {
-        return {
-          orderBy: sort.direction === "asc" ? statusOrderAsc : statusOrderDesc,
-        };
+    // Select the correct table
+    const table = (() => {
+      switch (tableName) {
+        case "ap_local":
+          return apLocal;
+        case "s2_local":
+          return s2Local;
+        case "sa_local":
+          return saLocal;
+        case "jb_local":
+          return jbLocal;
+        default:
+          throw new Error(`Unknown table name: ${tableName}`);
       }
-      return { [sort.type]: sort.direction };
+    })();
+
+    const where = searchFilter
+      ? like(table[searchFilter], `%${search}%`)
+      : undefined;
+
+    const orderByArray = sortList.map((sort) => {
+      if (sort.type === "status") {
+        return sort.direction === "asc" ? statusOrderAsc : statusOrderDesc;
+      } else {
+        const column = table[sort.type as keyof typeof table] as
+          | AnyColumn
+          | undefined;
+        if (column) {
+          return sort.direction === "asc" ? asc(column) : desc(column);
+        }
+        throw new Error(`Unknown column: ${sort.type}`);
+      }
     });
 
-    let rows: WarrantyDataType[];
+    // Execute the query with pagination and sorting
+    const rows = await db
+      .select()
+      .from(table)
+      .where(where)
+      .orderBy(...orderByArray)
+      .limit(pageSize)
+      .offset((pageNum - 1) * pageSize)
+      .execute();
 
-    switch (tableName) {
-      case "ap_local":
-        rows = (await prisma.ap_local.findMany({
-          where,
-          orderBy,
-          skip: (pageNum - 1) * pageSize,
-          take: pageSize,
-        })) as WarrantyDataType[];
-        break;
-      case "s2_local":
-        rows = (await prisma.s2_local.findMany({
-          where,
-          orderBy,
-          skip: (pageNum - 1) * pageSize,
-          take: pageSize,
-        })) as WarrantyDataType[];
-        break;
-      case "sa_local":
-        rows = (await prisma.sa_local.findMany({
-          where,
-          orderBy,
-          skip: (pageNum - 1) * pageSize,
-          take: pageSize,
-        })) as WarrantyDataType[];
-        break;
-      case "jb_local":
-        rows = (await prisma.jb_local.findMany({
-          where,
-          orderBy,
-          skip: (pageNum - 1) * pageSize,
-          take: pageSize,
-        })) as WarrantyDataType[];
-        break;
-      default:
-        throw new Error(`Unknown table name: ${tableName}`);
-    }
-
-    return rows.length > 0 ? rows : [];
+    return rows.length > 0 ? (rows as WarrantyDataType[]) : [];
   } catch (e) {
     throw new Error(`Database error (getDataByFilter): ${e}`);
   }
 };
 
 type UpdateWarrantyDataType = {
+  tableName: string;
   whereId: keyof WarrantyDataType;
   whereValue: string;
   toChangeId: string;
@@ -151,20 +145,41 @@ type UpdateWarrantyDataType = {
 };
 
 export const updateData = async ({
+  tableName,
   whereId,
   whereValue,
   toChangeId,
   toChangeValue,
 }: UpdateWarrantyDataType) => {
   try {
-    const whereClause = { [whereId]: whereValue } as WarrantyDataType;
+    // Select the correct table based on tableName
+    const table = (() => {
+      switch (tableName) {
+        case "ap_local":
+          return apLocal;
+        case "s2_local":
+          return s2Local;
+        case "sa_local":
+          return saLocal;
+        case "jb_local":
+          return jbLocal;
+        default:
+          throw new Error(`Unknown table name: ${tableName}`);
+      }
+    })();
 
-    await prisma.ap_local.update({
-      where: whereClause,
-      data: {
-        [toChangeId]: toChangeValue === "" ? null : toChangeValue,
-      },
-    });
+    // Define the `where` clause using the selected table and `whereId`
+    const whereClause = eq(table[whereId], whereValue);
+    const updateValue = toChangeValue === "" ? null : toChangeValue;
+
+    // Perform the update
+    await db
+      .update(table)
+      .set({
+        [toChangeId]: updateValue,
+      })
+      .where(whereClause)
+      .execute();
 
     // console.log(updateData, "CHECK UPDATE");
   } catch (e) {

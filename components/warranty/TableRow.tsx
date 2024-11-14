@@ -2,8 +2,10 @@
 import { Options } from "@/app/warranty/settings/page";
 import { cn } from "@/lib/utils";
 import { useBranchFormat } from "@/lib/zus-store";
-import { WarrantyDataType } from "@/services/common/FetchDB";
-import { updateData } from "@/services/warranty/warrantyActions";
+import {
+  updateData,
+  WarrantyDataType,
+} from "@/services/warranty/warrantyActions";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
@@ -15,24 +17,24 @@ type Props = {
 };
 
 const defaultData: WarrantyDataType = {
-  service_no: "",
+  serviceNo: "",
   date: "",
   pic: "",
-  received_by: "",
+  receivedBy: "",
   name: "",
   contact: "",
   status: "",
   email: "",
   address: "",
-  purchase_date: "",
+  purchaseDate: "",
   invoice: "",
-  received_items: "",
+  receivedItems: "",
   pin: "",
   issues: "",
   solutions: "",
-  status_desc: "",
+  statusDesc: "",
   remarks: "",
-  idt_pc: "",
+  idtPc: "",
 };
 
 const TableRow = ({ data }: Props) => {
@@ -67,8 +69,9 @@ const TableRow = ({ data }: Props) => {
     (newValue: string, id: string) => {
       toast.promise(
         updateData({
-          whereId: "service_no",
-          whereValue: value.service_no,
+          tableName: branchData ? branchData?.data_local : "apLocal",
+          whereId: "serviceNo",
+          whereValue: value.serviceNo,
           toChangeId: id,
           toChangeValue: newValue,
         }),
@@ -97,13 +100,13 @@ const TableRow = ({ data }: Props) => {
         onValueChange={handleValueChange}
       />
       <EditableTextBox
-        id="service_no"
-        value={value.service_no}
+        id="serviceNo"
+        value={value.serviceNo}
         onValueChange={handleValueChange}
       />
       <DropdownBox
-        id="idt_pc"
-        value={value.idt_pc}
+        id="idtPc"
+        value={value.idtPc}
         options={[
           { option: "Yes", color: "!bg-accent/80 !text-white" },
           { option: "No", color: "!bg-zinc-600 !text-zinc-200" },
@@ -111,9 +114,9 @@ const TableRow = ({ data }: Props) => {
         onValueChange={handleValueChange}
       />
       <DropdownBox
-        id="received_by"
+        id="receivedBy"
         options={staffList}
-        value={value.received_by}
+        value={value.receivedBy}
         onValueChange={handleValueChange}
       />
       <DropdownBox

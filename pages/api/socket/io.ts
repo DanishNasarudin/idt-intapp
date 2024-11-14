@@ -1,5 +1,5 @@
-import { updateData } from "@/services/common/FetchDB";
 import { NextAPIResponseServerIo } from "@/lib/types";
+import { updateData } from "@/services/common/FetchDB";
 import { Server as NetServer } from "http";
 import { NextApiRequest } from "next";
 import { Server as ServerIO } from "socket.io";
@@ -20,7 +20,7 @@ type UserLocks = {
 
 const ioHandler = (req: NextApiRequest, res: NextAPIResponseServerIo) => {
   if (!res.socket.server.io) {
-    const path = "/api/proxy/socket/io";
+    const path = "/api/socket/io";
     const httpServer: NetServer = res.socket.server as any;
     const io = new ServerIO(httpServer, {
       path,

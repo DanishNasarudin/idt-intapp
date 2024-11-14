@@ -1,7 +1,6 @@
 import NewDropdownOutsideClick from "@/components/warranty/DropdownOutsideClick";
 import SearchFilter from "@/components/warranty/SearchFilter";
 import NewTable from "@/components/warranty/Table";
-import { WarrantyDataType } from "@/services/common/FetchDB";
 import { getDataByFilter } from "@/services/warranty/warrantyActions";
 import { getBranchFormat } from "@/services/warranty/warrantyUtils";
 
@@ -49,7 +48,7 @@ const Branch = async ({ params, searchParams }: Props) => {
     sortList: [],
   });
 
-  const data = preData as WarrantyDataType[];
+  const data = preData;
 
   // console.log(data, "CJECK");
 

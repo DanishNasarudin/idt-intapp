@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { WarrantyDataType } from "@/services/common/FetchDB";
+import { WarrantyDataType } from "@/services/warranty/warrantyActions";
 import React, { useEffect, useState } from "react";
 import TableRow from "./TableRow";
 
@@ -53,7 +53,7 @@ const NewTable = ({ data }: Props) => {
       >
         {value.length > 0 ? (
           value.map((item) => (
-            <React.Fragment key={item.service_no}>
+            <React.Fragment key={item.serviceNo}>
               <TableRow data={item} />
             </React.Fragment>
           ))
