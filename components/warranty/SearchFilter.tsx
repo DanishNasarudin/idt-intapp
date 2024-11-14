@@ -31,7 +31,6 @@ const searchOptions: Options[] = [
 
 const SearchFilter = ({ branchData = undefined }: Props) => {
   // Search handler -------------------
-  const [searchFocus, setSearchFocus] = useState(false);
   const [search, setSearch] = useState("");
   const [searchValues] = useDebounce(search, 500);
 
@@ -39,7 +38,6 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
     searchOptions[0].option || ""
   );
   const [searchFilterValues] = useDebounce(searchFilter, 500);
-  // const searchFilter = useRef(searchOptions[0].option || "");
 
   const router = useRouter();
   const pathname = usePathname();
@@ -64,10 +62,6 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
     router.push(setURL);
   }, [searchValues, searchFilterValues]);
 
-  // Sort Handler ------
-
-  // const [position, setPosition] = useState(searchOptions[0].option);
-
   // Branch Format Zustand Initiate -------------
   const setBranchData = useBranchFormat((state) => state.setBranchData);
 
@@ -89,12 +83,6 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
             isSearch={true}
             placeholder={"Search.."}
           />
-          {/* <DropdownIdv
-            minSize="147"
-            values={searchFilter.current}
-            options={searchOptions}
-            setValues={searchFilter}
-          /> */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="font-normal">

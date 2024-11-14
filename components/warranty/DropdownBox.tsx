@@ -15,7 +15,7 @@ type Props = {
   id?: string;
   options?: Options[];
   value?: string;
-  onValueChange?: (newValue: string) => void;
+  onValueChange?: (newValue: string, id: string) => void;
 };
 
 const defaultOptions: Options[] = [
@@ -38,10 +38,10 @@ const DropdownBox = ({
   const handleValueChange = (value: string) => {
     if (value === position) {
       setPosition("");
-      onValueChange("");
+      onValueChange("", id);
     } else {
       setPosition(value);
-      onValueChange(value);
+      onValueChange(value, id);
     }
   };
 

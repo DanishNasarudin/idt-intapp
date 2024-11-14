@@ -22,6 +22,7 @@ export type WarrantyDataType = {
   solutions: string;
   status_desc: string;
   remarks: string;
+  idt_pc: string;
 };
 
 type MyDataType = RowDataPacket & WarrantyDataType;

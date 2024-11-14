@@ -20,6 +20,7 @@ export type WarrantyDataType = {
   solutions: string;
   status_desc: string;
   remarks: string;
+  idt_pc: string;
 };
 
 type SortType = {
@@ -45,9 +46,6 @@ export const getDataByFilter = async ({
   sortList,
 }: GetDataByFilterType): Promise<WarrantyDataType[]> => {
   try {
-    const { table } =
-      tableName === "ap_local" ? { table: "ap_local" } : { table: "s2_local" };
-
     let searchFilter: keyof WarrantyDataType | undefined;
     if (searchBy === "By: Service No") {
       searchFilter = "service_no";
@@ -142,5 +140,34 @@ export const getDataByFilter = async ({
     return rows.length > 0 ? rows : [];
   } catch (e) {
     throw new Error(`Database error (getDataByFilter): ${e}`);
+  }
+};
+
+type UpdateWarrantyDataType = {
+  whereId: keyof WarrantyDataType;
+  whereValue: string;
+  toChangeId: string;
+  toChangeValue: string;
+};
+
+export const updateData = async ({
+  whereId,
+  whereValue,
+  toChangeId,
+  toChangeValue,
+}: UpdateWarrantyDataType) => {
+  try {
+    const whereClause = { [whereId]: whereValue } as WarrantyDataType;
+
+    await prisma.ap_local.update({
+      where: whereClause,
+      data: {
+        [toChangeId]: toChangeValue === "" ? null : toChangeValue,
+      },
+    });
+
+    // console.log(updateData, "CHECK UPDATE");
+  } catch (e) {
+    throw new Error(`Database error (updateData): ${e}`);
   }
 };

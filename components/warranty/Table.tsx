@@ -16,31 +16,31 @@ const NewTable = ({ data }: Props) => {
   }, [data]);
 
   return (
-    <table className="table-fixed text-zinc-400 text-left w-full ">
+    <table className="table-fixed text-zinc-400 text-left w-full">
       <thead className="max-h-[20px]">
-        <tr className="[&>th]:px-2 [&>th]:w-full ">
-          <th className="w-[100px]">
+        <tr className="[&>th]:px-2 whitespace-nowrap [&>th]:!font-normal">
+          <th className="w-[12%]">
             <span>Date</span>
           </th>
-          <th className="w-[110px]">
+          <th className="w-[14%]">
             <span>Service No</span>
           </th>
-          <th className="w-[80px]">
+          <th className="w-[10%]">
             <span>IDT PC?</span>
           </th>
-          <th className="w-[100px]">
+          <th className="w-[13%]">
             <span>Received by</span>
           </th>
-          <th className="w-[100px]">
+          <th className="w-[13%]">
             <span>Serviced by</span>
           </th>
-          <th className="w-[200px]">
+          <th className="w-[20%]">
             <span>Name</span>
           </th>
-          <th className="w-[120px]">
+          <th className="w-[14%]">
             <span>Contact</span>
           </th>
-          <th className="w-[120px]">
+          <th className="w-[14%]">
             <span>Status</span>
           </th>
         </tr>

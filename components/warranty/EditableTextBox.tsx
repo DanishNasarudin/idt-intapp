@@ -1,12 +1,15 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { useDropOutsideClick } from "@/lib/zus-store";
+import { CopyIcon } from "lucide-react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "../ui/button";
 
 type Props = {
   id?: string;
   value?: string;
-  onValueChange?: (newValue: string) => void;
+  onValueChange?: (newValue: string, id: string) => void;
 };
 
 const EditableTextBox = ({
@@ -25,7 +28,7 @@ const EditableTextBox = ({
 
   const onInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInput(e.currentTarget.value);
-    onValueChange(e.currentTarget.value);
+    onValueChange(e.currentTarget.value, id);
   };
 
   useEffect(() => {
@@ -33,7 +36,7 @@ const EditableTextBox = ({
   }, [isOpenOutside]);
 
   return (
-    <td className={cn("relative overflow-hidden whitespace-nowrap")}>
+    <td className={cn("relative overflow-hidden whitespace-nowrap group")}>
       <div
         role="button"
         className="w-full px-2 py-1 cursor-default"
@@ -62,9 +65,7 @@ const EditableTextBox = ({
               id={id}
               type="text"
               value={input === null ? "" : input}
-              onChange={(e) => {
-                onInputChange(e);
-              }}
+              onChange={onInputChange}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === "Escape") {
                   setOpen(false);
@@ -77,6 +78,17 @@ const EditableTextBox = ({
           </div>
         </div>
       </div>
+      <Button
+        variant={"secondary"}
+        size={"icon"}
+        className="group-hover:flex hidden h-[20px] w-[20px] absolute right-[5%] top-[50%] translate-y-[-50%]"
+        onClick={() => {
+          navigator.clipboard.writeText(input);
+          toast.success("Copied!");
+        }}
+      >
+        <CopyIcon size={10} />
+      </Button>
     </td>
   );
 };
