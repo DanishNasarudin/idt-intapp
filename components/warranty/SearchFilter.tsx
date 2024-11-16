@@ -2,9 +2,12 @@
 import { Options } from "@/app/warranty/settings/page";
 import { createURL } from "@/lib/utils";
 import { useBranchFormat } from "@/lib/zus-store";
+import { addWarranty, SortDbType } from "@/services/warranty/warrantyActions";
 import { BranchType } from "@/services/warranty/warrantyUtils";
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 import { Button } from "../ui/button";
 import {
@@ -15,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Input } from "../ui/input";
+import SortModuleContext from "./SortModuleContext";
 
 type Props = {
   branchData?: BranchType | undefined;
@@ -39,8 +43,16 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
   );
   const [searchFilterValues] = useDebounce(searchFilter, 500);
 
+  const [searchSort, setSearchSort] = useState<SortDbType[]>([
+    { type: "date", direction: "desc" },
+    { type: "serviceNo", direction: "desc" },
+  ]);
+
+  const [searchSortValues] = useDebounce(searchSort, 500);
+
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const setSearchParams = new URLSearchParams();
 
   useEffect(() => {
@@ -58,9 +70,25 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
       setSearchParams.delete("filter");
     }
 
+    if (searchSortValues) {
+      const sortToString = searchSortValues
+        .map((item) => `${item.type}-${item.direction}`)
+        .join(",");
+
+      setSearchParams.set("sort", sortToString);
+    } else {
+      setSearchParams.delete("sort");
+    }
+
     const setURL = createURL(`${pathname}/`, setSearchParams);
     router.push(setURL);
-  }, [searchValues, searchFilterValues]);
+  }, [
+    searchValues,
+    searchFilterValues,
+    searchSortValues,
+    pathname,
+    searchParams,
+  ]);
 
   // Branch Format Zustand Initiate -------------
   const setBranchData = useBranchFormat((state) => state.setBranchData);
@@ -104,35 +132,47 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
           </DropdownMenu>
         </div>
         <div className="flex gap-4">
-          <div className="border-zinc-800 text-zinc-800 p-1 rounded-md transition-all border-[1px] bg-transparent flex gap-1">
-            {/* {sortingList &&
-              sortingList.map((sort, key) => {
-                return (
-                  <div
-                    key={key}
-                    draggable
-                    onDragStart={(e) => handleOnDrag(e, sort.type)}
-                    onDrop={(e) => handleOnDrop(e, sort.type)}
-                    onDragOver={handleDragOver}
-                    className="h-full"
-                  >
-                    <DropdownSort
-                      key={key}
-                      values={sort}
-                      setOptions={setSortOpt}
-                      setValues={setSortingList}
-                    />
-                  </div>
-                );
-              })}
-            <DropdownSortAdd
-              values="+ Add Sort"
-              setValues={setSortingList}
-              setOptions={setSortOpt}
-              options={sortOpt}
-            /> */}
-          </div>
+          <Button
+            variant={"outline"}
+            className="font-normal dark:text-zinc-600"
+            onClick={() => {
+              // setTimeout(() => {
+              //   setNewEntry(!newEntry);
+              // }, 50);
+            }}
+          >
+            <p>Refresh Data</p>
+          </Button>
+          <Link href={`/warranty/history/${branchData?.id}`} target="_blank">
+            <Button
+              variant={"outline"}
+              className="font-normal dark:text-zinc-600"
+            >
+              <p>History</p>
+            </Button>
+          </Link>
+          <Button
+            variant={"accent"}
+            className="font-normal dark:text-zinc-600"
+            onClick={() => {
+              toast.promise(
+                addWarranty({ tableName: branchData?.data_local }),
+                {
+                  loading: "Adding..",
+                  success: "Added New Entry!",
+                  error: "Failed adding data.",
+                }
+              );
+            }}
+          >
+            <p>
+              <b>New Entry</b>
+            </p>
+          </Button>
         </div>
+      </div>
+      <div className="flex gap-4">
+        <SortModuleContext setSearchSort={setSearchSort} />
       </div>
     </div>
   );

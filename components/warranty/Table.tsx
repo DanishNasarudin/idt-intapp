@@ -18,7 +18,12 @@ const NewTable = ({ data }: Props) => {
   return (
     <table className="table-fixed text-zinc-400 text-left w-full">
       <thead className="max-h-[20px]">
-        <tr className="[&>th]:px-2 whitespace-nowrap [&>th]:!font-normal">
+        <tr
+          className={cn(
+            "[&>th]:px-2 whitespace-nowrap [&>th]:!font-normal",
+            value.length === 0 && "border-b-[1px] border-zinc-800"
+          )}
+        >
           <th className="w-[12%]">
             <span>Date</span>
           </th>
@@ -58,7 +63,12 @@ const NewTable = ({ data }: Props) => {
             </React.Fragment>
           ))
         ) : (
-          <tr className="absolute left-[50%] translate-x-[-50%] top-[50%] translate-y-[-50%] font-bold text-lg">
+          <tr
+            className={cn(
+              "absolute left-[50%] translate-x-[-50%] top-[50%] translate-y-[-50%]",
+              "font-bold text-lg"
+            )}
+          >
             No Data
           </tr>
         )}

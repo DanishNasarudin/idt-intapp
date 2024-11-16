@@ -1,7 +1,10 @@
 import NewDropdownOutsideClick from "@/components/warranty/DropdownOutsideClick";
 import SearchFilter from "@/components/warranty/SearchFilter";
 import NewTable from "@/components/warranty/Table";
-import { getDataByFilter } from "@/services/warranty/warrantyActions";
+import {
+  getWarrantyByFilter,
+  SortDbType,
+} from "@/services/warranty/warrantyActions";
 import { getBranchFormat } from "@/services/warranty/warrantyUtils";
 
 type Props = {
@@ -22,15 +25,6 @@ const Branch = async ({ params, searchParams }: Props) => {
     throw new Error("Branch Page Invalid.");
   }
 
-  // const preData = await fetchData(
-  //   branchFormat.data_local,
-  //   10,
-  //   1,
-  //   "",
-  //   "By: Service No",
-  //   []
-  // );
-
   const searchTerm = Array.isArray(searchParams.search)
     ? searchParams.search[0]
     : searchParams.search;
@@ -39,27 +33,48 @@ const Branch = async ({ params, searchParams }: Props) => {
     ? searchParams.filter[0]
     : searchParams.filter;
 
-  const preData = await getDataByFilter({
+  const searchSort = Array.isArray(searchParams.sort)
+    ? searchParams.sort[0]
+    : searchParams.sort;
+
+  const parseSort =
+    searchSort?.split(",").map((item) => {
+      const [type, direction] = item.split("-");
+      return { type, direction } as SortDbType;
+    }) || [];
+
+  const branchData = await getWarrantyByFilter({
     tableName: branchFormat.data_local,
     pageSize: 10,
     pageNum: 1,
     search: searchTerm || "",
     searchBy: searchFilter || "By: Service No",
-    sortList: [],
+    sortList: parseSort,
   });
 
-  const data = preData;
+  const otherData = await getWarrantyByFilter({
+    tableName: branchFormat.data_other,
+    pageSize: 10,
+    pageNum: 1,
+    search: searchTerm || "",
+    searchBy: searchFilter || "By: Service No",
+    sortList: parseSort,
+  });
 
   // console.log(data, "CJECK");
 
   return (
     <>
-      <div className="hidden md:flex flex-col gap-16 w-full px-16 py-4">
+      <div className="hidden md:flex flex-col gap-16 w-full px-16 py-4 h-screen">
         <div className="top nav w-full flex justify-end"></div>
         <div className="main-table flex flex-col gap-4">
           <h2>{branchFormat?.name} Warranty</h2>
           <SearchFilter branchData={branchFormat} />
-          <NewTable data={data} />
+          <NewTable data={branchData} />
+        </div>
+        <div className="other-table flex flex-col gap-4">
+          <h2>Other Branch Warranty</h2>
+          <NewTable data={otherData} />
         </div>
       </div>
       <NewDropdownOutsideClick />

@@ -17,7 +17,7 @@ const EditableTextBox = ({
   value = "",
   onValueChange = () => {},
 }: Props) => {
-  const [input, setInput] = useState(value || "test");
+  const [input, setInput] = useState(value || "");
 
   const [open, setOpen] = useState(false);
 

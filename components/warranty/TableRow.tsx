@@ -3,7 +3,8 @@ import { Options } from "@/app/warranty/settings/page";
 import { cn } from "@/lib/utils";
 import { useBranchFormat } from "@/lib/zus-store";
 import {
-  updateData,
+  passWarranty,
+  updateWarranty,
   WarrantyDataType,
 } from "@/services/warranty/warrantyActions";
 import { useEffect, useState } from "react";
@@ -60,6 +61,13 @@ const TableRow = ({ data }: Props) => {
       color: item.color,
     }));
 
+  const allStaffList: Options[] | undefined =
+    branchData &&
+    branchData.all_pic.map((item) => ({
+      option: item.type,
+      color: item.color,
+    }));
+
   const statusList: Options[] | undefined =
     branchData &&
     branchData.status.map((item) => ({
@@ -69,20 +77,61 @@ const TableRow = ({ data }: Props) => {
 
   const handleValueChange = useDebouncedCallback(
     (newValue: string, id: string) => {
-      toast.promise(
-        updateData({
-          tableName: branchData ? branchData?.data_local : "apLocal",
-          whereId: "serviceNo",
-          whereValue: value.serviceNo,
-          toChangeId: id,
-          toChangeValue: newValue,
-        }),
-        {
-          loading: `Updating..`,
-          success: `Updated!`,
-          error: "Update Error!",
+      if (id === "status" && newValue.includes("Pass")) {
+        const fromDb = branchData?.data_local;
+        const toDbString = newValue;
+        let toDb: string;
+        let displayString: string;
+
+        switch (toDbString) {
+          case "Pass Ampang":
+            toDb = "ap_local";
+            displayString = "Ampang";
+            break;
+          case "Pass SS2":
+            toDb = "s2_local";
+            displayString = "SS2";
+            break;
+          case "Pass Setia Alam":
+            toDb = "sa_local";
+            displayString = "Setia Alam";
+            break;
+          case "Pass JB":
+            toDb = "jb_local";
+            displayString = "JB";
+            break;
+          default:
+            throw new Error(`Update fails at moving data.`);
         }
-      );
+
+        toast.promise(
+          passWarranty({
+            tableFrom: fromDb,
+            tableTo: toDb,
+            toPassId: value.serviceNo,
+          }),
+          {
+            loading: `Passing..`,
+            success: `Passed to ${displayString}!`,
+            error: "Data Passing Error!",
+          }
+        );
+      } else {
+        toast.promise(
+          updateWarranty({
+            tableName: branchData ? branchData?.data_local : "apLocal",
+            whereId: "serviceNo",
+            whereValue: value.serviceNo,
+            toChangeId: id,
+            toChangeValue: newValue,
+          }),
+          {
+            loading: `Updating..`,
+            success: `Updated!`,
+            error: "Update Error!",
+          }
+        );
+      }
     },
     500
   );
@@ -118,12 +167,14 @@ const TableRow = ({ data }: Props) => {
       <DropdownBox
         id="receivedBy"
         options={staffList}
+        allOptions={allStaffList}
         value={value.receivedBy}
         onValueChange={handleValueChange}
       />
       <DropdownBox
         id="pic"
         options={staffList}
+        allOptions={allStaffList}
         value={value.pic}
         onValueChange={handleValueChange}
       />

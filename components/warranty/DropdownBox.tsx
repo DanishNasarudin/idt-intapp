@@ -14,6 +14,7 @@ import {
 type Props = {
   id?: string;
   options?: Options[];
+  allOptions?: Options[];
   value?: string;
   onValueChange?: (newValue: string, id: string) => void;
 };
@@ -27,9 +28,18 @@ const defaultOptions: Options[] = [
 const DropdownBox = ({
   id = "default",
   options,
+  allOptions,
   value = "",
   onValueChange = () => {},
 }: Props) => {
+  if (id === "status") {
+    allOptions = options;
+    options = options?.filter((item) => !item.option.includes("From"));
+  }
+
+  const activeAllOptions =
+    allOptions && allOptions.length > 0 ? allOptions : defaultOptions;
+
   const activeOptions =
     options && options.length > 0 ? options : defaultOptions;
 
@@ -49,6 +59,10 @@ const DropdownBox = ({
     return activeOptions.findIndex((item) => item.option === option);
   };
 
+  const handleFindAllOptionIndex = (option: string) => {
+    return activeAllOptions.findIndex((item) => item.option === option);
+  };
+
   return (
     <td>
       <DropdownMenu>
@@ -63,7 +77,8 @@ const DropdownBox = ({
               <Badge
                 className={cn(
                   `${
-                    activeOptions[handleFindOptionIndex(position)]?.color || ""
+                    activeAllOptions[handleFindAllOptionIndex(position)]
+                      ?.color || ""
                   }`
                 )}
               >
