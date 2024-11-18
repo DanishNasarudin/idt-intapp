@@ -10,6 +10,9 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
+import { Accordion, AccordionContent, AccordionItem } from "../ui/accordion";
+import { Button } from "../ui/button";
+import AccordionRow from "./AccordionRow";
 import DropdownBox from "./DropdownBox";
 import EditableTextBox from "./EditableTextBox";
 
@@ -135,66 +138,118 @@ const TableRow = ({ data }: Props) => {
     },
     500
   );
+
+  const [accordion, setAccordion] = useState("");
   return (
-    <tr
-      className={cn(
-        "border-t-[1px] border-zinc-800 relative w-full",
-        "data-[open=true]:bg-zinc-900 data-[open=false]:bg-transparent",
-        "[&>td]:border-l-[1px] [&>*:first-child]:border-l-[0px]"
-      )}
-      data-open={false}
-      //   data-open={accordion.current}
-    >
-      <EditableTextBox
-        id="date"
-        value={value.date}
-        onValueChange={handleValueChange}
-      />
-      <EditableTextBox
-        id="serviceNo"
-        value={value.serviceNo}
-        onValueChange={handleValueChange}
-      />
-      <DropdownBox
-        id="idtPc"
-        value={value.idtPc}
-        options={[
-          { option: "Yes", color: "!bg-accent/80 !text-white" },
-          { option: "No", color: "!bg-zinc-600 !text-zinc-200" },
-        ]}
-        onValueChange={handleValueChange}
-      />
-      <DropdownBox
-        id="receivedBy"
-        options={staffList}
-        allOptions={allStaffList}
-        value={value.receivedBy}
-        onValueChange={handleValueChange}
-      />
-      <DropdownBox
-        id="pic"
-        options={staffList}
-        allOptions={allStaffList}
-        value={value.pic}
-        onValueChange={handleValueChange}
-      />
-      <EditableTextBox
-        id="name"
-        value={value.name}
-        onValueChange={handleValueChange}
-      />
-      <EditableTextBox
-        id="contact"
-        value={value.contact}
-        onValueChange={handleValueChange}
-      />
-      <DropdownBox
-        id="status"
-        options={statusList}
-        value={value.status}
-        onValueChange={handleValueChange}
-      />
-    </tr>
+    <>
+      <tr
+        className={cn(
+          "border-t-[1px] border-zinc-800 relative w-full",
+          "[&>td]:border-l-[1px] [&>*:last-child]:border-r-[1px]",
+          "group/accordion transition-all",
+          accordion === "" ? "bg-transparent" : "bg-zinc-900"
+        )}
+      >
+        <td className="relative">
+          <Button
+            onClick={() =>
+              setAccordion((prev) => (prev === "" ? "item-1" : ""))
+            }
+            variant={"nothing"}
+            size={"sm"}
+            className={cn(
+              "absolute right-[-100%] top-0 mobilehover:group-hover/accordion:text-white text-transparent bg-transparent transition-all",
+              accordion === ""
+                ? "mobilehover:group-hover/accordion:bg-accent"
+                : "mobilehover:group-hover/accordion:bg-destructive"
+            )}
+          >
+            {accordion === "" ? "Open" : "Close"}
+          </Button>
+        </td>
+        <EditableTextBox
+          id="date"
+          value={value.date}
+          onValueChange={handleValueChange}
+        />
+        <EditableTextBox
+          id="serviceNo"
+          value={value.serviceNo}
+          onValueChange={handleValueChange}
+        />
+        <DropdownBox
+          id="idtPc"
+          value={value.idtPc}
+          options={[
+            { option: "Yes", color: "!bg-accent/80 !text-white" },
+            { option: "No", color: "!bg-zinc-600 !text-zinc-200" },
+          ]}
+          allOptions={[
+            { option: "Yes", color: "!bg-accent/80 !text-white" },
+            { option: "No", color: "!bg-zinc-600 !text-zinc-200" },
+          ]}
+          onValueChange={handleValueChange}
+        />
+        <DropdownBox
+          id="receivedBy"
+          options={staffList}
+          allOptions={allStaffList}
+          value={value.receivedBy}
+          onValueChange={handleValueChange}
+        />
+        <DropdownBox
+          id="pic"
+          options={staffList}
+          allOptions={allStaffList}
+          value={value.pic}
+          onValueChange={handleValueChange}
+        />
+        <EditableTextBox
+          id="name"
+          value={value.name}
+          onValueChange={handleValueChange}
+        />
+        <EditableTextBox
+          id="contact"
+          value={value.contact}
+          onValueChange={handleValueChange}
+        />
+        <DropdownBox
+          id="status"
+          options={statusList}
+          value={value.status}
+          onValueChange={handleValueChange}
+        />
+      </tr>
+      <tr
+        className={cn(
+          accordion === "" ? "bg-transparent" : "bg-zinc-900",
+          "transition-all"
+        )}
+      >
+        <td colSpan={9}>
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full"
+            value={accordion}
+            onValueChange={setAccordion}
+          >
+            <AccordionItem
+              value="item-1"
+              className={cn(
+                "border-b-[0px] transition-all ",
+                accordion === "" ? "" : "border-t-[1px]"
+              )}
+            >
+              <AccordionContent className="pb-0">
+                <AccordionRow value={value} onValueChange={handleValueChange} />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </td>
+      </tr>
+    </>
   );
 };
 

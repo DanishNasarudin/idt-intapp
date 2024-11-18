@@ -11,14 +11,6 @@ module.exports = {
   ],
   prefix: "",
   theme: {
-    // container: {
-    //   center: true,
-    //   padding: "0",
-    //   margin: "0",
-    //   screens: {
-    //     "2xl": "1400px",
-    //   },
-    // },
     extend: {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
@@ -27,12 +19,36 @@ module.exports = {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
         },
         "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
+          },
+        },
+        "accordion-down": {
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
+        },
+        "accordion-up": {
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
+          },
         },
       },
       animation: {
@@ -102,7 +118,9 @@ module.exports = {
       },
       screens: {
         offer: "620px",
-        mobilehover: { raw: "(hover:hover)" },
+        mobilehover: {
+          raw: "(hover:hover)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

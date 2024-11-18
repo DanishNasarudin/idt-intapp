@@ -2,25 +2,25 @@
 import React, { useEffect, useState } from "react";
 
 type Props = {
-  id: string;
-  title: string;
-  input: string | null;
-  onInputChange: (
+  id?: string;
+  title?: string;
+  input?: string | null;
+  onInputChange?: (
     newValue:
       | React.ChangeEvent<HTMLInputElement>
       | React.ChangeEvent<HTMLTextAreaElement>
   ) => void;
-  area: boolean;
-  areaSize: string;
+  area?: boolean;
+  areaSize?: string;
 };
 
 const TextBoxNormal = ({
-  id,
-  title,
-  input,
-  area,
-  areaSize,
-  onInputChange,
+  id = "default",
+  title = "Title Placeholder",
+  input = "",
+  area = false,
+  areaSize = "0",
+  onInputChange = () => {},
 }: Props) => {
   // Copy values ----
   const [copyValues, setCopyValues] = useState("");

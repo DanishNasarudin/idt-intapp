@@ -311,6 +311,8 @@ export const updateWarranty = async ({
     const whereClause = eq(table[whereId], whereValue);
     const updateValue = toChangeValue === "" ? null : toChangeValue;
 
+    console.log(toChangeId, toChangeValue);
+
     await dbConnection
       .update(table)
       .set({

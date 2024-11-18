@@ -120,7 +120,7 @@ const SortModuleDraggable = ({
     <div
       {...(!open && dragProps)}
       className={cn(
-        "flex border-zinc-700 border-[1px] rounded-md bg-background",
+        "flex border-zinc-800 border-[1px] rounded-md bg-background",
         ""
       )}
     >

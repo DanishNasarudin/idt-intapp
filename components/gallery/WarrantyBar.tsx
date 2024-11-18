@@ -1,6 +1,6 @@
 "use client";
-import { countAllBranchDB } from "@/services/common/FetchDB";
-import React, { useEffect, useRef, useState } from "react";
+import { countAllBranchDB } from "@/services/warranty/dashboardActions";
+import { useEffect, useRef, useState } from "react";
 
 type Props = {
   inQ: (newValue: number) => void;

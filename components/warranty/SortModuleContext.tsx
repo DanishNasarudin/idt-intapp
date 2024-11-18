@@ -119,7 +119,7 @@ const SortModuleContext = ({ setSearchSort }: Props) => {
   return (
     <div
       className={cn(
-        "border-zinc-700 border-[1px] rounded-md p-1",
+        "border-zinc-800 border-[1px] rounded-md p-1",
         "flex gap-2"
       )}
     >

@@ -24,6 +24,7 @@ const NewTable = ({ data }: Props) => {
             value.length === 0 && "border-b-[1px] border-zinc-800"
           )}
         >
+          <th className="w-[0%]"></th>
           <th className="w-[12%]">
             <span>Date</span>
           </th>
@@ -52,7 +53,7 @@ const NewTable = ({ data }: Props) => {
       </thead>
       <tbody
         className={cn(
-          "overflow-hidden relative",
+          "overflow-hidden relative [&>*:last-child]:border-b-[1px]",
           value.length === 0 && "h-[150px]"
         )}
       >

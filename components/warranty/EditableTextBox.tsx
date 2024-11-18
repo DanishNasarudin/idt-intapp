@@ -87,7 +87,7 @@ const EditableTextBox = ({
           toast.success("Copied!");
         }}
       >
-        <CopyIcon size={10} />
+        <CopyIcon size={12} />
       </Button>
     </td>
   );
