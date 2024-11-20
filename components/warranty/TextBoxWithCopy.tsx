@@ -51,7 +51,7 @@ const TextBoxWithCopy = ({
       {isTextarea ? (
         <Textarea
           id={id}
-          value={input}
+          value={input === null ? "" : input}
           className={cn("[&>input]:px-1 resize-none", minHeightString)}
           onChange={handleInputChange}
         />
@@ -59,7 +59,7 @@ const TextBoxWithCopy = ({
         <Input
           {...(id === "email" && options)}
           id={id}
-          value={input}
+          value={input === null ? "" : input}
           className="[&>input]:px-1"
           onChange={handleInputChange}
         />

@@ -136,7 +136,7 @@ const TableRow = ({ data }: Props) => {
         );
       }
     },
-    500
+    1000
   );
 
   const [accordion, setAccordion] = useState("");
@@ -147,7 +147,7 @@ const TableRow = ({ data }: Props) => {
           "border-t-[1px] border-zinc-800 relative w-full",
           "[&>td]:border-l-[1px] [&>*:last-child]:border-r-[1px]",
           "group/accordion transition-all",
-          accordion === "" ? "bg-transparent" : "bg-zinc-900"
+          accordion === "" ? "bg-transparent" : "dark:bg-zinc-900 bg-zinc-100"
         )}
       >
         <td className="relative">
@@ -223,7 +223,7 @@ const TableRow = ({ data }: Props) => {
       </tr>
       <tr
         className={cn(
-          accordion === "" ? "bg-transparent" : "bg-zinc-900",
+          accordion === "" ? "bg-transparent" : "dark:bg-zinc-900 bg-zinc-100",
           "transition-all"
         )}
       >

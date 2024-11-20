@@ -6,9 +6,10 @@ import TableRow from "./TableRow";
 
 type Props = {
   data?: WarrantyDataType[];
+  isDisabled?: boolean;
 };
 
-const NewTable = ({ data }: Props) => {
+const NewTable = ({ data, isDisabled = false }: Props) => {
   const [value, setValue] = useState<WarrantyDataType[]>(data || []);
 
   useEffect(() => {
@@ -16,7 +17,12 @@ const NewTable = ({ data }: Props) => {
   }, [data]);
 
   return (
-    <table className="table-fixed text-zinc-400 text-left w-full">
+    <table
+      className={cn(
+        "table-fixed text-zinc-400 text-left w-full",
+        isDisabled && "pointer-events-none opacity-50 select-none"
+      )}
+    >
       <thead className="max-h-[20px]">
         <tr
           className={cn(

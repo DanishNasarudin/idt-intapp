@@ -104,7 +104,7 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between">
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-2 items-center">
           <Input
             onChange={(e) => setSearch(e.currentTarget.value)}
             className={"rounded-lg w-full text-base"}
@@ -131,7 +131,7 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-2">
           <Button
             variant={"outline"}
             className="font-normal dark:text-zinc-600"

@@ -1,12 +1,12 @@
 import NewDropdownOutsideClick from "@/components/warranty/DropdownOutsideClick";
 import SearchFilter from "@/components/warranty/SearchFilter";
 import NewTable from "@/components/warranty/Table";
+import TablePagination from "@/components/warranty/TablePagination";
 import {
   getWarrantyByFilter,
   SortDbType,
 } from "@/services/warranty/warrantyActions";
 import { getBranchFormat } from "@/services/warranty/warrantyUtils";
-import { Suspense } from "react";
 
 type Props = {
   params: {
@@ -44,10 +44,18 @@ const Branch = async ({ params, searchParams }: Props) => {
       return { type, direction } as SortDbType;
     }) || [];
 
+  const searchPageNum = Array.isArray(searchParams.pageNum)
+    ? searchParams.pageNum[0]
+    : searchParams.pageNum;
+
+  const searchPageSize = Array.isArray(searchParams.pageSize)
+    ? searchParams.pageSize[0]
+    : searchParams.pageSize;
+
   const branchData = await getWarrantyByFilter({
     tableName: branchFormat.data_local,
-    pageSize: 10,
-    pageNum: 1,
+    pageSize: Number(searchPageSize || 10),
+    pageNum: Number(searchPageNum || 1),
     search: searchTerm || "",
     searchBy: searchFilter || "By: Service No",
     sortList: parseSort,
@@ -66,20 +74,20 @@ const Branch = async ({ params, searchParams }: Props) => {
 
   return (
     <>
-      <div className="hidden md:flex flex-col gap-16 w-full px-16 py-4 h-screen">
+      <div className="hidden md:flex flex-col gap-16 w-full px-16 py-4">
         <div className="top nav w-full flex justify-end"></div>
         <div className="main-table flex flex-col gap-4">
           <h2>{branchFormat?.name} Warranty</h2>
-          <Suspense>
-            <SearchFilter branchData={branchFormat} />
-          </Suspense>
+          <SearchFilter branchData={branchFormat} />
 
-          <NewTable data={branchData} />
+          <NewTable data={branchData.data} />
+          <TablePagination numData={branchData.totalCount} />
         </div>
         <div className="other-table flex flex-col gap-4">
           <h2>Other Branch Warranty</h2>
-          <NewTable data={otherData} />
+          <NewTable data={otherData.data} isDisabled />
         </div>
+        <section className="h-[200px]"></section>
       </div>
       <NewDropdownOutsideClick />
       <div className="md:hidden flex justify-center items-center h-[100vh] text-center w-full">

@@ -39,7 +39,7 @@ const EditableTextBox = ({
     <td className={cn("relative overflow-hidden whitespace-nowrap group")}>
       <div
         role="button"
-        className="w-full px-2 py-1 cursor-default"
+        className="w-full px-2 py-1 cursor-pointer"
         onClick={() => {
           setOpen(true);
           setIsOpenOutside(true);

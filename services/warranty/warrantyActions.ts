@@ -67,7 +67,10 @@ export const getWarrantyByFilter = async ({
   searchBy,
   sortList,
   dbTransaction,
-}: GetWarrantyByFilterType): Promise<WarrantyDataType[]> => {
+}: GetWarrantyByFilterType): Promise<{
+  data: WarrantyDataType[];
+  totalCount: number;
+}> => {
   try {
     const dbConnection = dbTransaction ?? db;
 
@@ -84,7 +87,7 @@ export const getWarrantyByFilter = async ({
         case "By: Contact":
           return "contact";
         default:
-          return undefined;
+          throw new Error(`Unknown search filter: ${searchBy}`);
       }
     })();
 
@@ -133,9 +136,7 @@ export const getWarrantyByFilter = async ({
       }
     })();
 
-    const where = searchFilter
-      ? like(table[searchFilter], `%${search}%`)
-      : undefined;
+    const where = search ? like(table[searchFilter], `%${search}%`) : undefined;
 
     const orderByArray = sortList.map((sort) => {
       if (sort.type === "status") {
@@ -160,9 +161,33 @@ export const getWarrantyByFilter = async ({
       .offset((pageNum - 1) * pageSize)
       .execute();
 
+    let countFinal: number = 0;
+
+    if (search === "") {
+      // Count all rows if no search term is provided
+      const [{ count }] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(table)
+        .execute();
+
+      countFinal = Number(count);
+    } else {
+      // Count rows where `searchBy` column matches `search` term
+      const [{ count }] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(table)
+        .where(where)
+        .execute();
+
+      countFinal = Number(count);
+    }
+
     revalidatePath("/warranty/[branch]", "page");
 
-    return rows.length > 0 ? (rows as WarrantyDataType[]) : [];
+    return {
+      data: rows.length > 0 ? (rows as WarrantyDataType[]) : [],
+      totalCount: countFinal,
+    };
   } catch (e) {
     if (e instanceof Error) {
       throw new Error(`Error (getDataByFilter): ${e.message}`);
@@ -310,8 +335,6 @@ export const updateWarranty = async ({
     // Define the `where` clause using the selected table and `whereId`
     const whereClause = eq(table[whereId], whereValue);
     const updateValue = toChangeValue === "" ? null : toChangeValue;
-
-    console.log(toChangeId, toChangeValue);
 
     await dbConnection
       .update(table)

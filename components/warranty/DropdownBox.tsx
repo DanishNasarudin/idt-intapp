@@ -69,7 +69,7 @@ const DropdownBox = ({
         <DropdownMenuTrigger asChild>
           <div
             role="button"
-            className="w-full px-2 py-1 cursor-default whitespace-nowrap overflow-hidden"
+            className="w-full px-2 py-1 cursor-pointer whitespace-nowrap overflow-hidden"
           >
             {position === "" ? (
               <p className="min-h-[24px]"></p>
