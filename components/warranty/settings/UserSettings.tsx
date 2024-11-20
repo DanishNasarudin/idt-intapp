@@ -1,16 +1,14 @@
 "use client";
 import TableRowUser from "@/components/warranty/settings/TableRowUser";
-import { useEffect, useRef, useState } from "react";
-import { Options, UserType } from "../../../app/warranty/settings/page";
-// import { useSession } from "next-auth/react";
 import {
   adminClerkUser,
   createClerkUser,
 } from "@/services/common/clerkActions";
 import { useUser } from "@clerk/nextjs";
+import { useEffect, useRef, useState } from "react";
+import { Options, UserType } from "../../../app/warranty/settings/page";
 
 type Props = {
-  // dataValues: UserType[];
   data: UserType[];
   dataOptions: Options[];
 };
@@ -21,22 +19,10 @@ type UserData = {
   roles: string;
 };
 
-const UserSettings = ({
-  // dataValues,
-  data,
-  dataOptions,
-}: Props) => {
-  // const { data: session } = useSession();
+const UserSettings = ({ data, dataOptions }: Props) => {
   const [isAdmin, setAdmin] = useState(true);
-  // const [dataValues, setData] = useState<UserType[]>([]);
   const [render, setRender] = useState(false);
-  // console.log(dataValues);
   const { user, isLoaded } = useUser();
-
-  // useEffect(() => {
-  //   //  fetchUsers().then((users: UserType[]) => setData(users));
-  //   fetchClerkUser().then((users: any) => setData(users));
-  // }, [render, isLoaded]);
 
   const [searchFocus, setSearchFocus] = useState(false);
   const [search, setSearch] = useState("");

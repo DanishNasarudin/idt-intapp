@@ -2,9 +2,7 @@ import MainAnalytics from "@/components/warranty/MainAnalytics";
 import { countAllDB } from "@/services/warranty/dashboardActions";
 import { getBranchFormat } from "@/services/warranty/warrantyUtils";
 
-type Props = {};
-
-const Warranty = async (props: Props) => {
+const Warranty = async () => {
   const dataFormat = (await getBranchFormat()).branch;
 
   const apData = await countAllDB(

@@ -132,7 +132,7 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
           </DropdownMenu>
         </div>
         <div className="flex gap-2">
-          <Button
+          {/* <Button
             variant={"outline"}
             className="font-normal dark:text-zinc-600"
             onClick={() => {
@@ -142,7 +142,7 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
             }}
           >
             <p>Refresh Data</p>
-          </Button>
+          </Button> */}
           <Link href={`/warranty/history/${branchData?.id}`} target="_blank">
             <Button
               variant={"outline"}

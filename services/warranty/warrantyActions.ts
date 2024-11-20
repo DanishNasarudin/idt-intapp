@@ -2,12 +2,16 @@
 import db from "@/db/db";
 import {
   apLocal,
+  apLocalHistory,
   apOther,
   jbLocal,
+  jbLocalHistory,
   jbOther,
   s2Local,
+  s2LocalHistory,
   s2Other,
   saLocal,
+  saLocalHistory,
   saOther,
 } from "@/db/schema";
 import {
@@ -42,6 +46,10 @@ type NonNullableProperties<T> = {
 
 export type WarrantyDataType = NonNullableProperties<
   typeof apLocal.$inferSelect
+>;
+
+export type WarrantyHistoryDataType = NonNullableProperties<
+  typeof apLocalHistory.$inferSelect
 >;
 
 export type SortDbType = {
@@ -562,3 +570,42 @@ export const passWarranty = async ({
     }
   }
 };
+
+export async function getWarrantyHistory(
+  tableName: string,
+  search: string
+): Promise<WarrantyHistoryDataType[]> {
+  try {
+    const table = (() => {
+      switch (tableName) {
+        case "ampang-hq":
+          return apLocalHistory;
+        case "ss2-pj":
+          return s2LocalHistory;
+        case "setia-alam":
+          return saLocalHistory;
+        case "jb":
+          return jbLocalHistory;
+        default:
+          throw new Error(`Unknown table name: ${tableName}`);
+      }
+    })();
+
+    const query = db
+      .select()
+      .from(table)
+      .orderBy(sql`${table.historyId} DESC`)
+      .limit(20);
+
+    if (search) {
+      query.where(like(table.serviceNo, `%${search}%`));
+    }
+
+    // Execute the query
+    const rows = await query.execute();
+
+    return rows.length > 0 ? (rows as WarrantyHistoryDataType[]) : [];
+  } catch (error) {
+    throw new Error(`Database error (fetchHistoryData): ${error}`);
+  }
+}

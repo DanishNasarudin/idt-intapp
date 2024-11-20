@@ -124,6 +124,7 @@ const SortModuleContext = ({ setSearchSort }: Props) => {
       )}
     >
       <DndContext
+        id={"unique-dnd-context"}
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}

@@ -5,9 +5,9 @@ const nextConfig = {
   //   serverComponentsExternalPackages: ["puppeteer"],
   //   serverActions: true,
   // },
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
+  // experimental: {
+  //   missingSuspenseWithCSRBailout: false,
+  // },
   images: {
     domains: ["idealtech.com.my"],
   },
