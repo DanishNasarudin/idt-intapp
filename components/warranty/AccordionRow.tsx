@@ -15,13 +15,17 @@ import {
 } from "../ui/dialog";
 import TextBoxWithCopy from "./TextBoxWithCopy";
 
+import { useSocket } from "@/lib/providers/socket-provider";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
 
 type Props = {
   value?: WarrantyDataType;
-  onValueChange?: (newValue: string, id: string) => void;
+  onValueChange?: (
+    newValue: string,
+    id: keyof WarrantyDataType | "default"
+  ) => void;
 };
 
 const AccordionRow = ({
@@ -215,17 +219,22 @@ const AccordionRow = ({
       console.error("Failed to copy data.");
     }
   };
+
+  const { socket } = useSocket();
+
   return (
     <div className="p-2 flex flex-col gap-2">
       <div className="flex gap-2 [&>div]:w-full [&>div]:flex [&>div]:flex-col [&>div]:gap-2 [&>div]:[&>div]:flex [&>div]:[&>div]:flex-col [&>div]:[&>div]:gap-2">
         <div className="">
           <TextBoxWithCopy
+            rowId={value.serviceNo}
             id="email"
             label="Email"
             value={value.email}
             onValueChange={onValueChange}
           />
           <TextBoxWithCopy
+            rowId={value.serviceNo}
             id="address"
             label="Address"
             isTextarea
@@ -233,27 +242,36 @@ const AccordionRow = ({
             onValueChange={onValueChange}
           />
           <TextBoxWithCopy
+            rowId={value.serviceNo}
             id="purchaseDate"
             label="Purchase Date"
             value={value.purchaseDate}
             onValueChange={onValueChange}
           />
           <TextBoxWithCopy
+            rowId={value.serviceNo}
             id="invoice"
             label="Invoice"
             value={value.invoice}
             onValueChange={onValueChange}
           />
           <TextBoxWithCopy
-            id="receivedItem"
+            rowId={value.serviceNo}
+            id="receivedItems"
             label="Received Item"
             value={value.receivedItems}
             onValueChange={onValueChange}
           />
-          <TextBoxWithCopy id="pin" label="Pin" onValueChange={onValueChange} />
+          <TextBoxWithCopy
+            rowId={value.serviceNo}
+            id="pin"
+            label="Pin"
+            onValueChange={onValueChange}
+          />
         </div>
         <div>
           <TextBoxWithCopy
+            rowId={value.serviceNo}
             id="issues"
             label="Issues"
             isTextarea
@@ -262,6 +280,7 @@ const AccordionRow = ({
             onValueChange={onValueChange}
           />
           <TextBoxWithCopy
+            rowId={value.serviceNo}
             id="solutions"
             label="Solutions"
             isTextarea
@@ -272,6 +291,7 @@ const AccordionRow = ({
         </div>
         <div>
           <TextBoxWithCopy
+            rowId={value.serviceNo}
             id="statusDesc"
             label="Status Desc (Pending)"
             isTextarea
@@ -280,6 +300,7 @@ const AccordionRow = ({
             onValueChange={onValueChange}
           />
           <TextBoxWithCopy
+            rowId={value.serviceNo}
             id="remarks"
             label="Remarks / Accessories"
             isTextarea
@@ -288,6 +309,7 @@ const AccordionRow = ({
             onValueChange={onValueChange}
           />
           <TextBoxWithCopy
+            rowId={value.serviceNo}
             id="cost"
             label="Total Cost (RM) -Insert number only-"
             value={String(value.cost)}
@@ -354,12 +376,13 @@ const AccordionRow = ({
                 </DialogClose>
                 <Button
                   variant={"destructive"}
-                  onClick={() =>
+                  onClick={() => {
                     deleteWarranty({
                       tableName: branchData ? branchData?.data_local : "",
                       deleteId: value.serviceNo,
-                    })
-                  }
+                    });
+                    if (socket !== null) socket.emit("revalidate-data");
+                  }}
                 >
                   Delete
                 </Button>

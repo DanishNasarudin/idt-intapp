@@ -70,13 +70,10 @@ const NewTable = ({ data, isDisabled = false }: Props) => {
             </React.Fragment>
           ))
         ) : (
-          <tr
-            className={cn(
-              "absolute left-[50%] translate-x-[-50%] top-[50%] translate-y-[-50%]",
-              "font-bold text-lg"
-            )}
-          >
-            No Data
+          <tr className={cn("font-bold text-lg text-center")}>
+            <td colSpan={9} className="py-10">
+              No Data
+            </td>
           </tr>
         )}
       </tbody>

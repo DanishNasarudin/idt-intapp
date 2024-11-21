@@ -1,8 +1,9 @@
 "use client";
 import { createURL } from "@/lib/utils";
 import { ChevronsUpDownIcon } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
+import { useURLStore } from "@/lib/zus-store";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import {
@@ -42,10 +43,11 @@ const TablePagination = ({ numData = 0 }: { numData?: number }) => {
 
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const setSearchParams = new URLSearchParams(searchParams?.toString());
+  //   const searchParams = useSearchParams();
+  const { searchParams, updateURL } = useURLStore();
 
   useEffect(() => {
+    const setSearchParams = new URLSearchParams(searchParams?.toString());
     if (page.pageNum > 0) {
       setSearchParams.set("pageNum", String(page.pageNum));
     } else {
@@ -58,9 +60,10 @@ const TablePagination = ({ numData = 0 }: { numData?: number }) => {
       setSearchParams.delete("pageSize");
     }
 
+    updateURL(pathname !== null ? pathname : "", setSearchParams);
     const setURL = createURL(`${pathname}/`, setSearchParams);
     router.push(setURL);
-  }, [searchParams, pathname, page.pageNum, page.pageSize]);
+  }, [searchParams?.toString(), pathname, page.pageNum, page.pageSize]);
 
   return (
     <div className="flex justify-end gap-2">

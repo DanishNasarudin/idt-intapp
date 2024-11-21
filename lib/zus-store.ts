@@ -25,3 +25,17 @@ export const useBranchFormat = create<BranchFormatStore>()((set) => ({
   branchData: undefined,
   setBranchData: (branchData) => set({ branchData }),
 }));
+
+type URLState = {
+  pathname: string;
+  searchParams: URLSearchParams;
+  updateURL: (pathname: string, searchParams: URLSearchParams) => void;
+};
+
+export const useURLStore = create<URLState>()((set) => ({
+  pathname: "",
+  searchParams: new URLSearchParams(),
+  updateURL: (pathname, searchParams) => {
+    set({ pathname, searchParams });
+  },
+}));

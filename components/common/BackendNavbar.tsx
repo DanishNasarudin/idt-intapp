@@ -1,7 +1,7 @@
 "use client";
 import { useNavbarStore } from "@/lib/zus-store";
 import { UserButton, useUser } from "@clerk/nextjs";
-import { Button, Tooltip, Link as UILink } from "@nextui-org/react";
+import { Button, Tooltip } from "@nextui-org/react";
 import Link from "next/link";
 import { useEffect } from "react";
 import {
@@ -81,7 +81,7 @@ const BackendNavbar = ({ title, topLink, bottomLink }: LinkArray) => {
               radius="sm"
             >
               <Button
-                as={UILink}
+                as={Link}
                 href={val.link}
                 startContent={val.icon}
                 radius="sm"

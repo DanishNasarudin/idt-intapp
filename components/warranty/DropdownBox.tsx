@@ -1,7 +1,8 @@
 "use client";
 import { Options } from "@/app/warranty/settings/page";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { WarrantyDataType } from "@/services/warranty/warrantyActions";
+import { useEffect, useState } from "react";
 import { Badge } from "../ui/badge";
 import {
   DropdownMenu,
@@ -12,11 +13,14 @@ import {
 } from "../ui/dropdown-menu";
 
 type Props = {
-  id?: string;
+  id?: keyof WarrantyDataType | "default";
   options?: Options[];
   allOptions?: Options[];
   value?: string;
-  onValueChange?: (newValue: string, id: string) => void;
+  onValueChange?: (
+    newValue: string,
+    id: keyof WarrantyDataType | "default"
+  ) => void;
 };
 
 const defaultOptions: Options[] = [
@@ -54,6 +58,10 @@ const DropdownBox = ({
       onValueChange(value, id);
     }
   };
+
+  useEffect(() => {
+    if (value !== null) setPosition(value);
+  }, [value]);
 
   const handleFindOptionIndex = (option: string) => {
     return activeOptions.findIndex((item) => item.option === option);

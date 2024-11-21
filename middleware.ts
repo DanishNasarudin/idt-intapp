@@ -5,7 +5,7 @@ export default authMiddleware({
   afterAuth: async (auth, req, evt) => {
     let hostURL;
     // let hostURL = req.url;
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV !== "production") {
       hostURL = `${
         req.nextUrl.protocol +
         "//" +

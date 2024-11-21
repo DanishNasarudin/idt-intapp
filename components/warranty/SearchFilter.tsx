@@ -1,15 +1,28 @@
 "use client";
 import { Options } from "@/app/warranty/settings/page";
+import { useSocket } from "@/lib/providers/socket-provider";
 import { createURL } from "@/lib/utils";
-import { useBranchFormat } from "@/lib/zus-store";
-import { addWarranty, SortDbType } from "@/services/warranty/warrantyActions";
+import { useBranchFormat, useURLStore } from "@/lib/zus-store";
+import {
+  addWarranty,
+  revalidateGetWarranty,
+  SortDbType,
+} from "@/services/warranty/warrantyActions";
 import { BranchType } from "@/services/warranty/warrantyUtils";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useDebounce } from "use-debounce";
+import { useDebounce, useDebouncedCallback } from "use-debounce";
 import { Button } from "../ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,42 +65,34 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
 
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const setSearchParams = new URLSearchParams();
+  const searchParamsCheck = useSearchParams();
+  const { searchParams, updateURL } = useURLStore();
 
   useEffect(() => {
-    if (pathname === null) return;
-
+    const setSearchParams = new URLSearchParams(searchParams?.toString());
     if (searchValues) {
       setSearchParams.set("search", searchValues);
     } else {
       setSearchParams.delete("search");
     }
 
-    if (searchFilterValues) {
-      setSearchParams.set("filter", searchFilterValues);
-    } else {
-      setSearchParams.delete("filter");
-    }
+    setSearchParams.set("filter", searchFilterValues);
 
-    if (searchSortValues) {
-      const sortToString = searchSortValues
-        .map((item) => `${item.type}-${item.direction}`)
-        .join(",");
+    const sortToString = searchSortValues
+      .map((item) => `${item.type}-${item.direction}`)
+      .join(",");
 
-      setSearchParams.set("sort", sortToString);
-    } else {
-      setSearchParams.delete("sort");
-    }
+    setSearchParams.set("sort", sortToString);
 
+    updateURL(pathname !== null ? pathname : "", setSearchParams);
     const setURL = createURL(`${pathname}/`, setSearchParams);
     router.push(setURL);
   }, [
+    pathname,
+    searchParamsCheck,
     searchValues,
     searchFilterValues,
     searchSortValues,
-    pathname,
-    searchParams,
   ]);
 
   // Branch Format Zustand Initiate -------------
@@ -100,6 +105,31 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
   }, [branchData]);
 
   //
+
+  const [outdated, setOutdated] = useState(false);
+
+  const { socket, isOutdated } = useSocket();
+
+  useEffect(() => {
+    if (isOutdated) setOutdated(true);
+  }, [isOutdated]);
+
+  const revalidateWarranty = useDebouncedCallback(async () => {
+    toast.promise(revalidateGetWarranty(), {
+      loading: `Data Refreshing..`,
+      success: `Data Refreshed!`,
+      error: "Data Refresh Error!",
+    });
+  }, 2000);
+
+  useEffect(() => {
+    if (socket === null) return;
+
+    socket.on("receive-revalidate", revalidateWarranty);
+    return () => {
+      socket.off("receive-revalidate", revalidateWarranty);
+    };
+  }, [socket]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -132,17 +162,6 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
           </DropdownMenu>
         </div>
         <div className="flex gap-2">
-          {/* <Button
-            variant={"outline"}
-            className="font-normal dark:text-zinc-600"
-            onClick={() => {
-              // setTimeout(() => {
-              //   setNewEntry(!newEntry);
-              // }, 50);
-            }}
-          >
-            <p>Refresh Data</p>
-          </Button> */}
           <Link href={`/warranty/history/${branchData?.id}`} target="_blank">
             <Button
               variant={"outline"}
@@ -154,7 +173,7 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
           <Button
             variant={"accent"}
             className="font-normal dark:text-zinc-600"
-            onClick={() => {
+            onClick={async () => {
               toast.promise(
                 addWarranty({ tableName: branchData?.data_local }),
                 {
@@ -163,6 +182,7 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
                   error: "Failed adding data.",
                 }
               );
+              if (socket !== null) socket.emit("revalidate-data");
             }}
           >
             <p>
@@ -174,6 +194,25 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
       <div className="flex gap-4">
         <SortModuleContext setSearchSort={setSearchSort} />
       </div>
+      <Dialog open={outdated}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>There is a new version of the app!</DialogTitle>
+            <DialogDescription>Please refresh the page.</DialogDescription>
+            <div className="flex justify-end gap-2">
+              <DialogClose asChild>
+                <Button variant={"outline"}>Cancel</Button>
+              </DialogClose>
+              <Button
+                variant={"accent"}
+                onClick={() => window.location.reload()}
+              >
+                Refresh
+              </Button>
+            </div>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

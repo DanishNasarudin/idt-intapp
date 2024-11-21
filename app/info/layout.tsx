@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import dynamic from "next/dynamic";
+import { Suspense } from "react";
 
 const Navbar = dynamic(() => import("../../components/info/Navbar"), {
   ssr: false,
@@ -24,7 +25,7 @@ export default function InfoLayout({
       <Navbar />
       <div className="flex w-full">
         <div className="w-[280px] hidden xs:block"></div>
-        {children}
+        <Suspense>{children}</Suspense>
       </div>
       {/* <div className="h-[50vh]" /> */}
     </div>

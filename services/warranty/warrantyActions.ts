@@ -121,28 +121,7 @@ export const getWarrantyByFilter = async ({
       WHEN status = 'From Ampang' THEN 8
       ELSE 9 END`;
 
-    const table = (() => {
-      switch (tableName) {
-        case "ap_local":
-          return apLocal;
-        case "s2_local":
-          return s2Local;
-        case "sa_local":
-          return saLocal;
-        case "jb_local":
-          return jbLocal;
-        case "ap_other":
-          return apOther;
-        case "s2_other":
-          return s2Other;
-        case "sa_other":
-          return saOther;
-        case "jb_other":
-          return jbOther;
-        default:
-          throw new Error(`Unknown table name: ${tableName}`);
-      }
-    })();
+    const table = getDrizzleTable(tableName);
 
     const where = search ? like(table[searchFilter], `%${search}%`) : undefined;
 
@@ -317,28 +296,7 @@ export const updateWarranty = async ({
 }: UpdateWarrantyDataType) => {
   try {
     const dbConnection = dbTransaction ?? db;
-    const table = (() => {
-      switch (tableName) {
-        case "ap_local":
-          return apLocal;
-        case "s2_local":
-          return s2Local;
-        case "sa_local":
-          return saLocal;
-        case "jb_local":
-          return jbLocal;
-        case "ap_other":
-          return apOther;
-        case "s2_other":
-          return s2Other;
-        case "sa_other":
-          return saOther;
-        case "jb_other":
-          return jbOther;
-        default:
-          throw new Error(`Unknown table name: ${tableName}`);
-      }
-    })();
+    const table = getDrizzleTable(tableName);
 
     // Define the `where` clause using the selected table and `whereId`
     const whereClause = eq(table[whereId], whereValue);
@@ -373,28 +331,7 @@ export const deleteWarranty = async ({
 }) => {
   try {
     const dbConnection = dbTransaction ?? db;
-    const table = (() => {
-      switch (tableName) {
-        case "ap_local":
-          return apLocal;
-        case "s2_local":
-          return s2Local;
-        case "sa_local":
-          return saLocal;
-        case "jb_local":
-          return jbLocal;
-        case "ap_other":
-          return apOther;
-        case "s2_other":
-          return s2Other;
-        case "sa_other":
-          return saOther;
-        case "jb_other":
-          return jbOther;
-        default:
-          throw new Error(`Unknown table name: ${tableName}`);
-      }
-    })();
+    const table = getDrizzleTable(tableName);
 
     await dbConnection.delete(table).where(eq(table["serviceNo"], deleteId));
 
@@ -423,51 +360,9 @@ export const copyWarranty = async ({
 }: CopyWarrantyType) => {
   try {
     const dbConnection = dbTransaction ?? db;
-    const tableFromActive = (() => {
-      switch (tableFrom) {
-        case "ap_local":
-          return apLocal;
-        case "s2_local":
-          return s2Local;
-        case "sa_local":
-          return saLocal;
-        case "jb_local":
-          return jbLocal;
-        case "ap_other":
-          return apOther;
-        case "s2_other":
-          return s2Other;
-        case "sa_other":
-          return saOther;
-        case "jb_other":
-          return jbOther;
-        default:
-          throw new Error(`Unknown table name: ${tableFrom}`);
-      }
-    })();
+    const tableFromActive = getDrizzleTable(tableFrom);
 
-    const tableToActive = (() => {
-      switch (tableTo) {
-        case "ap_local":
-          return apLocal;
-        case "s2_local":
-          return s2Local;
-        case "sa_local":
-          return saLocal;
-        case "jb_local":
-          return jbLocal;
-        case "ap_other":
-          return apOther;
-        case "s2_other":
-          return s2Other;
-        case "sa_other":
-          return saOther;
-        case "jb_other":
-          return jbOther;
-        default:
-          throw new Error(`Unknown table name: ${tableTo}`);
-      }
-    })();
+    const tableToActive = getDrizzleTable(tableTo);
 
     const isExistToTable = await dbConnection
       .select()
@@ -609,3 +504,30 @@ export async function getWarrantyHistory(
     throw new Error(`Database error (fetchHistoryData): ${error}`);
   }
 }
+
+const getDrizzleTable = (tableName: string) => {
+  switch (tableName) {
+    case "ap_local":
+      return apLocal;
+    case "s2_local":
+      return s2Local;
+    case "sa_local":
+      return saLocal;
+    case "jb_local":
+      return jbLocal;
+    case "ap_other":
+      return apOther;
+    case "s2_other":
+      return s2Other;
+    case "sa_other":
+      return saOther;
+    case "jb_other":
+      return jbOther;
+    default:
+      throw new Error(`Unknown table name: ${tableName}`);
+  }
+};
+
+export const revalidateGetWarranty = async () => {
+  revalidatePath("/warranty/[branch]", "page");
+};

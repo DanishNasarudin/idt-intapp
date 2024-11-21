@@ -7,6 +7,7 @@ import {
   SortDbType,
 } from "@/services/warranty/warrantyActions";
 import { getBranchFormat } from "@/services/warranty/warrantyUtils";
+import { Suspense } from "react";
 
 type Props = {
   params: {
@@ -78,7 +79,9 @@ const Branch = async ({ params, searchParams }: Props) => {
         <div className="top nav w-full flex justify-end"></div>
         <div className="main-table flex flex-col gap-4">
           <h2>{branchFormat?.name} Warranty</h2>
-          <SearchFilter branchData={branchFormat} />
+          <Suspense>
+            <SearchFilter branchData={branchFormat} />
+          </Suspense>
 
           <NewTable data={branchData.data} />
           <TablePagination numData={branchData.totalCount} />

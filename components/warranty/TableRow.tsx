@@ -1,13 +1,15 @@
 "use client";
 import { Options } from "@/app/warranty/settings/page";
+import { useSocket } from "@/lib/providers/socket-provider";
 import { cn } from "@/lib/utils";
 import { useBranchFormat } from "@/lib/zus-store";
 import {
   passWarranty,
+  revalidateGetWarranty,
   updateWarranty,
   WarrantyDataType,
 } from "@/services/warranty/warrantyActions";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { Accordion, AccordionContent, AccordionItem } from "../ui/accordion";
@@ -44,6 +46,13 @@ const defaultData: WarrantyDataType = {
 };
 
 const TableRow = ({ data }: Props) => {
+  const { socket, isConnected } = useSocket();
+
+  useEffect(() => {
+    if (socket === null || !data) return;
+    socket.emit("create-edit", data.serviceNo);
+  }, [socket, isConnected]);
+
   const activeData = data && Object.keys(data).length > 0 ? data : defaultData;
 
   const [value, setValue] = useState<WarrantyDataType>(activeData);
@@ -78,8 +87,8 @@ const TableRow = ({ data }: Props) => {
       color: item.color,
     }));
 
-  const handleValueChange = useDebouncedCallback(
-    (newValue: string, id: string) => {
+  const handleValueChangeDebounced = useDebouncedCallback(
+    (newValue: string, id: keyof WarrantyDataType | "default") => {
       if (id === "status" && newValue.includes("Pass")) {
         const fromDb = branchData?.data_local;
         const toDbString = newValue;
@@ -139,7 +148,52 @@ const TableRow = ({ data }: Props) => {
     1000
   );
 
+  const handleValueChange = useCallback(
+    (newValue: string, id: keyof WarrantyDataType | "default") => {
+      setValue((prev) => ({ ...prev, [id]: newValue }));
+      handleValueChangeDebounced(newValue, id);
+      if (socket === null || !data || id === "default") return;
+      if (data[id] !== newValue) {
+        socket.emit("send-changes", { newValue, id, rowId: data.serviceNo });
+      }
+    },
+    [socket]
+  );
+
   const [accordion, setAccordion] = useState("");
+
+  const revalidateWarranty = useDebouncedCallback(async () => {
+    toast.promise(revalidateGetWarranty(), {
+      loading: `Data Refreshing..`,
+      success: `Data Refreshed!`,
+      error: "Data Refresh Error!",
+    });
+  }, 2000);
+
+  useEffect(() => {
+    if (socket === null || !data) return;
+    const socketHandler = (socketData: {
+      newValue: string;
+      id: string;
+      rowId: string;
+    }) => {
+      const { newValue, id, rowId } = socketData;
+      if (rowId === data.serviceNo) {
+        setValue((prev) => ({
+          ...prev,
+          [id]: newValue,
+        }));
+
+        revalidateWarranty();
+      }
+    };
+    socket.on("receive-changes", socketHandler);
+
+    return () => {
+      socket.off("receive-changes", socketHandler);
+    };
+  }, [socket]);
+
   return (
     <>
       <tr
@@ -168,11 +222,13 @@ const TableRow = ({ data }: Props) => {
           </Button>
         </td>
         <EditableTextBox
+          rowId={value.serviceNo}
           id="date"
           value={value.date}
           onValueChange={handleValueChange}
         />
         <EditableTextBox
+          rowId={value.serviceNo}
           id="serviceNo"
           value={value.serviceNo}
           onValueChange={handleValueChange}
@@ -205,11 +261,13 @@ const TableRow = ({ data }: Props) => {
           onValueChange={handleValueChange}
         />
         <EditableTextBox
+          rowId={value.serviceNo}
           id="name"
           value={value.name}
           onValueChange={handleValueChange}
         />
         <EditableTextBox
+          rowId={value.serviceNo}
           id="contact"
           value={value.contact}
           onValueChange={handleValueChange}

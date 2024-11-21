@@ -1,5 +1,4 @@
-import React from "react";
-import { SignOutButton, ClerkLoading } from "@clerk/nextjs";
+import { SignOutButton } from "@clerk/nextjs";
 
 type Props = {};
 
