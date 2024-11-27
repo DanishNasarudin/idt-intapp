@@ -4,7 +4,13 @@ import { cn } from "@/lib/utils";
 import { useDropOutsideClick } from "@/lib/zus-store";
 import { WarrantyDataType } from "@/services/warranty/warrantyActions";
 import { CopyIcon } from "lucide-react";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
@@ -17,6 +23,9 @@ type Props = {
     newValue: string,
     id: keyof WarrantyDataType | "default"
   ) => void;
+  isAccordion?: boolean;
+  accordionValue?: string;
+  setAccordion?: (newValue: SetStateAction<string>) => void;
 };
 
 const EditableTextBox = ({
@@ -24,6 +33,9 @@ const EditableTextBox = ({
   id = "default",
   value = "",
   onValueChange = () => {},
+  isAccordion = false,
+  accordionValue = "",
+  setAccordion = () => {},
 }: Props) => {
   const [input, setInput] = useState(value || "");
 
@@ -86,7 +98,27 @@ const EditableTextBox = ({
   };
 
   return (
-    <td className={cn("relative overflow-hidden whitespace-nowrap group")}>
+    <td
+      className={cn(
+        open && "overflow-hidden",
+        "relative whitespace-nowrap group"
+      )}
+    >
+      {isAccordion && (
+        <Button
+          onClick={() => setAccordion((prev) => (prev === "" ? "item-1" : ""))}
+          variant={"nothing"}
+          size={"sm"}
+          className={cn(
+            "z-[99] absolute left-[-60px] top-0 mobilehover:group-hover/accordion:text-white text-transparent bg-transparent transition-all",
+            accordionValue === ""
+              ? "mobilehover:group-hover/accordion:bg-accent"
+              : "mobilehover:group-hover/accordion:bg-destructive"
+          )}
+        >
+          {accordionValue === "" ? "Open" : "Close"}
+        </Button>
+      )}
       <Tooltip {...(!edit && { open: false })}>
         <TooltipTrigger className="cursor-default w-full text-left">
           <div

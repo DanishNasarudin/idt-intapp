@@ -67,6 +67,29 @@ type GetWarrantyByFilterType = {
   dbTransaction?: DatabaseTransaction;
 };
 
+const getDrizzleTable = (tableName: string) => {
+  switch (tableName) {
+    case "ap_local":
+      return apLocal;
+    case "s2_local":
+      return s2Local;
+    case "sa_local":
+      return saLocal;
+    case "jb_local":
+      return jbLocal;
+    case "ap_other":
+      return apOther;
+    case "s2_other":
+      return s2Other;
+    case "sa_other":
+      return saOther;
+    case "jb_other":
+      return jbOther;
+    default:
+      throw new Error(`Unknown table name: ${tableName}`);
+  }
+};
+
 export const getWarrantyByFilter = async ({
   tableName,
   pageSize,
@@ -125,19 +148,24 @@ export const getWarrantyByFilter = async ({
 
     const where = search ? like(table[searchFilter], `%${search}%`) : undefined;
 
-    const orderByArray = sortList.map((sort) => {
-      if (sort.type === "status") {
-        return sort.direction === "asc" ? statusOrderAsc : statusOrderDesc;
-      } else {
-        const column = table[sort.type as keyof typeof table] as
-          | AnyColumn
-          | undefined;
-        if (column) {
-          return sort.direction === "asc" ? asc(column) : desc(column);
-        }
-        throw new Error(`Unknown column: ${sort.type}`);
-      }
-    });
+    const orderByArray =
+      sortList.length > 0
+        ? sortList.map((sort) => {
+            if (sort.type === "status") {
+              return sort.direction === "asc"
+                ? statusOrderAsc
+                : statusOrderDesc;
+            } else {
+              const column = table[sort.type as keyof typeof table] as
+                | AnyColumn
+                | undefined;
+              if (column) {
+                return sort.direction === "asc" ? asc(column) : desc(column);
+              }
+              throw new Error(`Unknown column: ${sort.type}`);
+            }
+          })
+        : [asc(table.date)];
 
     const rows = await dbConnection
       .select()
@@ -500,34 +528,60 @@ export async function getWarrantyHistory(
     const rows = await query.execute();
 
     return rows.length > 0 ? (rows as WarrantyHistoryDataType[]) : [];
-  } catch (error) {
-    throw new Error(`Database error (fetchHistoryData): ${error}`);
+  } catch (e) {
+    if (e instanceof Error) {
+      throw new Error(`Error (getWarrantyHistory): ${e.message}`);
+    } else {
+      throw new Error(`Error (getWarrantyHistory): ${e}`);
+    }
   }
 }
 
-const getDrizzleTable = (tableName: string) => {
-  switch (tableName) {
-    case "ap_local":
-      return apLocal;
-    case "s2_local":
-      return s2Local;
-    case "sa_local":
-      return saLocal;
-    case "jb_local":
-      return jbLocal;
-    case "ap_other":
-      return apOther;
-    case "s2_other":
-      return s2Other;
-    case "sa_other":
-      return saOther;
-    case "jb_other":
-      return jbOther;
-    default:
-      throw new Error(`Unknown table name: ${tableName}`);
-  }
-};
-
 export const revalidateGetWarranty = async () => {
   revalidatePath("/warranty/[branch]", "page");
+};
+
+export const getWarrantyDetail = async (
+  search: string
+): Promise<Partial<WarrantyDataType> | undefined> => {
+  try {
+    const tables = [apLocal, s2Local, saLocal, jbLocal];
+    const searchLike = `%${search}%`;
+
+    const searchPromises = tables.map((table) =>
+      db
+        .select({
+          serviceNo: table.serviceNo,
+          date: table.date,
+          pic: table.pic,
+          status: table.status,
+          issues: table.issues,
+        })
+        .from(table)
+        .where(search ? like(table.serviceNo, searchLike) : undefined)
+        .execute()
+    );
+
+    const results = await Promise.all(searchPromises);
+
+    const aggregatedRows = results.flat().map((row) => ({
+      serviceNo: row.serviceNo,
+      date: row.date ?? "",
+      pic: row.pic ?? "",
+      status: row.status ?? "",
+      issues: row.issues ?? "",
+    }));
+
+    return search !== ""
+      ? aggregatedRows.length > 0
+        ? aggregatedRows[0]
+        : undefined
+      : undefined;
+  } catch (e) {
+    if (e instanceof Error) {
+      throw new Error(`Error (getWarrantyDetail): ${e.message}`);
+    } else {
+      throw new Error(`Error (getWarrantyDetail): ${e}`);
+    }
+  }
 };

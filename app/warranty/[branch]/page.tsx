@@ -40,10 +40,16 @@ const Branch = async ({ params, searchParams }: Props) => {
     : searchParams.sort;
 
   const parseSort =
-    searchSort?.split(",").map((item) => {
-      const [type, direction] = item.split("-");
-      return { type, direction } as SortDbType;
-    }) || [];
+    searchSort
+      ?.split(",")
+      .map((item) => {
+        const [type, direction] = item.split("-");
+        if (type && direction) {
+          return { type, direction } as SortDbType;
+        }
+        return null;
+      })
+      .filter((entry): entry is SortDbType => entry !== null) || [];
 
   const searchPageNum = Array.isArray(searchParams.pageNum)
     ? searchParams.pageNum[0]

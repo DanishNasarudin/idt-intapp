@@ -30,7 +30,7 @@ const NewTable = ({ data, isDisabled = false }: Props) => {
             value.length === 0 && "border-b-[1px] border-zinc-800"
           )}
         >
-          <th className="w-[0%]"></th>
+          {/* <th className="w-[0%]"></th> */}
           <th className="w-[12%]">
             <span>Date</span>
           </th>

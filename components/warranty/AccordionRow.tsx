@@ -188,23 +188,109 @@ const AccordionRow = ({
     }
   };
 
+  const generatePDFBuffer = async (): Promise<ArrayBuffer> => {
+    try {
+      const template = await addDataToHTML();
+
+      const newWindow = window.open("", "_blank");
+      if (newWindow) {
+        const htmlBlob = new Blob([template], { type: "text/html" });
+        const url = URL.createObjectURL(htmlBlob);
+        newWindow.location.href = url;
+
+        return new Promise((resolve, reject) => {
+          const checkContentInterval = setInterval(async () => {
+            try {
+              if (newWindow.document.readyState === "complete") {
+                clearInterval(checkContentInterval);
+
+                setTimeout(async () => {
+                  const element = newWindow.document.body
+                    .firstElementChild as HTMLElement;
+
+                  if (!element) {
+                    reject(
+                      new Error(
+                        "The target element is not loaded or does not exist."
+                      )
+                    );
+                    return;
+                  }
+
+                  const canvas = await html2canvas(element, {
+                    useCORS: true,
+                    backgroundColor: "#fff",
+                  });
+
+                  const pdf = new jsPDF("p", "pt", "a4");
+
+                  const canvasAspectRatio = canvas.height / canvas.width;
+                  const a4AspectRatio =
+                    pdf.internal.pageSize.height / pdf.internal.pageSize.width;
+
+                  let pdfWidth = pdf.internal.pageSize.width;
+                  let pdfHeight = pdf.internal.pageSize.height;
+
+                  if (canvasAspectRatio < a4AspectRatio) {
+                    pdfHeight = pdfWidth * canvasAspectRatio;
+                  } else {
+                    pdfWidth = pdfHeight / canvasAspectRatio;
+                  }
+
+                  const imgData = canvas.toDataURL("image/png");
+
+                  pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+                  // Generate PDF as arraybuffer
+                  const pdfBuffer = pdf.output("arraybuffer");
+
+                  // Clean up
+                  newWindow.close();
+                  URL.revokeObjectURL(url);
+
+                  resolve(pdfBuffer);
+                }, 100);
+              }
+            } catch (error) {
+              console.error("Error rendering the PDF:", error);
+              clearInterval(checkContentInterval);
+              newWindow.close();
+              URL.revokeObjectURL(url);
+              reject(error);
+            }
+          }, 100);
+        });
+      } else {
+        console.error("Failed to open a new window.");
+        throw new Error("Failed to open a new window.");
+      }
+    } catch (error) {
+      console.error("Failed to generate PDF buffer:", error);
+      throw error;
+    }
+  };
+
   const sendEmail = async () => {
     try {
       const template = await addDataToHTML();
+      const pdfBuffer = await generatePDFBuffer();
 
       await fetch("/api/contact", {
         method: "POST",
         body: JSON.stringify({
-          template: template,
+          template,
           values: value,
+          pdf: Array.from(new Uint8Array(pdfBuffer)),
         }),
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
       });
+      return true;
     } catch (e) {
       console.error("Email failed to send.");
+      return false;
     }
   };
 
@@ -215,8 +301,10 @@ const AccordionRow = ({
         .join("\n");
 
       navigator.clipboard.writeText(dataString);
+      return true;
     } catch (e) {
       console.error("Failed to copy data.");
+      return false;
     }
   };
 

@@ -1,10 +1,12 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { io as ClientIO } from "socket.io-client";
+
+import { io as ClientIO, Socket } from "socket.io-client";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 
 type SocketContextType = {
-  socket: any | null;
+  socket: Socket<DefaultEventsMap, DefaultEventsMap> | any | null;
   isConnected: boolean;
   isOutdated: boolean;
 };
@@ -19,33 +21,39 @@ export const useSocket = () => {
   return useContext(SocketContext);
 };
 
-// const hostname =
-//   process.env.NODE_ENV !== "production"
-//     ? "http://localhost:3000"
-//     : "https://app.idealtech.com.my";
+const hostname =
+  process.env.NODE_ENV !== "production"
+    ? "http://localhost:3000"
+    : "https://app.idealtech.com.my";
 
-const hostname = "http://localhost:3000";
+// const hostname = "http://localhost:3000";
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
-  const [socket, setSocket] = useState(null);
+  const [socket, setSocket] = useState<Socket<
+    DefaultEventsMap,
+    DefaultEventsMap
+  > | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isOutdated, setIsOutdated] = useState(false);
+  const [socketId, setSocketId] = useState("");
 
   useEffect(() => {
-    const socketInstance = new (ClientIO as any)(hostname, {
+    const socketInstance = ClientIO(hostname, {
       path: "/api/socket/io",
       addTrailingSlash: false,
     });
     socketInstance.on("connect", () => {
       setIsConnected(true);
+      setSocketId(socketInstance.id !== undefined ? socketInstance.id : "");
+      // console.log(socketInstance.id, "CHECKCCSS");
     });
     socketInstance.on("disconnect", () => {
       setIsConnected(false);
     });
     socketInstance.on("connect_error", (err: any) => {
-      console.log(err.message);
-      console.log(err.description);
-      console.log(err.context);
+      // console.log(err.message);
+      // console.log(err.description);
+      // console.log(err.context);
       setTimeout(() => {
         socketInstance.connect();
       }, 1000);
@@ -68,6 +76,20 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       socketInstance.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    if (socket === null) return;
+    if (typeof window !== "undefined") {
+      const activeId = window.localStorage.getItem("activeSocket");
+      // console.log(activeId, "CHECK");
+      if (activeId === "" && socketId !== "") {
+        window.localStorage.setItem("activeSocket", socketId);
+      } else {
+        socket.emit("clear-client", { activeSocket: activeId });
+        window.localStorage.setItem("activeSocket", socketId);
+      }
+    }
+  }, [socketId]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected, isOutdated }}>

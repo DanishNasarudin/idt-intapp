@@ -6,6 +6,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   const data = (await req.json()) as {
     template: string;
     values: WarrantyDataType;
+    pdf: number[];
   };
   // console.log(data);
   if (!data) {
@@ -14,8 +15,8 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
   try {
     const transporter = nodemailer.createTransport({
-      service: "v5787.securen.net",
-      host: "v5787.securen.net",
+      service: "mail.idealtech.com.my",
+      host: "mail.idealtech.com.my",
       port: 465,
       secure: true,
       auth: {
@@ -35,6 +36,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
       replyTo: process.env.EMAIL,
       subject: `Service Receipt: ${data.values.serviceNo} ${data.values.name}`,
       html: data.template,
+      attachments: [
+        {
+          filename: `${data.values.serviceNo}_IdealTechPC_Service.pdf`,
+          content: Buffer.from(data.pdf),
+          contentType: "application/pdf",
+        },
+      ],
     };
 
     await transporter.sendMail(mailOption);

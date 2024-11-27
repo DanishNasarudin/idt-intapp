@@ -13,7 +13,6 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { Accordion, AccordionContent, AccordionItem } from "../ui/accordion";
-import { Button } from "../ui/button";
 import AccordionRow from "./AccordionRow";
 import DropdownBox from "./DropdownBox";
 import EditableTextBox from "./EditableTextBox";
@@ -204,7 +203,7 @@ const TableRow = ({ data }: Props) => {
           accordion === "" ? "bg-transparent" : "dark:bg-zinc-900 bg-zinc-100"
         )}
       >
-        <td className="relative">
+        {/* <td className="relative">
           <Button
             onClick={() =>
               setAccordion((prev) => (prev === "" ? "item-1" : ""))
@@ -220,12 +219,15 @@ const TableRow = ({ data }: Props) => {
           >
             {accordion === "" ? "Open" : "Close"}
           </Button>
-        </td>
+        </td> */}
         <EditableTextBox
           rowId={value.serviceNo}
           id="date"
           value={value.date}
           onValueChange={handleValueChange}
+          isAccordion
+          accordionValue={accordion}
+          setAccordion={setAccordion}
         />
         <EditableTextBox
           rowId={value.serviceNo}
