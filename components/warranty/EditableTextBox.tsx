@@ -101,6 +101,7 @@ const EditableTextBox = ({
     <td
       className={cn(
         open && "overflow-hidden",
+        id !== "date" && "overflow-hidden",
         "relative whitespace-nowrap group"
       )}
     >
