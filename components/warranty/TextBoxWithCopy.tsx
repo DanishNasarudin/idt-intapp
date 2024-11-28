@@ -56,7 +56,7 @@ const TextBoxWithCopy = ({
   const [edit, setEdit] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const { socket } = useSocket();
+  const { socket, setIsFocus } = useSocket();
 
   useEffect(() => {
     if (socket === null) return;
@@ -66,7 +66,6 @@ const TextBoxWithCopy = ({
       isEditing: boolean;
     }) => {
       const { rowId: socketRowId, columnId, isEditing } = socketData;
-      // if (rowId === "WAP2411001") console.log(socketData, "HERE PASS");
       if (socketRowId === rowId && columnId === id) {
         setEdit(isEditing);
       }
@@ -88,11 +87,21 @@ const TextBoxWithCopy = ({
     }
   }, [open, socket]);
 
+  const handleFocus = () => {
+    setOpen(true);
+    setIsFocus(true);
+  };
+
+  const handleBlur = () => {
+    setOpen(false);
+    setIsFocus(false);
+  };
+
   return (
     <div
       className={cn("relative group/textboxinput")}
-      onFocus={() => setOpen(true)}
-      onBlur={() => setOpen(false)}
+      onFocus={() => handleFocus()}
+      onBlur={() => handleBlur()}
     >
       <Label
         htmlFor={id}

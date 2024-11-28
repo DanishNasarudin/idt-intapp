@@ -5,11 +5,10 @@ import { cn } from "@/lib/utils";
 import { useBranchFormat } from "@/lib/zus-store";
 import {
   passWarranty,
-  revalidateGetWarranty,
   updateWarranty,
   WarrantyDataType,
 } from "@/services/warranty/warrantyActions";
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { Accordion, AccordionContent, AccordionItem } from "../ui/accordion";
@@ -161,13 +160,13 @@ const TableRow = ({ data }: Props) => {
 
   const [accordion, setAccordion] = useState("");
 
-  const revalidateWarranty = useDebouncedCallback(async () => {
-    toast.promise(revalidateGetWarranty(), {
-      loading: `Data Refreshing..`,
-      success: `Data Refreshed!`,
-      error: "Data Refresh Error!",
-    });
-  }, 2000);
+  // const revalidateWarranty = useDebouncedCallback(async () => {
+  //   toast.promise(revalidateGetWarranty(), {
+  //     loading: `Data Refreshing..`,
+  //     success: `Data Refreshed!`,
+  //     error: "Data Refresh Error!",
+  //   });
+  // }, 2000);
 
   useEffect(() => {
     if (socket === null || !data) return;
@@ -183,7 +182,7 @@ const TableRow = ({ data }: Props) => {
           [id]: newValue,
         }));
 
-        revalidateWarranty();
+        // revalidateWarranty();
       }
     };
     socket.on("receive-changes", socketHandler);
@@ -313,4 +312,4 @@ const TableRow = ({ data }: Props) => {
   );
 };
 
-export default TableRow;
+export default memo(TableRow);

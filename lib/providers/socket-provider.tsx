@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 import { io as ClientIO, Socket } from "socket.io-client";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
@@ -9,12 +16,16 @@ type SocketContextType = {
   socket: Socket<DefaultEventsMap, DefaultEventsMap> | any | null;
   isConnected: boolean;
   isOutdated: boolean;
+  isFocus: boolean;
+  setIsFocus: Dispatch<SetStateAction<boolean>>;
 };
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
   isConnected: false,
   isOutdated: false,
+  isFocus: false,
+  setIsFocus: () => {},
 });
 
 export const useSocket = () => {
@@ -36,6 +47,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isOutdated, setIsOutdated] = useState(false);
   const [socketId, setSocketId] = useState("");
+  const [isFocus, setIsFocus] = useState(false);
 
   useEffect(() => {
     const socketInstance = ClientIO(hostname, {
@@ -92,7 +104,9 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   }, [socketId]);
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected, isOutdated }}>
+    <SocketContext.Provider
+      value={{ socket, isConnected, isOutdated, isFocus, setIsFocus }}
+    >
       {children}
     </SocketContext.Provider>
   );

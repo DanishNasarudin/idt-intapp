@@ -1,7 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { WarrantyDataType } from "@/services/warranty/warrantyActions";
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import TableRow from "./TableRow";
 
 type Props = {
@@ -10,11 +10,23 @@ type Props = {
 };
 
 const NewTable = ({ data, isDisabled = false }: Props) => {
-  const [value, setValue] = useState<WarrantyDataType[]>(data || []);
+  // const [value, setValue] = useState<WarrantyDataType[]>(data || []);
 
-  useEffect(() => {
-    if (data) setValue(data);
+  // useEffect(() => {
+  //   if (data) setValue(data);
+  // }, [data]);
+
+  const value = useMemo<WarrantyDataType[]>(() => {
+    return data || [];
   }, [data]);
+
+  const rows = useMemo(() => {
+    return value.map((item) => (
+      <React.Fragment key={item.serviceNo}>
+        <TableRow data={item} />
+      </React.Fragment>
+    ));
+  }, [value]);
 
   return (
     <table
@@ -64,11 +76,7 @@ const NewTable = ({ data, isDisabled = false }: Props) => {
         )}
       >
         {value.length > 0 ? (
-          value.map((item) => (
-            <React.Fragment key={item.serviceNo}>
-              <TableRow data={item} />
-            </React.Fragment>
-          ))
+          <>{rows}</>
         ) : (
           <tr className={cn("font-bold text-lg text-center")}>
             <td colSpan={9} className="py-10">

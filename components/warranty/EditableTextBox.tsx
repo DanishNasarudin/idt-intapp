@@ -52,7 +52,12 @@ const EditableTextBox = ({
   };
 
   useEffect(() => {
-    if (isOpenOutside === false) setOpen(false);
+    if (isOpenOutside === false) {
+      setOpen(false);
+      if (open) {
+        setIsFocus(false);
+      }
+    }
   }, [isOpenOutside]);
 
   useEffect(() => {
@@ -61,7 +66,7 @@ const EditableTextBox = ({
 
   const [edit, setEdit] = useState(false);
 
-  const { socket } = useSocket();
+  const { socket, setIsFocus } = useSocket();
 
   useEffect(() => {
     if (socket === null) return;
@@ -92,10 +97,6 @@ const EditableTextBox = ({
       socket.emit("editing-cell", { rowId, columnId: id, isEditing: false });
     }
   }, [open, socket]);
-
-  const toolTipOption = {
-    open: false,
-  };
 
   return (
     <td
@@ -132,6 +133,7 @@ const EditableTextBox = ({
             )}
             onClick={() => {
               setOpen(true);
+              setIsFocus(true);
               setIsOpenOutside(true);
               setTimeout(() => {
                 if (inputRef.current && inputRef.current.id === id)
@@ -159,6 +161,7 @@ const EditableTextBox = ({
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === "Escape") {
                       setOpen(false);
+                      setIsFocus(false);
                       setIsOpenOutside(false);
                     }
                   }}

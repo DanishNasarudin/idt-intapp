@@ -11,7 +11,7 @@ import {
 import { BranchType } from "@/services/warranty/warrantyUtils";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useDebounce, useDebouncedCallback } from "use-debounce";
 import { Button } from "../ui/button";
@@ -108,7 +108,7 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
 
   const [outdated, setOutdated] = useState(false);
 
-  const { socket, isOutdated } = useSocket();
+  const { socket, isOutdated, isFocus } = useSocket();
 
   useEffect(() => {
     if (isOutdated) setOutdated(true);
@@ -122,14 +122,31 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
     });
   }, 2000);
 
+  const pendingExecution = useRef<(() => void) | null>(null);
+
   useEffect(() => {
     if (socket === null) return;
 
-    socket.on("receive-revalidate", revalidateWarranty);
-    return () => {
-      socket.off("receive-revalidate", revalidateWarranty);
+    const handleRevalidate = () => {
+      if (isFocus) {
+        pendingExecution.current = revalidateWarranty;
+      } else {
+        revalidateWarranty();
+      }
     };
-  }, [socket]);
+
+    socket.on("receive-revalidate", handleRevalidate);
+    return () => {
+      socket.off("receive-revalidate", handleRevalidate);
+    };
+  }, [socket, isFocus]);
+
+  useEffect(() => {
+    if (!isFocus && pendingExecution.current) {
+      pendingExecution.current();
+      pendingExecution.current = null;
+    }
+  }, [isFocus]);
 
   return (
     <div className="flex flex-col gap-4">
