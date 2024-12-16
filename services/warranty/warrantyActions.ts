@@ -244,29 +244,25 @@ export const addWarranty = async ({
       throw new Error(`Invalid table name: ${tableName}`);
     }
 
-    const maxSequences = await Promise.all(
-      Object.entries(tables).map(async ([name, table]) => {
-        const [{ maxSequence }] = await db
-          .select({
-            maxSequence: sql<number>`MAX(SUBSTRING(service_no, ${
-              prefix.length + 5
-            }))`,
-          })
-          .from(table)
-          .where(like(table.serviceNo, likePattern))
-          .execute();
+    const table = tables[tableName];
 
-        return maxSequence || 0;
+    const [{ maxSequence }] = await dbConnection
+      .select({
+        maxSequence: sql<number>`MAX(SUBSTRING(service_no, ${
+          prefix.length + 5
+        }, 3)::INTEGER)`,
       })
-    );
+      .from(table)
+      .where(like(table.serviceNo, likePattern))
+      .execute();
 
-    const maxSequence = Math.max(...maxSequences, 0);
-
-    const sequenceNumber = maxSequence + 1;
+    const sequenceNumber = (maxSequence || 0) + 1;
 
     const serviceNo = `${prefix}${year}${month}${`00${sequenceNumber}`.slice(
       -3
     )}`;
+
+    // console.log(maxSequence);
 
     const today = new Date();
     const formattedDate = format(today, "yyyy-MM-dd");
