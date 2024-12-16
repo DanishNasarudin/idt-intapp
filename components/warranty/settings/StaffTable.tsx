@@ -25,7 +25,9 @@ const StaffTable = ({ data }: Props) => {
       <div className="tab-body">
         {data ? (
           data.length > 0 ? (
-            data.map((item) => <StaffTableRow data={item} key={item.id} />)
+            data.map((item) => (
+              <StaffTableRow data={item} key={Number(item.id)} />
+            ))
           ) : (
             <>
               <h2 className="text-center">No data</h2>
