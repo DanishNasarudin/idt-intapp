@@ -11,6 +11,10 @@ import {
   saOther,
 } from "@/db/schema";
 import { AnyColumn, eq, like, sql } from "drizzle-orm";
+import {
+  serverErrorHandler,
+  ServerErrorHandlerType,
+} from "../common/errorHandler";
 import { WarrantyDataType } from "./warrantyActions";
 
 export const countDB = async (
@@ -96,7 +100,7 @@ export const countAllDB = async (
   local: string,
   prefix: string,
   leadList: string[]
-): Promise<CountAllDBType> => {
+): Promise<{ data: CountAllDBType } | ServerErrorHandlerType> => {
   try {
     const completeCount = await countDB(
       `${local}_local`,
@@ -124,29 +128,31 @@ export const countAllDB = async (
     );
     const statusJB = await countDB(`${local}_local`, "status", "From JB");
 
+    if (!("data" in lead)) {
+      return await serverErrorHandler(lead.message, "BranchPage");
+    }
+
     return {
-      complete: completeCount.count,
-      total: totalCount.count,
-      other,
-      pass: passCount.count,
-      leadboard: lead,
-      status: {
-        completed: completeCount.count,
-        waiting: statusW.count,
-        inProgress: statusP.count,
-        inQueue: statusQ.count,
-        fromAP: statusAP.count,
-        fromS2: statusS2.count,
-        fromSA: statusSA.count,
-        fromJB: statusJB.count,
+      data: {
+        complete: completeCount.count,
+        total: totalCount.count,
+        other,
+        pass: passCount.count,
+        leadboard: lead.data,
+        status: {
+          completed: completeCount.count,
+          waiting: statusW.count,
+          inProgress: statusP.count,
+          inQueue: statusQ.count,
+          fromAP: statusAP.count,
+          fromS2: statusS2.count,
+          fromSA: statusSA.count,
+          fromJB: statusJB.count,
+        },
       },
     };
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Error (countAllDB): ${error.message}`);
-    } else {
-      throw new Error(`Error (countAllDB): ${error}`);
-    }
+    return await serverErrorHandler(error, "countAllDB");
   }
 };
 
@@ -159,7 +165,9 @@ type CountAllBranchDBType = {
   };
 };
 
-export const countAllBranchDB = async (): Promise<CountAllBranchDBType> => {
+export const countAllBranchDB = async (): Promise<
+  { data: CountAllBranchDBType } | ServerErrorHandlerType
+> => {
   const locals = ["ap", "s2", "sa", "jb"];
   try {
     // Create an array of promises for each count operation for every local entry
@@ -186,19 +194,17 @@ export const countAllBranchDB = async (): Promise<CountAllBranchDBType> => {
     }
 
     return {
-      total: completed + inProgress + inQueue,
-      status: {
-        completed,
-        inProgress,
-        inQueue,
+      data: {
+        total: completed + inProgress + inQueue,
+        status: {
+          completed,
+          inProgress,
+          inQueue,
+        },
       },
     };
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Error (countAllBranchDB): ${error.message}`);
-    } else {
-      throw new Error(`Error (countAllBranchDB): ${error}`);
-    }
+    return await serverErrorHandler(error, "countAllBranchDB");
   }
 };
 
@@ -206,7 +212,9 @@ export const countLeadDB = async (
   tableName: string,
   columnName: string,
   array: string[]
-): Promise<{ name: string; count: number }[]> => {
+): Promise<
+  { data: { name: string; count: number }[] } | ServerErrorHandlerType
+> => {
   try {
     const table = (() => {
       switch (tableName) {
@@ -245,12 +253,8 @@ export const countLeadDB = async (
 
     counts.sort((a, b) => b.count - a.count);
 
-    return counts;
+    return { data: counts };
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Error (countLeadDB): ${error.message}`);
-    } else {
-      throw new Error(`Error (countLeadDB): ${error}`);
-    }
+    return await serverErrorHandler(error, "countLeadDB");
   }
 };

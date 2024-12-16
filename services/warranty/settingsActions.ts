@@ -30,7 +30,7 @@ export const addStaffBranch = async (
 };
 
 export type StaffBranchType = {
-  id: number;
+  id: bigint;
   name: string;
   branch: string;
   color: string;
@@ -53,7 +53,7 @@ export const updateStaffBranch = async (
   colType: keyof StaffBranchType,
   colTypeName: string,
   colId: keyof StaffBranchType,
-  id: number
+  id: bigint
 ) => {
   try {
     await db
@@ -74,7 +74,7 @@ export const updateStaffBranch = async (
   }
 };
 
-export const deleteStaffBranch = async (id: number) => {
+export const deleteStaffBranch = async (id: bigint) => {
   try {
     await db
       .delete(warrantyStaffBranch)

@@ -24,7 +24,8 @@ const Branch = async ({ params, searchParams }: Props) => {
   const branchFormat = format.find((item) => item.id === branchId);
 
   if (branchFormat === undefined) {
-    throw new Error("Branch Page Invalid.");
+    console.error("Branch format invalid.");
+    throw new Error("Branch format invalid.");
   }
 
   const searchTerm = Array.isArray(searchParams.search)
@@ -76,6 +77,16 @@ const Branch = async ({ params, searchParams }: Props) => {
     searchBy: searchFilter || "By: Service No",
     sortList: parseSort,
   });
+
+  if (!("data" in branchData)) {
+    console.error(branchData.message);
+    throw new Error(branchData.message);
+  }
+
+  if (!("data" in otherData)) {
+    console.error(otherData.message);
+    throw new Error(otherData.message);
+  }
 
   // console.log(data, "CJECK");
 

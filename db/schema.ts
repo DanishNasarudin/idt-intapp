@@ -1,30 +1,20 @@
-import { sql } from "drizzle-orm";
-import { datetime, index, int, mysqlEnum, mysqlTable, primaryKey, text, unique, varchar } from "drizzle-orm/mysql-core";
+import { pgTable, index, varchar, text, bigint, bigserial, timestamp, uniqueIndex, pgEnum } from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
 
-export const prismaMigrations = mysqlTable("_prisma_migrations", {
-	id: varchar({ length: 36 }).notNull(),
-	checksum: varchar({ length: 64 }).notNull(),
-	finishedAt: datetime("finished_at", { mode: 'string', fsp: 3 }),
-	migrationName: varchar("migration_name", { length: 255 }).notNull(),
-	logs: text(),
-	rolledBackAt: datetime("rolled_back_at", { mode: 'string', fsp: 3 }),
-	startedAt: datetime("started_at", { mode: 'string', fsp: 3 }).default(sql`(CURRENT_TIMESTAMP(3))`).notNull(),
-	appliedStepsCount: int("applied_steps_count", { unsigned: true }).default(0).notNull(),
-},
-(table) => {
-	return {
-		prismaMigrationsId: primaryKey({ columns: [table.id], name: "_prisma_migrations_id"}),
-	}
-});
+export const apLocalHistoryChangeType = pgEnum("ap_local_history_change_type", ['INSERT', 'UPDATE', 'DELETE'])
+export const jbLocalHistoryChangeType = pgEnum("jb_local_history_change_type", ['INSERT', 'UPDATE', 'DELETE'])
+export const s2LocalHistoryChangeType = pgEnum("s2_local_history_change_type", ['INSERT', 'UPDATE', 'DELETE'])
+export const saLocalHistoryChangeType = pgEnum("sa_local_history_change_type", ['INSERT', 'UPDATE', 'DELETE'])
 
-export const apLocal = mysqlTable("ap_local", {
-	serviceNo: varchar("service_no", { length: 255 }).notNull(),
+
+export const apLocal = pgTable("ap_local", {
+	serviceNo: varchar("service_no", { length: 10 }).primaryKey().notNull(),
 	date: varchar({ length: 255 }),
 	pic: varchar({ length: 20 }),
 	name: varchar({ length: 100 }),
 	contact: varchar({ length: 40 }),
 	status: varchar({ length: 255 }),
-	email: varchar({ length: 255 }),
+	email: varchar({ length: 250 }),
 	address: text(),
 	purchaseDate: varchar("purchase_date", { length: 255 }),
 	invoice: varchar({ length: 255 }),
@@ -34,23 +24,24 @@ export const apLocal = mysqlTable("ap_local", {
 	solutions: text(),
 	statusDesc: text("status_desc"),
 	remarks: text(),
-	cost: int().default(0),
-	locker: int(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	locker: bigint({ mode: "number" }).default(sql`'0'`),
 	receivedBy: varchar("received_by", { length: 20 }),
 	idtPc: varchar("idt_pc", { length: 10 }),
-},
-(table) => {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	cost: bigint({ mode: "number" }).default(sql`'0'`),
+}, (table) => {
 	return {
-		contactIdx: index("contact_idx").on(table.contact),
-		emailIdx: index("email_idx").on(table.email),
-		nameIdx: index("name_idx").on(table.name),
-		receivedItemsIdx: index("received_items_idx").on(table.receivedItems),
-		apLocalServiceNo: primaryKey({ columns: [table.serviceNo], name: "ap_local_service_no"}),
+		idx24609ContactIdx: index("idx_24609_contact_idx").using("btree", table.contact.asc().nullsLast().op("text_ops")),
+		idx24609EmailIdx: index("idx_24609_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
+		idx24609NameIdx: index("idx_24609_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
+		idx24609PicIdx: index("idx_24609_pic_idx").using("btree", table.pic.asc().nullsLast().op("text_ops")),
+		idx24609ReceivedItemsIdx: index("idx_24609_received_items_idx").using("btree", table.receivedItems.asc().nullsLast().op("text_ops")),
 	}
 });
 
-export const apLocalHistory = mysqlTable("ap_local_history", {
-	historyId: int("history_id").autoincrement().notNull(),
+export const apLocalHistory = pgTable("ap_local_history", {
+	historyId: bigserial("history_id", { mode: "bigint" }).primaryKey().notNull(),
 	serviceNo: varchar("service_no", { length: 255 }),
 	date: varchar({ length: 255 }),
 	pic: varchar({ length: 20 }),
@@ -67,27 +58,24 @@ export const apLocalHistory = mysqlTable("ap_local_history", {
 	solutions: text(),
 	statusDesc: text("status_desc"),
 	remarks: text(),
-	cost: int().default(0),
-	locker: int(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	cost: bigint({ mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	locker: bigint({ mode: "number" }),
 	receivedBy: varchar("received_by", { length: 20 }),
 	idtPc: varchar("idt_pc", { length: 10 }),
-	changeType: mysqlEnum("change_type", ['INSERT','UPDATE','DELETE']).notNull(),
-	changeTimestamp: datetime("change_timestamp", { mode: 'string'}).default(sql`(CURRENT_TIMESTAMP)`),
-},
-(table) => {
-	return {
-		apLocalHistoryHistoryId: primaryKey({ columns: [table.historyId], name: "ap_local_history_history_id"}),
-	}
+	changeType: apLocalHistoryChangeType("change_type").notNull(),
+	changeTimestamp: timestamp("change_timestamp", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const apOther = mysqlTable("ap_other", {
-	serviceNo: varchar("service_no", { length: 255 }).notNull(),
+export const apOther = pgTable("ap_other", {
+	serviceNo: varchar("service_no", { length: 10 }).primaryKey().notNull(),
 	date: varchar({ length: 255 }),
 	pic: varchar({ length: 20 }),
 	name: varchar({ length: 100 }),
 	contact: varchar({ length: 40 }),
 	status: varchar({ length: 255 }),
-	email: varchar({ length: 255 }),
+	email: varchar({ length: 250 }),
 	address: text(),
 	purchaseDate: varchar("purchase_date", { length: 255 }),
 	invoice: varchar({ length: 255 }),
@@ -97,41 +85,40 @@ export const apOther = mysqlTable("ap_other", {
 	solutions: text(),
 	statusDesc: text("status_desc"),
 	remarks: text(),
-	cost: int().default(0),
-	locker: int(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	locker: bigint({ mode: "number" }).default(sql`'0'`),
 	receivedBy: varchar("received_by", { length: 20 }),
 	idtPc: varchar("idt_pc", { length: 10 }),
-},
-(table) => {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	cost: bigint({ mode: "number" }).default(sql`'0'`),
+}, (table) => {
 	return {
-		contactIdx: index("contact_idx").on(table.contact),
-		emailIdx: index("email_idx").on(table.email),
-		nameIdx: index("name_idx").on(table.name),
-		receivedItemsIdx: index("received_items_idx").on(table.receivedItems),
-		apOtherServiceNo: primaryKey({ columns: [table.serviceNo], name: "ap_other_service_no"}),
+		idx24624ContactIdx: index("idx_24624_contact_idx").using("btree", table.contact.asc().nullsLast().op("text_ops")),
+		idx24624EmailIdx: index("idx_24624_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
+		idx24624NameIdx: index("idx_24624_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
+		idx24624PicIdx: index("idx_24624_pic_idx").using("btree", table.pic.asc().nullsLast().op("text_ops")),
+		idx24624ReceivedItemsIdx: index("idx_24624_received_items_idx").using("btree", table.receivedItems.asc().nullsLast().op("text_ops")),
 	}
 });
 
-export const authUsers = mysqlTable("auth_users", {
-	id: int().autoincrement().notNull(),
-	email: varchar({ length: 255 }),
-	roles: varchar({ length: 10 }).default('Normal'),
-},
-(table) => {
+export const authUsers = pgTable("auth_users", {
+	id: bigserial({ mode: "bigint" }).primaryKey().notNull(),
+	email: varchar({ length: 200 }),
+	roles: varchar({ length: 10 }),
+}, (table) => {
 	return {
-		authUsersId: primaryKey({ columns: [table.id], name: "auth_users_id"}),
-		email: unique("email").on(table.email),
+		idx24632Email: uniqueIndex("idx_24632_email").using("btree", table.email.asc().nullsLast().op("text_ops")),
 	}
 });
 
-export const jbLocal = mysqlTable("jb_local", {
-	serviceNo: varchar("service_no", { length: 255 }).notNull(),
+export const jbLocal = pgTable("jb_local", {
+	serviceNo: varchar("service_no", { length: 10 }).primaryKey().notNull(),
 	date: varchar({ length: 255 }),
 	pic: varchar({ length: 20 }),
 	name: varchar({ length: 100 }),
 	contact: varchar({ length: 40 }),
 	status: varchar({ length: 255 }),
-	email: varchar({ length: 255 }),
+	email: varchar({ length: 250 }),
 	address: text(),
 	purchaseDate: varchar("purchase_date", { length: 255 }),
 	invoice: varchar({ length: 255 }),
@@ -141,23 +128,24 @@ export const jbLocal = mysqlTable("jb_local", {
 	solutions: text(),
 	statusDesc: text("status_desc"),
 	remarks: text(),
-	cost: int().default(0),
-	locker: int(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	locker: bigint({ mode: "number" }).default(sql`'0'`),
 	receivedBy: varchar("received_by", { length: 20 }),
 	idtPc: varchar("idt_pc", { length: 10 }),
-},
-(table) => {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	cost: bigint({ mode: "number" }).default(sql`'0'`),
+}, (table) => {
 	return {
-		contactIdx: index("contact_idx").on(table.contact),
-		emailIdx: index("email_idx").on(table.email),
-		nameIdx: index("name_idx").on(table.name),
-		receivedItemsIdx: index("received_items_idx").on(table.receivedItems),
-		jbLocalServiceNo: primaryKey({ columns: [table.serviceNo], name: "jb_local_service_no"}),
+		idx24636ContactIdx: index("idx_24636_contact_idx").using("btree", table.contact.asc().nullsLast().op("text_ops")),
+		idx24636EmailIdx: index("idx_24636_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
+		idx24636NameIdx: index("idx_24636_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
+		idx24636PicIdx: index("idx_24636_pic_idx").using("btree", table.pic.asc().nullsLast().op("text_ops")),
+		idx24636ReceivedItemsIdx: index("idx_24636_received_items_idx").using("btree", table.receivedItems.asc().nullsLast().op("text_ops")),
 	}
 });
 
-export const jbLocalHistory = mysqlTable("jb_local_history", {
-	historyId: int("history_id").autoincrement().notNull(),
+export const jbLocalHistory = pgTable("jb_local_history", {
+	historyId: bigserial("history_id", { mode: "bigint" }).primaryKey().notNull(),
 	serviceNo: varchar("service_no", { length: 255 }),
 	date: varchar({ length: 255 }),
 	pic: varchar({ length: 20 }),
@@ -174,27 +162,24 @@ export const jbLocalHistory = mysqlTable("jb_local_history", {
 	solutions: text(),
 	statusDesc: text("status_desc"),
 	remarks: text(),
-	cost: int().default(0),
-	locker: int(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	cost: bigint({ mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	locker: bigint({ mode: "number" }),
 	receivedBy: varchar("received_by", { length: 20 }),
 	idtPc: varchar("idt_pc", { length: 10 }),
-	changeType: mysqlEnum("change_type", ['INSERT','UPDATE','DELETE']).notNull(),
-	changeTimestamp: datetime("change_timestamp", { mode: 'string'}).default(sql`(CURRENT_TIMESTAMP)`),
-},
-(table) => {
-	return {
-		jbLocalHistoryHistoryId: primaryKey({ columns: [table.historyId], name: "jb_local_history_history_id"}),
-	}
+	changeType: jbLocalHistoryChangeType("change_type").notNull(),
+	changeTimestamp: timestamp("change_timestamp", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const jbOther = mysqlTable("jb_other", {
-	serviceNo: varchar("service_no", { length: 255 }).notNull(),
+export const jbOther = pgTable("jb_other", {
+	serviceNo: varchar("service_no", { length: 10 }).primaryKey().notNull(),
 	date: varchar({ length: 255 }),
 	pic: varchar({ length: 20 }),
 	name: varchar({ length: 100 }),
 	contact: varchar({ length: 40 }),
 	status: varchar({ length: 255 }),
-	email: varchar({ length: 255 }),
+	email: varchar({ length: 250 }),
 	address: text(),
 	purchaseDate: varchar("purchase_date", { length: 255 }),
 	invoice: varchar({ length: 255 }),
@@ -204,29 +189,30 @@ export const jbOther = mysqlTable("jb_other", {
 	solutions: text(),
 	statusDesc: text("status_desc"),
 	remarks: text(),
-	cost: int().default(0),
-	locker: int(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	locker: bigint({ mode: "number" }).default(sql`'0'`),
 	receivedBy: varchar("received_by", { length: 20 }),
 	idtPc: varchar("idt_pc", { length: 10 }),
-},
-(table) => {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	cost: bigint({ mode: "number" }).default(sql`'0'`),
+}, (table) => {
 	return {
-		contactIdx: index("contact_idx").on(table.contact),
-		emailIdx: index("email_idx").on(table.email),
-		nameIdx: index("name_idx").on(table.name),
-		receivedItemsIdx: index("received_items_idx").on(table.receivedItems),
-		jbOtherServiceNo: primaryKey({ columns: [table.serviceNo], name: "jb_other_service_no"}),
+		idx24651ContactIdx: index("idx_24651_contact_idx").using("btree", table.contact.asc().nullsLast().op("text_ops")),
+		idx24651EmailIdx: index("idx_24651_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
+		idx24651NameIdx: index("idx_24651_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
+		idx24651PicIdx: index("idx_24651_pic_idx").using("btree", table.pic.asc().nullsLast().op("text_ops")),
+		idx24651ReceivedItemsIdx: index("idx_24651_received_items_idx").using("btree", table.receivedItems.asc().nullsLast().op("text_ops")),
 	}
 });
 
-export const s2Local = mysqlTable("s2_local", {
-	serviceNo: varchar("service_no", { length: 255 }).notNull(),
+export const s2Local = pgTable("s2_local", {
+	serviceNo: varchar("service_no", { length: 10 }).primaryKey().notNull(),
 	date: varchar({ length: 255 }),
 	pic: varchar({ length: 20 }),
 	name: varchar({ length: 100 }),
 	contact: varchar({ length: 40 }),
 	status: varchar({ length: 255 }),
-	email: varchar({ length: 255 }),
+	email: varchar({ length: 250 }),
 	address: text(),
 	purchaseDate: varchar("purchase_date", { length: 255 }),
 	invoice: varchar({ length: 255 }),
@@ -236,23 +222,24 @@ export const s2Local = mysqlTable("s2_local", {
 	solutions: text(),
 	statusDesc: text("status_desc"),
 	remarks: text(),
-	cost: int().default(0),
-	locker: int(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	locker: bigint({ mode: "number" }).default(sql`'0'`),
 	receivedBy: varchar("received_by", { length: 20 }),
 	idtPc: varchar("idt_pc", { length: 10 }),
-},
-(table) => {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	cost: bigint({ mode: "number" }).default(sql`'0'`),
+}, (table) => {
 	return {
-		contactIdx: index("contact_idx").on(table.contact),
-		emailIdx: index("email_idx").on(table.email),
-		nameIdx: index("name_idx").on(table.name),
-		receivedItemsIdx: index("received_items_idx").on(table.receivedItems),
-		s2LocalServiceNo: primaryKey({ columns: [table.serviceNo], name: "s2_local_service_no"}),
+		idx24658ContactIdx: index("idx_24658_contact_idx").using("btree", table.contact.asc().nullsLast().op("text_ops")),
+		idx24658EmailIdx: index("idx_24658_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
+		idx24658NameIdx: index("idx_24658_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
+		idx24658PicIdx: index("idx_24658_pic_idx").using("btree", table.pic.asc().nullsLast().op("text_ops")),
+		idx24658ReceivedItemsIdx: index("idx_24658_received_items_idx").using("btree", table.receivedItems.asc().nullsLast().op("text_ops")),
 	}
 });
 
-export const s2LocalHistory = mysqlTable("s2_local_history", {
-	historyId: int("history_id").autoincrement().notNull(),
+export const s2LocalHistory = pgTable("s2_local_history", {
+	historyId: bigserial("history_id", { mode: "bigint" }).primaryKey().notNull(),
 	serviceNo: varchar("service_no", { length: 255 }),
 	date: varchar({ length: 255 }),
 	pic: varchar({ length: 20 }),
@@ -269,27 +256,24 @@ export const s2LocalHistory = mysqlTable("s2_local_history", {
 	solutions: text(),
 	statusDesc: text("status_desc"),
 	remarks: text(),
-	cost: int().default(0),
-	locker: int(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	cost: bigint({ mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	locker: bigint({ mode: "number" }),
 	receivedBy: varchar("received_by", { length: 20 }),
 	idtPc: varchar("idt_pc", { length: 10 }),
-	changeType: mysqlEnum("change_type", ['INSERT','UPDATE','DELETE']).notNull(),
-	changeTimestamp: datetime("change_timestamp", { mode: 'string'}).default(sql`(CURRENT_TIMESTAMP)`),
-},
-(table) => {
-	return {
-		s2LocalHistoryHistoryId: primaryKey({ columns: [table.historyId], name: "s2_local_history_history_id"}),
-	}
+	changeType: s2LocalHistoryChangeType("change_type").notNull(),
+	changeTimestamp: timestamp("change_timestamp", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const s2Other = mysqlTable("s2_other", {
-	serviceNo: varchar("service_no", { length: 255 }).notNull(),
+export const s2Other = pgTable("s2_other", {
+	serviceNo: varchar("service_no", { length: 10 }).primaryKey().notNull(),
 	date: varchar({ length: 255 }),
 	pic: varchar({ length: 20 }),
 	name: varchar({ length: 100 }),
 	contact: varchar({ length: 40 }),
 	status: varchar({ length: 255 }),
-	email: varchar({ length: 255 }),
+	email: varchar({ length: 250 }),
 	address: text(),
 	purchaseDate: varchar("purchase_date", { length: 255 }),
 	invoice: varchar({ length: 255 }),
@@ -299,29 +283,30 @@ export const s2Other = mysqlTable("s2_other", {
 	solutions: text(),
 	statusDesc: text("status_desc"),
 	remarks: text(),
-	cost: int().default(0),
-	locker: int(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	locker: bigint({ mode: "number" }).default(sql`'0'`),
 	receivedBy: varchar("received_by", { length: 20 }),
 	idtPc: varchar("idt_pc", { length: 10 }),
-},
-(table) => {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	cost: bigint({ mode: "number" }).default(sql`'0'`),
+}, (table) => {
 	return {
-		contactIdx: index("contact_idx").on(table.contact),
-		emailIdx: index("email_idx").on(table.email),
-		nameIdx: index("name_idx").on(table.name),
-		receivedItemsIdx: index("received_items_idx").on(table.receivedItems),
-		s2OtherServiceNo: primaryKey({ columns: [table.serviceNo], name: "s2_other_service_no"}),
+		idx24673ContactIdx: index("idx_24673_contact_idx").using("btree", table.contact.asc().nullsLast().op("text_ops")),
+		idx24673EmailIdx: index("idx_24673_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
+		idx24673NameIdx: index("idx_24673_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
+		idx24673PicIdx: index("idx_24673_pic_idx").using("btree", table.pic.asc().nullsLast().op("text_ops")),
+		idx24673ReceivedItemsIdx: index("idx_24673_received_items_idx").using("btree", table.receivedItems.asc().nullsLast().op("text_ops")),
 	}
 });
 
-export const saLocal = mysqlTable("sa_local", {
-	serviceNo: varchar("service_no", { length: 255 }).notNull(),
+export const saLocal = pgTable("sa_local", {
+	serviceNo: varchar("service_no", { length: 10 }).primaryKey().notNull(),
 	date: varchar({ length: 255 }),
 	pic: varchar({ length: 20 }),
 	name: varchar({ length: 100 }),
 	contact: varchar({ length: 40 }),
 	status: varchar({ length: 255 }),
-	email: varchar({ length: 255 }),
+	email: varchar({ length: 250 }),
 	address: text(),
 	purchaseDate: varchar("purchase_date", { length: 255 }),
 	invoice: varchar({ length: 255 }),
@@ -331,23 +316,24 @@ export const saLocal = mysqlTable("sa_local", {
 	solutions: text(),
 	statusDesc: text("status_desc"),
 	remarks: text(),
-	cost: int().default(0),
-	locker: int(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	locker: bigint({ mode: "number" }).default(sql`'0'`),
 	receivedBy: varchar("received_by", { length: 20 }),
 	idtPc: varchar("idt_pc", { length: 10 }),
-},
-(table) => {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	cost: bigint({ mode: "number" }).default(sql`'0'`),
+}, (table) => {
 	return {
-		contactIdx: index("contact_idx").on(table.contact),
-		emailIdx: index("email_idx").on(table.email),
-		nameIdx: index("name_idx").on(table.name),
-		receivedItemsIdx: index("received_items_idx").on(table.receivedItems),
-		saLocalServiceNo: primaryKey({ columns: [table.serviceNo], name: "sa_local_service_no"}),
+		idx24680ContactIdx: index("idx_24680_contact_idx").using("btree", table.contact.asc().nullsLast().op("text_ops")),
+		idx24680EmailIdx: index("idx_24680_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
+		idx24680NameIdx: index("idx_24680_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
+		idx24680PicIdx: index("idx_24680_pic_idx").using("btree", table.pic.asc().nullsLast().op("text_ops")),
+		idx24680ReceivedItemsIdx: index("idx_24680_received_items_idx").using("btree", table.receivedItems.asc().nullsLast().op("text_ops")),
 	}
 });
 
-export const saLocalHistory = mysqlTable("sa_local_history", {
-	historyId: int("history_id").autoincrement().notNull(),
+export const saLocalHistory = pgTable("sa_local_history", {
+	historyId: bigserial("history_id", { mode: "bigint" }).primaryKey().notNull(),
 	serviceNo: varchar("service_no", { length: 255 }),
 	date: varchar({ length: 255 }),
 	pic: varchar({ length: 20 }),
@@ -364,27 +350,24 @@ export const saLocalHistory = mysqlTable("sa_local_history", {
 	solutions: text(),
 	statusDesc: text("status_desc"),
 	remarks: text(),
-	cost: int().default(0),
-	locker: int(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	cost: bigint({ mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	locker: bigint({ mode: "number" }),
 	receivedBy: varchar("received_by", { length: 20 }),
 	idtPc: varchar("idt_pc", { length: 10 }),
-	changeType: mysqlEnum("change_type", ['INSERT','UPDATE','DELETE']).notNull(),
-	changeTimestamp: datetime("change_timestamp", { mode: 'string'}).default(sql`(CURRENT_TIMESTAMP)`),
-},
-(table) => {
-	return {
-		saLocalHistoryHistoryId: primaryKey({ columns: [table.historyId], name: "sa_local_history_history_id"}),
-	}
+	changeType: saLocalHistoryChangeType("change_type").notNull(),
+	changeTimestamp: timestamp("change_timestamp", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const saOther = mysqlTable("sa_other", {
-	serviceNo: varchar("service_no", { length: 255 }).notNull(),
+export const saOther = pgTable("sa_other", {
+	serviceNo: varchar("service_no", { length: 10 }).primaryKey().notNull(),
 	date: varchar({ length: 255 }),
 	pic: varchar({ length: 20 }),
 	name: varchar({ length: 100 }),
 	contact: varchar({ length: 40 }),
 	status: varchar({ length: 255 }),
-	email: varchar({ length: 255 }),
+	email: varchar({ length: 250 }),
 	address: text(),
 	purchaseDate: varchar("purchase_date", { length: 255 }),
 	invoice: varchar({ length: 255 }),
@@ -394,29 +377,25 @@ export const saOther = mysqlTable("sa_other", {
 	solutions: text(),
 	statusDesc: text("status_desc"),
 	remarks: text(),
-	cost: int().default(0),
-	locker: int(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	locker: bigint({ mode: "number" }).default(sql`'0'`),
 	receivedBy: varchar("received_by", { length: 20 }),
 	idtPc: varchar("idt_pc", { length: 10 }),
-},
-(table) => {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	cost: bigint({ mode: "number" }).default(sql`'0'`),
+}, (table) => {
 	return {
-		contactIdx: index("contact_idx").on(table.contact),
-		emailIdx: index("email_idx").on(table.email),
-		nameIdx: index("name_idx").on(table.name),
-		receivedItemsIdx: index("received_items_idx").on(table.receivedItems),
-		saOtherServiceNo: primaryKey({ columns: [table.serviceNo], name: "sa_other_service_no"}),
+		idx24695ContactIdx: index("idx_24695_contact_idx").using("btree", table.contact.asc().nullsLast().op("text_ops")),
+		idx24695EmailIdx: index("idx_24695_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
+		idx24695NameIdx: index("idx_24695_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
+		idx24695PicIdx: index("idx_24695_pic_idx").using("btree", table.pic.asc().nullsLast().op("text_ops")),
+		idx24695ReceivedItemsIdx: index("idx_24695_received_items_idx").using("btree", table.receivedItems.asc().nullsLast().op("text_ops")),
 	}
 });
 
-export const warrantyStaffBranch = mysqlTable("warranty_staff_branch", {
-	id: int().autoincrement().notNull(),
+export const warrantyStaffBranch = pgTable("warranty_staff_branch", {
+	id: bigserial({ mode: "bigint" }).primaryKey().notNull(),
 	name: varchar({ length: 255 }),
 	branch: varchar({ length: 255 }),
 	color: varchar({ length: 255 }),
-},
-(table) => {
-	return {
-		warrantyStaffBranchId: primaryKey({ columns: [table.id], name: "warranty_staff_branch_id"}),
-	}
 });

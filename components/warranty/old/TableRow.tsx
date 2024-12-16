@@ -1,5 +1,4 @@
 "use client";
-import { BranchType, DataValues } from "@/app/warranty/[branch]/page-old";
 import React, { useEffect, useRef, useState } from "react";
 import Dropdown from "./Dropdown";
 import TableRowExt from "./TableRowExt";
@@ -7,19 +6,21 @@ import TextBoxEditor from "./TextBoxEditor";
 // import socket from "@/lib/socket";
 import { useSocket } from "@/lib/providers/socket-provider";
 import { debounceFunc } from "@/lib/utils";
+import { WarrantyDataType } from "@/services/warranty/warrantyActions";
+import { BranchType } from "@/services/warranty/warrantyUtils";
 
 type Props = {
   branch: BranchType | null;
-  data: DataValues;
+  data: WarrantyDataType;
   updateDB: (id: string, column: string, value: string) => void;
   deleteDB: (id: string) => void;
-  updateAllDB: (id: string, lastChange: DataValues) => void;
+  updateAllDB: (id: string, lastChange: WarrantyDataType) => void;
   setNewEntry: (newValue: React.SetStateAction<boolean>) => void;
   lockTable: boolean;
 };
 
 type InputState = {
-  values: DataValues;
+  values: WarrantyDataType;
 };
 
 const TableRow = ({
@@ -36,23 +37,23 @@ const TableRow = ({
 
   const initialInputState: InputState = {
     values: {
-      service_no: data.service_no,
+      serviceNo: data.serviceNo,
       date: data.date,
-      idt_pc: data.idt_pc,
-      received_by: data.received_by,
+      idtPc: data.idtPc,
+      receivedBy: data.receivedBy,
       pic: data.pic,
       name: data.name,
       contact: data.contact,
       status: data.status,
       email: data.email,
       address: data.address,
-      purchase_date: data.purchase_date,
+      purchaseDate: data.purchaseDate,
       invoice: data.invoice,
-      received_items: data.received_items,
+      receivedItems: data.receivedItems,
       pin: data.pin,
       issues: data.issues,
       solutions: data.solutions,
-      status_desc: data.status_desc,
+      statusDesc: data.statusDesc,
       remarks: data.remarks,
       cost: data.cost,
       locker: data.locker,
@@ -70,23 +71,23 @@ const TableRow = ({
     )
       setInputValues({
         values: {
-          service_no: data.service_no,
+          serviceNo: data.serviceNo,
           date: data.date,
-          idt_pc: data.idt_pc,
-          received_by: data.received_by,
+          idtPc: data.idtPc,
+          receivedBy: data.receivedBy,
           pic: data.pic,
           name: data.name,
           contact: data.contact,
           status: data.status,
           email: data.email,
           address: data.address,
-          purchase_date: data.purchase_date,
+          purchaseDate: data.purchaseDate,
           invoice: data.invoice,
-          received_items: data.received_items,
+          receivedItems: data.receivedItems,
           pin: data.pin,
           issues: data.issues,
           solutions: data.solutions,
-          status_desc: data.status_desc,
+          statusDesc: data.statusDesc,
           remarks: data.remarks,
           cost: data.cost,
           locker: data.locker,
@@ -103,39 +104,39 @@ const TableRow = ({
   }>({ column: null, value: null });
 
   // last change for extended fields
-  const lastChangedExtRef = useRef<DataValues>({
-    service_no: null,
+  const lastChangedExtRef = useRef<WarrantyDataType>({
+    serviceNo: null,
     date: null,
-    idt_pc: null,
-    received_by: null,
+    idtPc: null,
+    receivedBy: null,
     pic: null,
     name: null,
     contact: null,
     status: null,
     email: null,
     address: null,
-    purchase_date: null,
+    purchaseDate: null,
     invoice: null,
-    received_items: null,
+    receivedItems: null,
     pin: null,
     issues: null,
     solutions: null,
-    status_desc: null,
+    statusDesc: null,
     remarks: null,
     cost: null,
-    locker: "0",
+    locker: 0,
   });
 
   // console.log(lastChangedExtRef);
 
-  const prevValuesRef = useRef<DataValues>(values);
+  const prevValuesRef = useRef<WarrantyDataType>(values);
 
   useEffect(() => {
     // console.log("pass");
     setLastChangeUpdated(!lastChangeUpdated);
-    const changes: Partial<DataValues> = {};
+    const changes: Partial<WarrantyDataType> = {};
 
-    (Object.keys(values) as Array<keyof DataValues>).forEach((key) => {
+    (Object.keys(values) as Array<keyof WarrantyDataType>).forEach((key) => {
       if (key === "locker") return;
       if (values[key] !== prevValuesRef.current[key]) {
         changes[key] = values[key];
@@ -158,7 +159,7 @@ const TableRow = ({
     | React.ChangeEvent<HTMLTextAreaElement>) => {
     if (socket === null) return;
     socket.emit("input-change", {
-      id: data.service_no,
+      id: data.serviceNo,
       valueId: target.id,
       value: target.value,
     });
@@ -187,7 +188,7 @@ const TableRow = ({
   const inputChangeDropdown = (id: string, value: string) => {
     if (socket === null) return;
     socket.emit("input-change", {
-      id: data.service_no,
+      id: data.serviceNo,
       valueId: id,
       value: value,
     });
@@ -210,8 +211,8 @@ const TableRow = ({
 
   // Check if lastChangedExtRef is empty ----
   const [lastChangeUpdated, setLastChangeUpdated] = useState(false);
-  const isExtEmpty = (refObject: DataValues) => {
-    for (const key of Object.keys(refObject) as Array<keyof DataValues>) {
+  const isExtEmpty = (refObject: WarrantyDataType) => {
+    for (const key of Object.keys(refObject) as Array<keyof WarrantyDataType>) {
       if (key === "locker") continue;
       if (refObject[key] !== null) {
         return true;
@@ -223,8 +224,8 @@ const TableRow = ({
   // update All DB and reset lastChangedExtRef ----
 
   const handleUpdateAllDB = async () => {
-    if (data.service_no) {
-      await updateAllDB(data.service_no, lastChangedExtRef.current);
+    if (data.serviceNo) {
+      await updateAllDB(data.serviceNo, lastChangedExtRef.current);
 
       // socket.emit("re-render", { string: "render" });
       clearExtRef();
@@ -253,12 +254,12 @@ const TableRow = ({
   // OpenClose for Row ----
   const [openClose, setOpenClose] = useState({
     status: false,
-    idt_pc: false,
-    received_by: false,
+    idtPc: false,
+    receivedBy: false,
     pic: false,
     name: false,
     contact: false,
-    service_no: false,
+    serviceNo: false,
     date: false,
   });
 
@@ -268,19 +269,19 @@ const TableRow = ({
     setOpenClose({ ...openClose, [id]: open });
 
     if (open) {
-      socket.emit("lock-row", { lock: data.service_no });
+      socket.emit("lock-row", { lock: data.serviceNo });
       // console.log("pass check1", lastChangedExtRef.current);
       return;
     } else {
       // console.log(accordion.current, "accordion1");
       if (accordion.current === true) {
-        socket.emit("unlock-row", { lock: data.service_no });
+        socket.emit("unlock-row", { lock: data.serviceNo });
         const lastChange = lastChangedRef.current;
         // console.log("pass check2");
         if (lastChange.column != null && lastChange.value != null) {
           // console.log("pass handleOpenClose");
-          if (values.service_no != null && values.service_no != "")
-            updateDB(values.service_no, lastChange.column, lastChange.value);
+          if (values.serviceNo != null && values.serviceNo != "")
+            updateDB(values.serviceNo, lastChange.column, lastChange.value);
           lastChangedRef.current = { column: null, value: null };
         }
       } else {
@@ -289,8 +290,8 @@ const TableRow = ({
         // console.log("pass check2");
         if (lastChange.column != null && lastChange.value != null) {
           // console.log("pass handleOpenClose");
-          if (values.service_no != null && values.service_no != "")
-            updateDB(values.service_no, lastChange.column, lastChange.value);
+          if (values.serviceNo != null && values.serviceNo != "")
+            updateDB(values.serviceNo, lastChange.column, lastChange.value);
           lastChangedRef.current = { column: null, value: null };
         }
         return;
@@ -315,13 +316,13 @@ const TableRow = ({
         // }, 50);
         // console.log(accordion.current, "accordion2");
         if (accordion.current === true) {
-          socket.emit("unlock-row", { lock: data.service_no });
+          socket.emit("unlock-row", { lock: data.serviceNo });
           // Update DB with the changes, take values and pass to parent to DB.
           const lastChange = lastChangedRef.current;
           if (lastChange.column != null && lastChange.value != null) {
             // console.log("pass handleOutsideClick");
-            if (values.service_no != null && values.service_no != "") {
-              updateDB(values.service_no, lastChange.column, lastChange.value);
+            if (values.serviceNo != null && values.serviceNo != "") {
+              updateDB(values.serviceNo, lastChange.column, lastChange.value);
               lastChangedRef.current = { column: null, value: null };
             }
           }
@@ -332,8 +333,8 @@ const TableRow = ({
           const lastChange = lastChangedRef.current;
           if (lastChange.column != null && lastChange.value != null) {
             // console.log("pass handleOutsideClick");
-            if (values.service_no != null && values.service_no != "") {
-              updateDB(values.service_no, lastChange.column, lastChange.value);
+            if (values.serviceNo != null && values.serviceNo != "") {
+              updateDB(values.serviceNo, lastChange.column, lastChange.value);
               lastChangedRef.current = { column: null, value: null };
             }
           }
@@ -394,7 +395,7 @@ const TableRow = ({
       isLocked: boolean;
     }) => {
       // console.log(rowId, isLocked);
-      if (rowId === data.service_no) {
+      if (rowId === data.serviceNo) {
         if (isLocked) {
           // console.log("lock state");
           setLockRow(true);
@@ -422,13 +423,13 @@ const TableRow = ({
       isLocked: boolean;
       multiLock: boolean;
     }) => {
-      if (!multiLock && rowId === data.service_no) {
+      if (!multiLock && rowId === data.serviceNo) {
         if (isLocked) {
           // console.log("lock db");
-          updateDB(data.service_no, "locker", "1");
+          updateDB(data.serviceNo, "locker", "1");
         } else {
           // console.log("unlock db");
-          updateDB(data.service_no, "locker", "0");
+          updateDB(data.serviceNo, "locker", "0");
         }
       } else if (multiLock) {
         // console.log(rowId);
@@ -450,7 +451,7 @@ const TableRow = ({
       value: string;
     }) => {
       if (valueId === "" || value === "") return;
-      if (id === data.service_no) {
+      if (id === data.serviceNo) {
         setInputValues((prev) => ({
           ...prev,
           values: {
@@ -525,16 +526,16 @@ const TableRow = ({
           accordion.current = !accordion.current;
           // console.log(accordion.current, "after");
           if (!accordion.current) {
-            if (data.service_no) {
+            if (data.serviceNo) {
               handleUpdateAllDB();
               socket.emit("unlock-row", {
-                rowId: data.service_no,
+                rowId: data.serviceNo,
                 count: -1,
               });
             }
           } else {
-            if (data.service_no) {
-              socket.emit("lock-row", { rowId: data.service_no, count: 1 });
+            if (data.serviceNo) {
+              socket.emit("lock-row", { rowId: data.serviceNo, count: 1 });
             }
           }
         }}
@@ -570,17 +571,17 @@ const TableRow = ({
         />
         <TextBoxEditor
           boxSize={110}
-          values={values.service_no}
-          id="service_no"
+          values={values.serviceNo}
+          id="serviceNo"
           onInputChange={inputChange}
           setOpenClose={handleOpenClose}
-          openClose={openClose.service_no}
+          openClose={openClose.serviceNo}
         />
         {branch && (
           <Dropdown
             boxSize={80}
-            id={values.service_no}
-            buttonId="idt_pc"
+            id={values.serviceNo}
+            buttonId="idtPc"
             status={[
               { type: "Yes", color: "bg-accent/80 text-white" },
               { type: "No", color: "bg-zinc-600 text-zinc-200" },
@@ -589,9 +590,9 @@ const TableRow = ({
               { type: "Yes", color: "bg-accent/80 text-white" },
               { type: "No", color: "bg-zinc-600 text-zinc-200" },
             ]}
-            values={values.idt_pc}
+            values={values.idtPc}
             setOpenClose={handleOpenClose}
-            openClose={openClose.idt_pc}
+            openClose={openClose.idtPc}
             setInputValues={inputChangeDropdown}
             updateDB={updateDB}
             clearExtRef={clearExtRef}
@@ -600,13 +601,13 @@ const TableRow = ({
         {branch && (
           <Dropdown
             boxSize={100}
-            id={values.service_no}
-            buttonId="received_by"
+            id={values.serviceNo}
+            buttonId="receivedBy"
             status={branch.pic}
             status_all={branch.all_pic}
-            values={values.received_by}
+            values={values.receivedBy}
             setOpenClose={handleOpenClose}
-            openClose={openClose.received_by}
+            openClose={openClose.receivedBy}
             setInputValues={inputChangeDropdown}
             updateDB={updateDB}
             clearExtRef={clearExtRef}
@@ -615,7 +616,7 @@ const TableRow = ({
         {branch && (
           <Dropdown
             boxSize={100}
-            id={values.service_no}
+            id={values.serviceNo}
             buttonId="pic"
             status={branch.pic}
             status_all={branch.all_pic}
@@ -646,7 +647,7 @@ const TableRow = ({
         {branch && (
           <Dropdown
             boxSize={120}
-            id={values.service_no}
+            id={values.serviceNo}
             buttonId="status"
             status={branch.status}
             status_all={branch.status}

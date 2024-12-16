@@ -16,9 +16,19 @@ const WarrantyInfo = async ({ searchParams }: Props) => {
 
   const data = await getWarrantyDetail(searchTerm || "");
 
+  if (!("data" in data)) {
+    console.error(data.message);
+    throw new Error(data.message);
+  }
+
   const format = (await getBranchFormat()).branch;
 
   const branchFormat = format.find((item) => item.id === "ampang-hq");
+
+  if (branchFormat === undefined) {
+    console.error("Branch format invalid.");
+    throw new Error("Branch format invalid.");
+  }
 
   return (
     <div className="mt-12 xs:mt-auto flex flex-col gap-8 xs:gap-16 max-w-[900px] w-full px-4 xs:px-16 py-4 mx-auto">
@@ -32,7 +42,7 @@ const WarrantyInfo = async ({ searchParams }: Props) => {
           <WarrantySearch />
         </div>
         <div className="w-full flex">
-          {data !== undefined ? (
+          {data.data !== undefined ? (
             <div className="bg-zinc-900 p-4 rounded-md border-[1px] dark:border-zinc-800 border-zinc-400 w-full">
               <div className="flex">
                 <div className="w-full min-w-[100px]">
@@ -41,7 +51,7 @@ const WarrantyInfo = async ({ searchParams }: Props) => {
                   </p>
                 </div>
                 <div className="w-full">
-                  <p className="pb-3">{data.serviceNo}</p>
+                  <p className="pb-3">{data.data.serviceNo}</p>
                 </div>
               </div>
               <div className="flex">
@@ -53,12 +63,12 @@ const WarrantyInfo = async ({ searchParams }: Props) => {
                     className={cn(
                       `${
                         branchFormat?.status.find(
-                          (item) => item.type === data.status
+                          (item) => item.type === data.data?.status
                         )?.color
                       }`
                     )}
                   >
-                    {data.status}
+                    {data.data.status}
                   </Badge>
                 </div>
               </div>
@@ -70,7 +80,7 @@ const WarrantyInfo = async ({ searchParams }: Props) => {
                   <p className="whitespace-nowrap pb-3">Issues:</p>
                 </div>
                 <div className="w-full">
-                  <p className="pb-3">{data.issues}</p>
+                  <p className="pb-3">{data.data.issues}</p>
                 </div>
               </div>
               <div className="flex">
@@ -82,12 +92,12 @@ const WarrantyInfo = async ({ searchParams }: Props) => {
                     className={cn(
                       `${
                         branchFormat?.all_pic.find(
-                          (item) => item.type === data.pic
+                          (item) => item.type === data.data?.pic
                         )?.color
                       }`
                     )}
                   >
-                    {data.pic}
+                    {data.data.pic}
                   </Badge>
                 </div>
               </div>
@@ -96,7 +106,7 @@ const WarrantyInfo = async ({ searchParams }: Props) => {
                   <p className="whitespace-nowrap pb-3">Date Issued:</p>
                 </div>
                 <div className="w-full">
-                  <p className="pb-3">{data.date}</p>
+                  <p className="pb-3">{data.data.date}</p>
                 </div>
               </div>
             </div>

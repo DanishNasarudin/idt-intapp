@@ -1,5 +1,5 @@
-import { BranchStatus, DataValues } from "@/app/warranty/[branch]/page-old";
 import { cn } from "@/lib/utils";
+import { BranchStatus } from "@/services/warranty/warrantyUtils";
 
 type Props = {
   boxSize: number;
@@ -13,10 +13,6 @@ type Props = {
   setInputValues: (id: string, value: string) => void;
   updateDB: (id: string, column: string, value: string) => void;
   clearExtRef: () => void;
-};
-
-type InputState = {
-  values: DataValues;
 };
 
 const Dropdown = ({

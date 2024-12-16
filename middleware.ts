@@ -5,7 +5,7 @@ export default authMiddleware({
   afterAuth: async (auth, req, evt) => {
     let hostURL;
     // let hostURL = req.url;
-    if (process.env.NODE_ENV !== "production") {
+    if (process.env.NODE_ENV === "production") {
       hostURL = `${
         req.nextUrl.protocol +
         "//" +
@@ -55,7 +55,8 @@ export default authMiddleware({
       }
     }
   },
-  publicRoutes: ["/home", "/info(.*)"], // unprotected pages
+  clockSkewInMs: 15000,
+  publicRoutes: ["/home", "/info(.*)", "/sign-in(.*)"], // unprotected pages
   // debug: true,
 });
 

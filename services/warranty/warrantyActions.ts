@@ -14,31 +14,16 @@ import {
   saLocalHistory,
   saOther,
 } from "@/db/schema";
-import {
-  AnyColumn,
-  asc,
-  desc,
-  eq,
-  ExtractTablesWithRelations,
-  like,
-  sql,
-} from "drizzle-orm";
-import { MySqlTransaction } from "drizzle-orm/mysql-core";
-import {
-  MySql2PreparedQueryHKT,
-  MySql2QueryResultHKT,
-} from "drizzle-orm/mysql2";
+import { AnyColumn, asc, desc, eq, like, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-import * as schema from "@/db/schema";
 import { format } from "date-fns";
+import {
+  serverErrorHandler,
+  ServerErrorHandlerType,
+} from "../common/errorHandler";
 
-type DatabaseTransaction = MySqlTransaction<
-  MySql2QueryResultHKT,
-  MySql2PreparedQueryHKT,
-  typeof schema,
-  ExtractTablesWithRelations<typeof schema>
->;
+// type DatabaseTransaction = PgTransaction<typeof schema>;
 
 type NonNullableProperties<T> = {
   [P in keyof T]: NonNullable<T[P]>;
@@ -47,6 +32,7 @@ type NonNullableProperties<T> = {
 export type WarrantyDataType = NonNullableProperties<
   typeof apLocal.$inferSelect
 >;
+export type WarrantyDataNulType = typeof apLocal.$inferSelect;
 
 export type WarrantyHistoryDataType = NonNullableProperties<
   typeof apLocalHistory.$inferSelect
@@ -64,7 +50,7 @@ type GetWarrantyByFilterType = {
   search: string;
   searchBy: string;
   sortList: SortDbType[];
-  dbTransaction?: DatabaseTransaction;
+  // dbTransaction?: DatabaseTransaction;
 };
 
 const getDrizzleTable = (tableName: string) => {
@@ -97,13 +83,17 @@ export const getWarrantyByFilter = async ({
   search,
   searchBy,
   sortList,
-  dbTransaction,
-}: GetWarrantyByFilterType): Promise<{
-  data: WarrantyDataType[];
-  totalCount: number;
-}> => {
+}: // dbTransaction,
+GetWarrantyByFilterType): Promise<
+  | {
+      data: WarrantyDataType[];
+      totalCount: number;
+    }
+  | ServerErrorHandlerType
+> => {
   try {
-    const dbConnection = dbTransaction ?? db;
+    // const dbConnection = dbTransaction ?? db;
+    const dbConnection = db;
 
     const searchFilter = (() => {
       switch (searchBy) {
@@ -204,25 +194,22 @@ export const getWarrantyByFilter = async ({
       totalCount: countFinal,
     };
   } catch (e) {
-    if (e instanceof Error) {
-      throw new Error(`Error (getDataByFilter): ${e.message}`);
-    } else {
-      throw new Error(`Error (getDataByFilter): ${e}`);
-    }
+    return await serverErrorHandler(e, "getWarrabtyByFilter");
   }
 };
 
 export const addWarranty = async ({
   tableName,
-  dbTransaction,
-}: {
+}: // dbTransaction,
+{
   tableName: string | undefined;
-  dbTransaction?: DatabaseTransaction;
+  // dbTransaction?: DatabaseTransaction;
 }) => {
   try {
     if (tableName === undefined)
       throw new Error(`Unknown table name: ${tableName}`);
-    const dbConnection = dbTransaction ?? db;
+    // const dbConnection = dbTransaction ?? db;
+    const dbConnection = db;
 
     let prefix = "";
     switch (tableName) {
@@ -297,11 +284,7 @@ export const addWarranty = async ({
     revalidatePath("/warranty/[branch]", "page");
     return { date: formattedDate, serviceNo };
   } catch (e) {
-    if (e instanceof Error) {
-      throw new Error(`Error (getDataByFilter): ${e.message}`);
-    } else {
-      throw new Error(`Error (getDataByFilter): ${e}`);
-    }
+    return await serverErrorHandler(e, "addWarranty");
   }
 };
 
@@ -311,7 +294,7 @@ type UpdateWarrantyDataType = {
   whereValue: string;
   toChangeId: string;
   toChangeValue: string;
-  dbTransaction?: DatabaseTransaction;
+  // dbTransaction?: DatabaseTransaction;
 };
 
 export const updateWarranty = async ({
@@ -320,10 +303,11 @@ export const updateWarranty = async ({
   whereValue,
   toChangeId,
   toChangeValue,
-  dbTransaction,
-}: UpdateWarrantyDataType) => {
+}: // dbTransaction,
+UpdateWarrantyDataType) => {
   try {
-    const dbConnection = dbTransaction ?? db;
+    // const dbConnection = dbTransaction ?? db;
+    const dbConnection = db;
     const table = getDrizzleTable(tableName);
 
     // Define the `where` clause using the selected table and `whereId`
@@ -338,38 +322,31 @@ export const updateWarranty = async ({
       .where(whereClause)
       .execute();
 
-    revalidatePath("/warranty/[branch]", "page");
+    // revalidatePath("/warranty/[branch]", "page");
   } catch (e) {
-    if (e instanceof Error) {
-      throw new Error(`Error (updateData): ${e.message}`);
-    } else {
-      throw new Error(`Error (updateData): ${e}`);
-    }
+    return await serverErrorHandler(e, "updateWarranty");
   }
 };
 
 export const deleteWarranty = async ({
   tableName,
   deleteId,
-  dbTransaction,
-}: {
+}: // dbTransaction,
+{
   tableName: string;
   deleteId: string;
-  dbTransaction?: DatabaseTransaction;
+  // dbTransaction?: DatabaseTransaction;
 }) => {
   try {
-    const dbConnection = dbTransaction ?? db;
+    // const dbConnection = dbTransaction ?? db;
+    const dbConnection = db;
     const table = getDrizzleTable(tableName);
 
     await dbConnection.delete(table).where(eq(table["serviceNo"], deleteId));
 
     revalidatePath("/warranty/[branch]", "page");
   } catch (e) {
-    if (e instanceof Error) {
-      throw new Error(`Error (deleteWarranty): ${e.message}`);
-    } else {
-      throw new Error(`Error (deleteWarranty): ${e}`);
-    }
+    return await serverErrorHandler(e, "deleteWarranty");
   }
 };
 
@@ -377,17 +354,18 @@ type CopyWarrantyType = {
   tableFrom: string;
   tableTo: string;
   toCopyId: string;
-  dbTransaction?: DatabaseTransaction;
+  // dbTransaction?: DatabaseTransaction;
 };
 
 export const copyWarranty = async ({
   tableFrom,
   tableTo,
   toCopyId,
-  dbTransaction,
-}: CopyWarrantyType) => {
+}: // dbTransaction,
+CopyWarrantyType) => {
   try {
-    const dbConnection = dbTransaction ?? db;
+    // const dbConnection = dbTransaction ?? db;
+    const dbConnection = db;
     const tableFromActive = getDrizzleTable(tableFrom);
 
     const tableToActive = getDrizzleTable(tableTo);
@@ -419,11 +397,7 @@ export const copyWarranty = async ({
       throw new Error("No data found to copy");
     }
   } catch (e) {
-    if (e instanceof Error) {
-      throw new Error(`Error (copyWarranty): ${e.message}`);
-    } else {
-      throw new Error(`Error (copyWarranty): ${e}`);
-    }
+    return await serverErrorHandler(e, "copyWarranty");
   }
 };
 
@@ -465,7 +439,7 @@ export const passWarranty = async ({
         tableFrom,
         tableTo: `${tableFrom.split("_")[0]}_other`,
         toCopyId: toPassId,
-        dbTransaction,
+        // dbTransaction,
       });
       await updateWarranty({
         tableName: tableFrom,
@@ -473,31 +447,27 @@ export const passWarranty = async ({
         whereValue: toPassId,
         toChangeId: "status",
         toChangeValue: `From ${statusValue}`,
-        dbTransaction,
+        // dbTransaction,
       });
       await copyWarranty({
         tableFrom,
         tableTo,
         toCopyId: toPassId,
-        dbTransaction,
+        // dbTransaction,
       });
       deleteWarranty({ tableName: tableFrom, deleteId: toPassId });
     });
 
     revalidatePath("/warranty/[branch]", "page");
   } catch (e) {
-    if (e instanceof Error) {
-      throw new Error(`Error (passWarranty): ${e.message}`);
-    } else {
-      throw new Error(`Error (passWarranty): ${e}`);
-    }
+    return await serverErrorHandler(e, "passWarranty");
   }
 };
 
 export async function getWarrantyHistory(
   tableName: string,
   search: string
-): Promise<WarrantyHistoryDataType[]> {
+): Promise<{ data: WarrantyHistoryDataType[] } | ServerErrorHandlerType> {
   try {
     const table = (() => {
       switch (tableName) {
@@ -527,13 +497,9 @@ export async function getWarrantyHistory(
     // Execute the query
     const rows = await query.execute();
 
-    return rows.length > 0 ? (rows as WarrantyHistoryDataType[]) : [];
+    return { data: rows.length > 0 ? (rows as WarrantyHistoryDataType[]) : [] };
   } catch (e) {
-    if (e instanceof Error) {
-      throw new Error(`Error (getWarrantyHistory): ${e.message}`);
-    } else {
-      throw new Error(`Error (getWarrantyHistory): ${e}`);
-    }
+    return await serverErrorHandler(e, "getWarrantyHistory");
   }
 }
 
@@ -543,7 +509,9 @@ export const revalidateGetWarranty = async () => {
 
 export const getWarrantyDetail = async (
   search: string
-): Promise<Partial<WarrantyDataType> | undefined> => {
+): Promise<
+  { data: Partial<WarrantyDataType> | undefined } | ServerErrorHandlerType
+> => {
   try {
     const tables = [apLocal, s2Local, saLocal, jbLocal];
     const searchLike = `%${search}%`;
@@ -572,16 +540,15 @@ export const getWarrantyDetail = async (
       issues: row.issues ?? "",
     }));
 
-    return search !== ""
-      ? aggregatedRows.length > 0
-        ? aggregatedRows[0]
-        : undefined
-      : undefined;
+    return {
+      data:
+        search !== ""
+          ? aggregatedRows.length > 0
+            ? aggregatedRows[0]
+            : undefined
+          : undefined,
+    };
   } catch (e) {
-    if (e instanceof Error) {
-      throw new Error(`Error (getWarrantyDetail): ${e.message}`);
-    } else {
-      throw new Error(`Error (getWarrantyDetail): ${e}`);
-    }
+    return await serverErrorHandler(e, "getWarrantyDetail");
   }
 };

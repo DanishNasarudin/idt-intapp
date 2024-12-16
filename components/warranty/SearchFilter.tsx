@@ -17,7 +17,6 @@ import { useDebounce, useDebouncedCallback } from "use-debounce";
 import { Button } from "../ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -217,9 +216,9 @@ const SearchFilter = ({ branchData = undefined }: Props) => {
             <DialogTitle>There is a new version of the app!</DialogTitle>
             <DialogDescription>Please refresh the page.</DialogDescription>
             <div className="flex justify-end gap-2">
-              <DialogClose asChild>
+              {/* <DialogClose asChild>
                 <Button variant={"outline"}>Cancel</Button>
-              </DialogClose>
+              </DialogClose> */}
               <Button
                 variant={"accent"}
                 onClick={() => window.location.reload()}

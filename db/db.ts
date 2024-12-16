@@ -1,13 +1,15 @@
-import mysql from "mysql2/promise";
-
+import { neon } from "@neondatabase/serverless";
 import "dotenv/config";
-import { drizzle } from "drizzle-orm/mysql2";
-import * as schema from "./schema";
+import { drizzle } from "drizzle-orm/neon-http";
 
-const connection = await mysql.createConnection({
-  uri: process.env.DATABASE_URL!,
-});
+// const connection = await mysql.createPool({
+//   uri: process.env.DATABASE_URL!,
+// });
 
-const db = drizzle({ client: connection, schema, mode: "default" });
+// const db = drizzle({ client: connection, schema, mode: "default" });
+
+const sql = neon(process.env.DATABASE_URL!);
+
+const db = drizzle({ client: sql });
 
 export default db;
