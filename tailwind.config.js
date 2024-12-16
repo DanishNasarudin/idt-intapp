@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 import { nextui } from "@nextui-org/theme";
+import * as tailwindAnimate from "tailwindcss-animate";
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -135,5 +136,5 @@ module.exports = {
       md: "900px",
     },
   },
-  plugins: [require("tailwindcss-animate"), nextui()],
+  plugins: [tailwindAnimate, nextui()],
 };
