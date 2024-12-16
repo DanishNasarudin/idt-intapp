@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 import { nextui } from "@nextui-org/theme";
 import * as tailwindAnimate from "tailwindcss-animate";
-module.exports = {
+export default {
   darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
