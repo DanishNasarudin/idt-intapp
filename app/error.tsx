@@ -22,7 +22,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="h-screen">
+    <div className="h-screen w-screen">
       <h2>Something went wrong!</h2>
       <p>Error: {message}</p>
       <button
