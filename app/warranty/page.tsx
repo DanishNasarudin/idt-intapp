@@ -50,6 +50,23 @@ const Warranty = async () => {
           }) || []
   );
 
+  if (!("data" in apData)) {
+    console.error(apData.message);
+    throw new Error(apData.message);
+  }
+  if (!("data" in s2Data)) {
+    console.error(s2Data.message);
+    throw new Error(s2Data.message);
+  }
+  if (!("data" in saData)) {
+    console.error(saData.message);
+    throw new Error(saData.message);
+  }
+  if (!("data" in jbData)) {
+    console.error(jbData.message);
+    throw new Error(jbData.message);
+  }
+
   return (
     <>
       <div className="hidden md:flex flex-col gap-16 w-full px-16 py-4 max-w-[1060px] mx-auto">
@@ -67,26 +84,26 @@ const Warranty = async () => {
           <div className="flex gap-4 w-full">
             <div className="flex flex-col gap-4 w-full px-4 py-4 rounded-md bg-zinc-900 border-[1px] border-zinc-800">
               <span className="leading-none">Ampang HQ</span>
-              <h2>{apData.complete} Units</h2>
+              <h2>{apData.data.complete} Units</h2>
             </div>
             <div className="flex flex-col gap-4 w-full px-4 py-4 rounded-md bg-zinc-900 border-[1px] border-zinc-800">
               <span className="leading-none">SS2, PJ</span>
-              <h2>{s2Data.complete} Units</h2>
+              <h2>{s2Data.data.complete} Units</h2>
             </div>
             <div className="flex flex-col gap-4 w-full px-4 py-4 rounded-md bg-zinc-900 border-[1px] border-zinc-800">
               <span className="leading-none">Setia Alam</span>
-              <h2>{saData.complete} Units</h2>
+              <h2>{saData.data.complete} Units</h2>
             </div>
             <div className="flex flex-col gap-4 w-full px-4 py-4 rounded-md bg-zinc-900 border-[1px] border-zinc-800">
               <span className="leading-none">Johor Bahru</span>
-              <h2>{jbData.complete} Units</h2>
+              <h2>{jbData.data.complete} Units</h2>
             </div>
           </div>
         </div>
-        <MainAnalytics branch="Ampang HQ" data={apData} />
-        <MainAnalytics branch="SS2, PJ" data={s2Data} />
-        <MainAnalytics branch="Setia Alam" data={saData} />
-        <MainAnalytics branch="Johor Bahru" data={jbData} />
+        <MainAnalytics branch="Ampang HQ" data={apData.data} />
+        <MainAnalytics branch="SS2, PJ" data={s2Data.data} />
+        <MainAnalytics branch="Setia Alam" data={saData.data} />
+        <MainAnalytics branch="Johor Bahru" data={jbData.data} />
         <div className="h-[20vh]" />
       </div>
       <div className="md:hidden flex justify-center items-center h-[100vh] text-center w-full">
@@ -97,5 +114,5 @@ const Warranty = async () => {
   );
 };
 
-export const revalidate = 0;
+// export const revalidate = 0;
 export default Warranty;

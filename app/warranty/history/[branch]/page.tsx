@@ -32,6 +32,11 @@ const History = async ({ params, searchParams }: Props) => {
 
   const historyData = await getWarrantyHistory(branchId, searchTerm || "");
 
+  if (!("data" in historyData)) {
+    console.error(historyData.message);
+    throw new Error(historyData.message);
+  }
+
   const groupByServiceNo = (
     data: WarrantyHistoryDataType[]
   ): Record<string, WarrantyHistoryDataType[]> => {
@@ -123,7 +128,7 @@ const History = async ({ params, searchParams }: Props) => {
     return result;
   };
 
-  const refactorData = createChangeObjects(historyData);
+  const refactorData = createChangeObjects(historyData.data);
 
   return (
     <>

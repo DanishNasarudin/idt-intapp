@@ -1,4 +1,3 @@
-import { DataValues } from "@/app/warranty/[branch]/page-old";
 import { Options } from "@/app/warranty/settings/page";
 import React from "react";
 
@@ -11,10 +10,6 @@ type Props = {
   openClose: boolean;
   setInput: React.MutableRefObject<string>;
   updateDB: () => void;
-};
-
-type InputState = {
-  values: DataValues;
 };
 
 const Dropdown = ({
