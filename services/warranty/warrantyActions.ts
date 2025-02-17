@@ -127,6 +127,8 @@ export const getWarrantyByFilter = async ({
           return "pic";
         case "By: Contact":
           return "contact";
+        case "By: Received Items":
+          return "receivedItems";
         default:
           throw new Error(`Unknown search filter: ${searchBy}`);
       }

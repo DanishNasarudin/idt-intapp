@@ -4,7 +4,7 @@ import "dotenv/config";
 import { drizzle } from "drizzle-orm/mysql2";
 import * as schema from "./schema";
 
-const connection = await mysql.createConnection({
+const connection = await mysql.createPool({
   uri: process.env.DATABASE_URL!,
 });
 
