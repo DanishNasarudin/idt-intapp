@@ -99,6 +99,10 @@ INSERT INTO ap_local (service_no, date, name, contact, status, email, address, p
 
 --@block
 
+SELECT * FROM ap_local WHERE service_no = "WAP2412068";
+
+--@block
+
 CREATE TABLE ap_local_history(
     history_id INT AUTO_INCREMENT PRIMARY KEY,
     service_no VARCHAR(255),

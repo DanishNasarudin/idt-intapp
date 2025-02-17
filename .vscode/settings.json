@@ -12,8 +12,9 @@
       "port": 3306,
       "driver": "MySQL",
       "name": "idt-intapp",
-      "database": "idtIntapp",
-      "username": "root"
+      "database": "idealth_intapp_d",
+      "username": "root",
+      "password": ""
     }
   ]
 }

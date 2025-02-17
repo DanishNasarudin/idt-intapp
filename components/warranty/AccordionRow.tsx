@@ -351,9 +351,10 @@ const AccordionRow = ({
             onValueChange={onValueChange}
           />
           <TextBoxWithCopy
-            rowId={value.serviceNo}
+            rowId={value.pin}
             id="pin"
             label="Pin"
+            value={value.pin}
             onValueChange={onValueChange}
           />
         </div>

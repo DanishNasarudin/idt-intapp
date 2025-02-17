@@ -88,7 +88,7 @@ const Branch = async ({ params, searchParams }: Props) => {
     throw new Error(otherData.message);
   }
 
-  // console.log(data, "CJECK");
+  // console.log(branchData.data[0], "CJECK");
 
   return (
     <>
