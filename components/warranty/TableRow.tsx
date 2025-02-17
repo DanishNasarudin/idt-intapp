@@ -143,7 +143,7 @@ const TableRow = ({ data }: Props) => {
         );
       }
     },
-    1000
+    5000
   );
 
   const handleValueChange = useCallback(
@@ -159,6 +159,10 @@ const TableRow = ({ data }: Props) => {
   );
 
   const [accordion, setAccordion] = useState("");
+
+  // const manualSave = useCallback(() => {
+  //   handleValueChangeDebounced(newValue, id);
+  // }, []);
 
   // const revalidateWarranty = useDebouncedCallback(async () => {
   //   toast.promise(revalidateGetWarranty(), {
@@ -302,7 +306,12 @@ const TableRow = ({ data }: Props) => {
               )}
             >
               <AccordionContent className="pb-0">
-                <AccordionRow value={value} onValueChange={handleValueChange} />
+                <AccordionRow
+                  value={value}
+                  onValueChange={handleValueChange}
+                  flushSave={handleValueChangeDebounced.flush}
+                  isPendingSave={handleValueChangeDebounced.isPending()}
+                />
               </AccordionContent>
             </AccordionItem>
           </Accordion>

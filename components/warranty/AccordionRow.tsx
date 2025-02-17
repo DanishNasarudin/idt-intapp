@@ -26,6 +26,8 @@ type Props = {
     newValue: string,
     id: keyof WarrantyDataType | "default"
   ) => void;
+  flushSave?: () => void;
+  isPendingSave?: boolean;
 };
 
 const AccordionRow = ({
@@ -52,6 +54,8 @@ const AccordionRow = ({
     locker: 0,
   },
   onValueChange = () => {},
+  flushSave,
+  isPendingSave,
 }: Props) => {
   const branchData = useBranchFormat((state) => state.branchData);
 
@@ -444,7 +448,14 @@ const AccordionRow = ({
           >
             Send Email
           </Button>
-          {/* <Button>Save Data</Button> */}
+          <Button
+            variant={isPendingSave ? "accent" : "outline"}
+            className="border-[0]"
+            disabled={!isPendingSave}
+            onClick={flushSave}
+          >
+            Save
+          </Button>
         </div>
         <Dialog>
           <DialogTrigger asChild>
