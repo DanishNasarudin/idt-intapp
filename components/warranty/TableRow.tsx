@@ -8,7 +8,7 @@ import {
   updateWarranty,
   WarrantyDataType,
 } from "@/services/warranty/warrantyActions";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { Accordion, AccordionContent, AccordionItem } from "../ui/accordion";
@@ -85,15 +85,48 @@ const TableRow = ({ data }: Props) => {
       color: item.color,
     }));
 
-  const handleValueChangeDebounced = useDebouncedCallback(
+  type UpdatableValue = string | number | null;
+
+  type PendingChanges = Partial<Record<keyof WarrantyDataType, UpdatableValue>>;
+
+  const pendingChangesRef = useRef<PendingChanges>({});
+
+  // Define which fields are numeric.
+  const numericFields: (keyof WarrantyDataType)[] = ["cost", "locker"];
+
+  const debouncedBulkUpdate = useDebouncedCallback(() => {
+    const changes: Partial<Record<string, string | number | null>> = {
+      ...pendingChangesRef.current,
+    };
+    if (Object.keys(changes).length === 0) return;
+    pendingChangesRef.current = {};
+    toast.promise(
+      updateWarranty({
+        tableName: branchData ? branchData.data_local : "apLocal",
+        whereId: "serviceNo",
+        whereValue: value.serviceNo,
+        changes,
+      }),
+      {
+        loading: "Updating..",
+        success: "Updated!",
+        error: "Update Error!",
+      }
+    );
+  }, 5000);
+
+  const handleValueChange = useCallback(
     (newValue: string, id: keyof WarrantyDataType | "default") => {
+      setValue((prev) => ({ ...prev, [id]: newValue }));
+
+      if (id === "default") return;
+
       if (id === "status" && newValue.includes("Pass")) {
-        const fromDb = branchData?.data_local;
-        const toDbString = newValue;
+        // Remove any pending change for "status".
+        delete pendingChangesRef.current.status;
         let toDb: string;
         let displayString: string;
-
-        switch (toDbString) {
+        switch (newValue) {
           case "Pass Ampang":
             toDb = "ap_local";
             displayString = "Ampang";
@@ -113,49 +146,37 @@ const TableRow = ({ data }: Props) => {
           default:
             throw new Error(`Update fails at moving data.`);
         }
-
         toast.promise(
           passWarranty({
-            tableFrom: fromDb,
+            tableFrom: branchData?.data_local,
             tableTo: toDb,
             toPassId: value.serviceNo,
           }),
           {
-            loading: `Passing..`,
+            loading: "Passing..",
             success: `Passed to ${displayString}!`,
             error: "Data Passing Error!",
           }
         );
       } else {
-        toast.promise(
-          updateWarranty({
-            tableName: branchData ? branchData?.data_local : "apLocal",
-            whereId: "serviceNo",
-            whereValue: value.serviceNo,
-            toChangeId: id,
-            toChangeValue: newValue,
-          }),
-          {
-            loading: `Updating..`,
-            success: `Updated!`,
-            error: "Update Error!",
-          }
-        );
+        // Store change for bulk update.
+        let convertedValue: UpdatableValue;
+        if (numericFields.includes(id as keyof WarrantyDataType)) {
+          convertedValue = newValue === "" ? "" : Number(newValue);
+        } else {
+          convertedValue = newValue === "" ? "" : newValue;
+        }
+        pendingChangesRef.current[id as keyof WarrantyDataType] =
+          convertedValue;
+        debouncedBulkUpdate();
       }
-    },
-    5000
-  );
 
-  const handleValueChange = useCallback(
-    (newValue: string, id: keyof WarrantyDataType | "default") => {
-      setValue((prev) => ({ ...prev, [id]: newValue }));
-      handleValueChangeDebounced(newValue, id);
-      if (socket === null || !data || id === "default") return;
+      if (socket === null || !data) return;
       if (data[id] !== newValue) {
         socket.emit("send-changes", { newValue, id, rowId: data.serviceNo });
       }
     },
-    [socket]
+    [socket, branchData, value, data, setValue, debouncedBulkUpdate]
   );
 
   const [accordion, setAccordion] = useState("");
@@ -309,8 +330,8 @@ const TableRow = ({ data }: Props) => {
                 <AccordionRow
                   value={value}
                   onValueChange={handleValueChange}
-                  flushSave={handleValueChangeDebounced.flush}
-                  isPendingSave={handleValueChangeDebounced.isPending()}
+                  flushSave={debouncedBulkUpdate.flush}
+                  isPendingSave={debouncedBulkUpdate.isPending()}
                 />
               </AccordionContent>
             </AccordionItem>

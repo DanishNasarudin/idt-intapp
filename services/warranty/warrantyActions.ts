@@ -314,8 +314,7 @@ type UpdateWarrantyDataType = {
   tableName: string;
   whereId: keyof WarrantyDataType;
   whereValue: string;
-  toChangeId: string;
-  toChangeValue: string;
+  changes: Partial<Record<string, string | number | null>>;
   dbTransaction?: DatabaseTransaction;
 };
 
@@ -323,8 +322,7 @@ export const updateWarranty = async ({
   tableName,
   whereId,
   whereValue,
-  toChangeId,
-  toChangeValue,
+  changes,
   dbTransaction,
 }: UpdateWarrantyDataType) => {
   try {
@@ -333,14 +331,24 @@ export const updateWarranty = async ({
     const table = getDrizzleTable(tableName);
 
     // Define the `where` clause using the selected table and `whereId`
-    const whereClause = eq(table[whereId], whereValue);
-    const updateValue = toChangeValue === "" ? null : toChangeValue;
+    const processedChanges: Record<string, string | null> = {};
+    Object.entries(changes).forEach(([key, value]) => {
+      processedChanges[key] =
+        value === ""
+          ? null
+          : value === undefined
+          ? null
+          : typeof value === "string"
+          ? value
+          : String(value);
+    });
 
+    const whereClause = eq(table[whereId], whereValue);
+
+    // Update all changed fields in a single query
     await dbConnection
       .update(table)
-      .set({
-        [toChangeId]: updateValue,
-      })
+      .set(processedChanges)
       .where(whereClause)
       .execute();
 
@@ -467,8 +475,7 @@ export const passWarranty = async ({
         tableName: tableFrom,
         whereId: "serviceNo",
         whereValue: toPassId,
-        toChangeId: "status",
-        toChangeValue: `From ${statusValue}`,
+        changes: { status: `From ${statusValue}` },
         dbTransaction,
       });
       await copyWarranty({

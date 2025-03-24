@@ -29,6 +29,7 @@ const nextConfig = {
     fetches: {
       fullUrl: true,
     },
+    
   },
 };
 
