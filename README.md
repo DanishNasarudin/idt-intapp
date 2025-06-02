@@ -16,7 +16,7 @@ The information is also synchronised with websockets across devices as the web a
 | <img alt="" src= "https://cdn-icons-png.flaticon.com/512/5968/5968381.png" height="13">                                                                        | Typescript   | JS Syntax        |
 | <img alt="" src= "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Tailwind_CSS_Logo.svg/512px-Tailwind_CSS_Logo.svg.png?20230715030042" height="10"> | Tailwind CSS | CSS Framework    |
 | <img alt="" src= "https://i0.wp.com/community.nodemailer.com/wp-content/uploads/2015/10/n2-2.png?w=422&ssl=1" height="13">                                     | Nodemailer   | Email Handling   |
-| <img alt="" src= "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpHj4UwTW4ANSlNjzQOiiOqfDa6kal9RpF0A&s" height="13">                                   | Zustand      | State Management |
+| <img alt="" src= "https://user-images.githubusercontent.com/958486/218346783-72be5ae3-b953-4dd7-b239-788a882fdad6.svg" height="13">                            | Zustand      | State Management |
 | <img alt="" src= "https://brandlogovector.com/wp-content/uploads/2022/02/Cpanel-Icon-Logo.png" height="10">                                                    | cPanel       | Deployment       |
 | <img alt="" src= "https://upload.wikimedia.org/wikipedia/commons/9/94/Cloudflare_Logo.png" height="13">                                                        | Cloudflare   | CDN              |
 
